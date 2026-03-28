@@ -1,14 +1,51 @@
-import { Controller, Get } from "@nestjs/common";
-import { HealthCheckResponseDto } from "../dtos/health-check-response.dto";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Controller, Post, Get, Body, UseGuards, Req } from "@nestjs/common";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
+import { CreateWalletDto } from "../dtos/create-wallet.dto";
+import { WalletResponseDto } from "../dtos/wallet-response.dto";
+import { ErrorResponseDto } from "../dtos/error-response.dto";
+import { WalletService } from "../services/wallet.service";
 
 @ApiTags("wallets")
 @Controller("wallets")
 export class WalletsController {
-  @Get("health")
-  @ApiOperation({ summary: "Health check endpoint" })
-  @ApiResponse({ status: 200, description: "Service is healthy", type: HealthCheckResponseDto })
-  check(): HealthCheckResponseDto {
-    return { status: "ok", service: "wallets" };
+  constructor(private readonly walletService: WalletService) {}
+
+  @Post()
+  @ApiOperation({ summary: "Cria carteira para o jogador autenticado" })
+  @ApiResponse({ status: 201, type: WalletResponseDto })
+  @ApiResponse({
+    status: 400,
+    type: ErrorResponseDto,
+    description: "Carteira já existe",
+  })
+  @ApiResponse({ status: 401, description: "Não autorizado" })
+  async createWallet(
+    @Body() dto: CreateWalletDto,
+    // @Req() req: Request, // TODO: extrair userId do JWT
+  ): Promise<WalletResponseDto> {
+    // TODO: Pegar userId do token JWT
+    const userId = dto.userId || "mock-user-id";
+    return this.walletService.createWallet(userId);
+  }
+
+  @Get("me")
+  @ApiOperation({ summary: "Retorna carteira e saldo do jogador" })
+  @ApiResponse({ status: 200, type: WalletResponseDto })
+  @ApiResponse({ status: 401, description: "Não autorizado" })
+  @ApiResponse({
+    status: 404,
+    type: ErrorResponseDto,
+    description: "Carteira não encontrada",
+  })
+  async getMyWallet() // @Req() req: Request, // TODO: extrair userId do JWT
+  : Promise<WalletResponseDto> {
+    // TODO: Pegar userId do token JWT
+    const userId = "mock-user-id";
+    return this.walletService.getWallet(userId);
   }
 }

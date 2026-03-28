@@ -16,13 +16,11 @@ async function bootstrap(): Promise<void> {
     .setVersion("1.0")
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, document); // Passe o document diretamente
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("api", app, documentFactory);
 
-  await app.listen(port, "0.0.0.0", () => {
-    console.log(`Wallets rodando na porta ${port}`);
-    console.log(`Swagger disponivel em: http://localhost:${port}/api`);
-  });
+  await app.listen(port, "0.0.0.0");
+  console.log(`Wallet service running on port ${port}`);
 }
 
 bootstrap();
