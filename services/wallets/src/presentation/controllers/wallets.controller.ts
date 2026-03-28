@@ -8,14 +8,20 @@ import {
 import { CreateWalletDto } from "../dtos/create-wallet.dto";
 import { WalletResponseDto } from "../dtos/wallet-response.dto";
 import { ErrorResponseDto } from "../dtos/error-response.dto";
-import { WalletService } from "../services/wallet.service";
+import { WalletsService } from "../services/wallets.service";
+import { HealthCheckResponseDto } from "../dtos/health-check-response.dto";
 
 @ApiTags("wallets")
 @Controller("wallets")
 export class WalletsController {
-  constructor(private readonly walletService: WalletService) {}
+  constructor(private readonly walletService: WalletsService) {}
 
-  @Post()
+  @Get("health")
+  check(): HealthCheckResponseDto {
+    return { status: "ok", service: "games" };
+  }
+
+  @Post("/")
   @ApiOperation({ summary: "Cria carteira para o jogador autenticado" })
   @ApiResponse({ status: 201, type: WalletResponseDto })
   @ApiResponse({
@@ -24,12 +30,10 @@ export class WalletsController {
     description: "Carteira já existe",
   })
   @ApiResponse({ status: 401, description: "Não autorizado" })
-  async createWallet(
-    @Body() dto: CreateWalletDto,
-    // @Req() req: Request, // TODO: extrair userId do JWT
-  ): Promise<WalletResponseDto> {
+  async createWallet() // @Body() dto: CreateWalletDto,
+  : Promise<WalletResponseDto> {
     // TODO: Pegar userId do token JWT
-    const userId = dto.userId || "mock-user-id";
+    const userId = "mock-user-id";
     return this.walletService.createWallet(userId);
   }
 

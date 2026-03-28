@@ -6,6 +6,21 @@ import { ConfigService, ConfigModule } from "@nestjs/config";
 
 export default class TypeORMConfig {
   static getORMConfig(): TypeOrmModuleOptions {
+    console.log("db configs", {
+      type: "postgres",
+      host: process.env.DB_HOST || "localhost",
+      port: parseInt(process.env.DB_PORT || "5432") || 5432,
+      username: process.env.DB_USER || "admin",
+      password: process.env.DB_PASSWORD || "admin",
+      database: process.env.DB_NAME_WALLETS || "wallets",
+      synchronize: process.env.NODE_ENV !== "production",
+      entities: [__dirname + "/../**/*.entity.{js,ts}"],
+      extra: {
+        max: 20, // Configuração do pool
+      },
+      logging: process.env.DB_LOGGING === "true",
+      autoLoadEntities: true,
+    });
     return {
       type: "postgres",
       host: process.env.DB_HOST || "localhost",

@@ -9,7 +9,7 @@ import { WalletRepository } from "@/infrastructure/database/orm/repository/walle
 import { TransactionSource, TransactionType } from "@/infrastructure/database/orm/entites/transaction.entity";
 
 @Injectable()
-export class WalletService {
+export class WalletsService {
   constructor(
     private readonly walletRepository: WalletRepository,
     // private readonly outboxRepository: OutboxRepository,
