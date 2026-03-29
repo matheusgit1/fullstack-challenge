@@ -14,6 +14,14 @@ async function bootstrap(): Promise<void> {
     .setTitle("Wallet API")
     .setDescription("The wallet API description")
     .setVersion("1.0")
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+      "Authorization",
+    )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

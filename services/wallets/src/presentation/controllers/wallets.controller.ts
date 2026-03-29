@@ -1,15 +1,20 @@
-import { Controller, Post, Get, Body, UseGuards, Req } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Get,
+  Request,
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
 } from "@nestjs/swagger";
-import { CreateWalletDto } from "../dtos/create-wallet.dto";
 import { WalletResponseDto } from "../dtos/wallet-response.dto";
 import { ErrorResponseDto } from "../dtos/error-response.dto";
 import { WalletsService } from "../services/wallets.service";
 import { HealthCheckResponseDto } from "../dtos/health-check-response.dto";
+import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
+import type { Request as ExpressRequest } from "express";
 
 @ApiTags("wallets")
 @Controller("wallets")
@@ -17,11 +22,14 @@ export class WalletsController {
   constructor(private readonly walletService: WalletsService) {}
 
   @Get("health")
-  check(): HealthCheckResponseDto {
-    return { status: "ok", service: "games" };
+  @Auth(AuthGuardType.GUARD)
+  check(@Request() req: ExpressRequest): HealthCheckResponseDto {
+    console.log("user in  request:", req.user);
+    return { status: "ok", service: "wallets" };
   }
 
   @Post("/")
+  @Auth(AuthGuardType.GUARD)
   @ApiOperation({ summary: "Cria carteira para o jogador autenticado" })
   @ApiResponse({ status: 201, type: WalletResponseDto })
   @ApiResponse({
@@ -30,14 +38,15 @@ export class WalletsController {
     description: "Carteira já existe",
   })
   @ApiResponse({ status: 401, description: "Não autorizado" })
-  async createWallet() // @Body() dto: CreateWalletDto,
-  : Promise<WalletResponseDto> {
-    // TODO: Pegar userId do token JWT
-    const userId = "mock-user-id";
+  async createWallet(
+    @Request() req: ExpressRequest,
+  ): Promise<WalletResponseDto> {
+    const userId = (req.user as any).sub;
     return this.walletService.createWallet(userId);
   }
 
   @Get("me")
+  @Auth(AuthGuardType.GUARD)
   @ApiOperation({ summary: "Retorna carteira e saldo do jogador" })
   @ApiResponse({ status: 200, type: WalletResponseDto })
   @ApiResponse({ status: 401, description: "Não autorizado" })
@@ -46,10 +55,10 @@ export class WalletsController {
     type: ErrorResponseDto,
     description: "Carteira não encontrada",
   })
-  async getMyWallet() // @Req() req: Request, // TODO: extrair userId do JWT
-  : Promise<WalletResponseDto> {
-    // TODO: Pegar userId do token JWT
-    const userId = "mock-user-id";
+  async getMyWallet(
+    @Request() req: ExpressRequest,
+  ): Promise<WalletResponseDto> {
+    const userId = (req.user as any).sub;
     return this.walletService.getWallet(userId);
   }
 }

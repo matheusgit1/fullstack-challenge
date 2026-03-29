@@ -1,8 +1,6 @@
-// import { OutboxRepository } from "./../../../../games/src/infrastructure/database/orm/repository/outbox.repository";
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from "@nestjs/common";
 import { WalletResponseDto } from "../../presentation/dtos/wallet-response.dto";
 import { WalletRepository } from "@/infrastructure/database/orm/repository/wallet.repository";
@@ -12,7 +10,6 @@ import { TransactionSource, TransactionType } from "@/infrastructure/database/or
 export class WalletsService {
   constructor(
     private readonly walletRepository: WalletRepository,
-    // private readonly outboxRepository: OutboxRepository,
   ) {}
 
   /**

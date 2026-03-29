@@ -19,7 +19,8 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "typeRoots": ["./@types/index.d.ts"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]
