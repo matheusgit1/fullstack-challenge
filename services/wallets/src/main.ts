@@ -1,12 +1,26 @@
-import "reflect-metadata"; // Deve ser o primeiro import
+import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { WsAdapter } from "@nestjs/platform-ws";
 import { AppModule } from "./modules/app/app.module";
+import { Transport } from "@nestjs/microservices";
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
   const port = 4002;
+  const app = await NestFactory.create(AppModule);
+
+  app.connectMicroservice({
+    transport: Transport.RMQ,
+    options: {
+      urls: ["amqp://admin:admin@localhost:5672"],
+      queue: "wallet_queue",
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
 
   app.useWebSocketAdapter(new WsAdapter(app));
 
