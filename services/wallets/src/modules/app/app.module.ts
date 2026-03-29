@@ -7,6 +7,7 @@ import { Module } from "@nestjs/common";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
 import { PassportModule } from "@nestjs/passport";
 import { AuthModule } from "@/infrastructure/auth/auth.module";
+import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthGuard } from "@/infrastructure/auth/auth.guard";
 
@@ -15,6 +16,7 @@ import { AuthGuard } from "@/infrastructure/auth/auth.guard";
     AuthModule,
     OrmModule,
     PassportModule,
+    RabbitmqModule,
     ConfigModule.forRoot(),
   ],
   controllers: [WalletsController],

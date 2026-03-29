@@ -13,10 +13,11 @@ async function bootstrap(): Promise<void> {
     transport: Transport.RMQ,
     options: {
       urls: ["amqp://admin:admin@localhost:5672"],
-      queue: "wallet_queue",
+      queue: "cashin",
       queueOptions: {
         durable: true,
       },
+      noAck: false,
     },
   });
 
