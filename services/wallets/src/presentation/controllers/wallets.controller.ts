@@ -1,14 +1,5 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Request,
-} from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-} from "@nestjs/swagger";
+import { Controller, Post, Get, Request } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { WalletResponseDto } from "../dtos/wallet-response.dto";
 import { ErrorResponseDto } from "../dtos/error-response.dto";
 import { WalletsService } from "../services/wallets.service";
@@ -23,8 +14,7 @@ export class WalletsController {
 
   @Get("health")
   @Auth(AuthGuardType.GUARD)
-  check(@Request() req: ExpressRequest): HealthCheckResponseDto {
-    console.log("user in  request:", req.user);
+  check(): HealthCheckResponseDto {
     return { status: "ok", service: "wallets" };
   }
 

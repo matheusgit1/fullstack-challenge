@@ -1,6 +1,6 @@
 const amqp = require('amqplib');
 const crypto = require('crypto');
-const userId = '82883971-8818-4e16-8e4a-c645a759d935'
+const userId = 'd1a6c9bb-563b-46d7-bdde-456583b979d5'
 
 const type = {
   BET_PLACED: "bet_placed",
@@ -14,8 +14,8 @@ async function send() {
     data: {
       cashType: type.BET_PLACED,
       userId: userId,
-      amount: 100,
-      externalId: crypto.randomUUID(), // 🔥 obrigatório
+      amount: 100 * 200, // 200 reais em centavos
+      externalId: crypto.randomUUID(), 
       timestamp: new Date().toISOString()
     }
   };
@@ -25,8 +25,8 @@ async function send() {
     data: {
       cashType: type.BET_LOST,
       userId: userId,
-      amount: 50,
-      externalId: crypto.randomUUID(), // 🔥 obrigatório
+      amount: 25 * 100, // 25 reais em centavos
+      externalId: crypto.randomUUID(), 
       timestamp: new Date().toISOString()
     }
   };
