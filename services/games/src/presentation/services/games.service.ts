@@ -37,10 +37,8 @@ export class GamesService {
     dto: CashoutRequestDto,
   ): Promise<CashoutResponseDto> {
     const [round, bet] = await Promise.all([
-      this.roundRepository.findOne({
-        where: { id: dto.roundId },
-      }),
-      this.betRepository.findOne({
+      this.roundRepository.findByRoundId(dto.roundId),
+      this.betRepository.findByFilters({
         where: { id: dto.betId, userId: userId },
         relations: ["round"],
       }),
@@ -98,9 +96,7 @@ export class GamesService {
       throw new Error("Saldo insuficiente");
     }
 
-    const round = await this.roundRepository.findOne({
-      where: { id: dto.roundId },
-    });
+    const round = await this.roundRepository.findByRoundId(dto.roundId);
 
     if (!round) {
       throw new Error("Nenhuma rodada ativa");

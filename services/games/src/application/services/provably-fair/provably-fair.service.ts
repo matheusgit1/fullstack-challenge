@@ -152,9 +152,7 @@ export class ProvablyFairService {
   async getProvablyFairDataForRound(
     roundId: string,
   ): Promise<ProvablyFairSeed> {
-    const round = await this.roundRepository.findOne({
-      where: { id: roundId },
-    });
+    const round = await this.roundRepository.findByRoundId(roundId);
 
     console.log("Round encontrado:", round);
 

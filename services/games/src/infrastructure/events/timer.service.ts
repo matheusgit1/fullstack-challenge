@@ -16,7 +16,7 @@ export class TimerService {
 
   @Interval("betting.phase", 1000 * 15)
   async handleBettingPhase() {
-    const activeRound = await this.roundRepository.findActiveRound();
+    const activeRound = await this.roundRepository.findCurrentRound();
     if (activeRound && activeRound.isBettingPhase()) {
       if (activeRound.bettingEndsAt < new Date(Date.now())) {
         activeRound.status = RoundStatus.RUNNING;
@@ -43,7 +43,7 @@ export class TimerService {
 
   @Interval("betting.running", 1000 * 60)
   async handleNewBetting() {
-    const activeRound = await this.roundRepository.findActiveRound();
+    const activeRound = await this.roundRepository.findCurrentRound();
     if (activeRound && activeRound.isRunning()) {
       if (new Date() > activeRound.crashedAt) {
         activeRound.status = RoundStatus.CRASHED;

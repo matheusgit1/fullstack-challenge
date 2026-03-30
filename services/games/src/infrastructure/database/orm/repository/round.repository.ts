@@ -10,26 +10,14 @@ export class RoundRepository {
     private readonly repository: Repository<Round>,
   ) {}
 
-  async findOne(options: FindOneOptions<Round>): Promise<Round | null> {
-    return this.repository.findOne(options);
-  }
-
-  async findBettingRound(): Promise<Round | null> {
+  async findByRoundId(roundId: string): Promise<Round | null> {
     return this.repository.findOne({
-      where: { status: RoundStatus.BETTING },
-      order: { createdAt: "DESC" },
-    });
-  }
-
-  async findCurrentRound(): Promise<Round | null> {
-    return this.repository.findOne({
-      where: [{ status: RoundStatus.BETTING }, { status: RoundStatus.RUNNING }],
-      order: { createdAt: "DESC" },
+      where: { id: roundId },
       relations: ["bets"],
     });
   }
 
-  async findActiveRound(): Promise<Round | null> {
+  async findCurrentRound(): Promise<Round | null> {
     return this.repository.findOne({
       where: [{ status: RoundStatus.BETTING }, { status: RoundStatus.RUNNING }],
       order: { createdAt: "DESC" },
