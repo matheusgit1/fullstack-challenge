@@ -4,7 +4,6 @@ import { AuthGuard } from "@/infrastructure/auth/auth.guard";
 import { AuthModule } from "@/infrastructure/auth/auth.module";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
-import { EventListenerService } from "@/infrastructure/events/event-listener.service";
 import { TimerService } from "@/infrastructure/events/timer.service";
 import { ProxyModule } from "@/infrastructure/proxy/proxy.module";
 import { ProxyService } from "@/infrastructure/proxy/proxy.service";
@@ -45,7 +44,6 @@ import { ScheduleModule } from "@nestjs/schedule";
     ConfigService,
     GamesService,
     TimerService,
-    EventListenerService,
     WebsocketGateway,
     RoundRepository,
     ProxyService,

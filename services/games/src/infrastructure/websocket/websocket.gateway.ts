@@ -112,6 +112,12 @@ export class WebsocketGateway
     this.broadcast("betting.running", payload);
   }
 
+  @OnEvent("multiplier.updated")
+  handleMultiplyIncrease(payload: any) {
+    this.logger.log(`multiplier.updated received`);
+    this.broadcast("multiplier.updated", payload);
+  }
+
   @OnEvent("betting.crashed")
   handleGameCrashed(payload: any) {
     this.logger.log(`betting.crashed received`);
