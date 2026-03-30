@@ -1,23 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import {
-  Repository,
-  LessThan,
-  MoreThan,
-  Between,
-  FindOptionsWhere,
-  FindOneOptions,
-} from "typeorm";
+import { Repository, FindOneOptions } from "typeorm";
 import { Round, RoundStatus } from "../entites/round.entity";
-import { Bet } from "../entites/bet.entity";
 
 @Injectable()
 export class RoundRepository {
   constructor(
     @InjectRepository(Round)
     private readonly repository: Repository<Round>,
-    @InjectRepository(Bet)
-    private readonly betRepository: Repository<Bet>,
   ) {}
 
   async findOne(options: FindOneOptions<Round>): Promise<Round | null> {

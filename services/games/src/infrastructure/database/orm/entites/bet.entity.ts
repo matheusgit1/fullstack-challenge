@@ -76,7 +76,6 @@ export class Bet {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Métodos auxiliares
   isPending(): boolean {
     return this.status === BetStatus.PENDING;
   }

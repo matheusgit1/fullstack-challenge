@@ -1,41 +1,39 @@
-
-
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   Index,
-} from 'typeorm';
+} from "typeorm";
 
 export enum OutboxStatus {
-  PENDING = 'pending',
-  PROCESSED = 'processed',
-  FAILED = 'failed',
+  PENDING = "pending",
+  PROCESSED = "processed",
+  FAILED = "failed",
 }
 
-@Entity('outbox_messages')
-@Index(['status', 'createdAt'])
+@Entity("outbox_messages")
+@Index(["status", "createdAt"])
 export class OutboxMessage {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  eventType: string; // ex: 'bet.placed', 'round.crashed', 'bet.cashed_out'
+  @Column({ type: "varchar", length: 100 })
+  eventType: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: "jsonb" })
   payload: Record<string, any>;
 
-  @Column({ type: 'varchar', length: 50, default: OutboxStatus.PENDING })
+  @Column({ type: "varchar", length: 50, default: OutboxStatus.PENDING })
   status: OutboxStatus;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: "int", default: 0 })
   retryCount: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   processedAt: Date | null;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   errorMessage: string | null;
 
   @CreateDateColumn()

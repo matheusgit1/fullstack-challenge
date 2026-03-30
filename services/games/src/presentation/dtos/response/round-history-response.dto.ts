@@ -25,6 +25,9 @@ export class RoundHistoryItemDto {
 }
 
 export class RoundHistoryQueryDto {
+  constructor(partial: Partial<RoundHistoryQueryDto>) {
+    Object.assign(this, partial);
+  }
   @ApiPropertyOptional({ example: 1, default: 1 })
   page: number = 1;
 

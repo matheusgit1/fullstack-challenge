@@ -25,15 +25,6 @@ export class BetRepository {
     return this.repository.save(bet);
   }
 
-  // async findUserBetInRound(
-  //   roundId: string,
-  //   userId: string,
-  // ): Promise<Bet | null> {
-  //   return this.repository.findOne({
-  //     where: { roundId, userId },
-  //   });
-  // }
-
   async findUserBetsHistory(
     userId: string,
     page: number = 1,
@@ -55,23 +46,4 @@ export class BetRepository {
       relations: ["round"],
     });
   }
-
-  // async findPendingBetsByRound(roundId: string): Promise<Bet[]> {
-  //   return this.repository.find({
-  //     where: { roundId, status: BetStatus.PENDING },
-  //   });
-  // }
-
-  // async saveBet(bet: Bet): Promise<Bet> {
-  //   return this.repository.save(bet);
-  // }
-
-  // async createBet(data: Partial<Bet>): Promise<Bet> {
-  //   const bet = this.repository.create(data);
-  //   return this.repository.save(bet);
-  // }
-
-  // async updateBetsStatus(bets: Bet[]): Promise<void> {
-  //   await this.repository.save(bets);
-  // }
 }

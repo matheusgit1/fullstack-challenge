@@ -2,6 +2,8 @@ import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { ApiProperty } from "@nestjs/swagger";
 
+export { RoundStatus, BetStatus };
+
 export class BetDto {
   constructor(partial: BetDto) {
     Object.assign(this, partial);

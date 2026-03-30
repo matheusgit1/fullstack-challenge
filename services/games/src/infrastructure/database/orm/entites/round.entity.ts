@@ -6,10 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   Index,
-  ManyToOne,
-  JoinColumn,
 } from "typeorm";
-import { ProvablyFairSeed } from "./provably-fair.entity";
 
 export enum RoundStatus {
   BETTING = "betting",
@@ -58,22 +55,18 @@ export class Round {
   })
   crashPoint: number;
 
-  // 🟡 FASE DE APOSTA
   @Column({ type: "timestamp" })
   bettingStartedAt: Date;
 
   @Column({ type: "timestamp" })
   bettingEndsAt: Date;
 
-  // 🟢 FASE RUNNING
   @Column({ type: "timestamp", nullable: true })
   startedAt: Date;
 
-  // 🔴 FASE CRASH
   @Column({ type: "timestamp", nullable: true })
   crashedAt: Date;
 
-  // Provably Fair
   @Column({ type: "varchar", length: 128, nullable: true })
   serverSeed: string | null;
 

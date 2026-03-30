@@ -34,26 +34,26 @@ export class GameEngineService {
       this.configService.get("HOUSE_EDGE_PERCENT", 1),
     );
 
-    const bettingDurationSeconds = 15
+    const bettingDurationSeconds = 15;
     const bettingEndsAt = new Date(Date.now() + bettingDurationSeconds * 1000);
     const startedAt = new Date(bettingEndsAt.getTime() + 500);
     const timeToCrashMs = this.calculateTimeToCrash(crashPoint, 0.001) * 1000;
 
     const crashedAt = new Date(startedAt.getTime() + timeToCrashMs);
-    // 4. Criar a entidade Round com TODOS os dados
+
     const round = new Round({
       status: RoundStatus.BETTING,
-      multiplier: 1.0, // Começa em 1.0
-      crashPoint: crashPoint, // ✅ JÁ DEFINIDO (mas oculto!)
+      multiplier: 1.0,
+      crashPoint: crashPoint,
       bettingStartedAt: new Date(),
       bettingEndsAt: bettingEndsAt,
       startedAt: startedAt,
       crashedAt: crashedAt,
-      serverSeed: serverSeed, // Seed completo (secreto)
-      serverSeedHash: serverSeedHash, // Hash (público)
-      clientSeed: clientSeed, // Client seed
-      nonce: nonce, // Número sequencial
-      bets: [], // Sem apostas ainda
+      serverSeed: serverSeed,
+      serverSeedHash: serverSeedHash,
+      clientSeed: clientSeed,
+      nonce: nonce,
+      bets: [],
     });
 
     this.currentRound = await this.roundRepository.createRound(round);

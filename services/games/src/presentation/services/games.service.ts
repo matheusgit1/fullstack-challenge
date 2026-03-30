@@ -61,12 +61,7 @@ export class GamesService {
     if (bet?.roundId !== dto.roundId) {
       throw new Error("Aposta não pertence à rodada informada");
     }
-    console.log(
-      "multiplicador alvo",
-      dto.targetMultiplier,
-      "multiplicador atual",
-      round.crashPoint,
-    );
+
     if (dto.targetMultiplier > round.crashPoint) {
       throw new Error(
         "Multiplicador alvo não deve ser maior que o multiplicador atual",

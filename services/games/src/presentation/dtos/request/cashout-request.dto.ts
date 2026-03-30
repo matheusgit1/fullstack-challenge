@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsNumber, Min } from "class-validator";
+import { IsNumber, Min } from "class-validator";
 import { BetDto } from "../index";
-import { RoundStatus } from "../enums/enums";
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 
 export class CashoutRequestDto {
   @ApiProperty({
@@ -36,7 +36,6 @@ export class CashoutResponseDto {
 
   @ApiProperty({ description: "Valor ganho" })
   winAmount: number;
-
 
   @ApiProperty({
     description: "Status da rodada após o cashout",
