@@ -101,13 +101,6 @@ export class WalletRepository {
         wallet.debit(amountInCents);
         newBalanceInCents = wallet.balanceInCents;
       }
-      console.log(
-        "typeoff newBalanceInCents",
-        Number(wallet.balanceInCents),
-        typeof newBalanceInCents,
-      );
-      console.log("wallets: ", wallet);
-      // Salvar wallet (version incrementa automaticamente)
       await queryRunner.manager.save(wallet);
 
       const transaction = new Transaction({
@@ -121,8 +114,6 @@ export class WalletRepository {
         status: TransactionStatus.COMPLETED,
         metadata,
       });
-
-      console.log("transaction: ", transaction);
 
       await queryRunner.manager.save(transaction);
 

@@ -24,7 +24,6 @@ export class AuthGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    console.log("request.headers", request.headers);
     const token = request.headers["authorization"]?.split(" ")[1];
 
     switch (authGuardType) {
@@ -33,8 +32,6 @@ export class AuthGuard implements CanActivate {
           token || "fake token",
         );
         request.user = res;
-
-        console.log("res", res);
         if (res) {
           return true;
         }

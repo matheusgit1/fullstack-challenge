@@ -21,10 +21,6 @@ export class KeycloakService {
     private httpService: HttpService,
   ) {}
 
-  /***
-   * @param {string} token valida um usuariio a partir de um token, caso token seja expirado ou invalidao
-   * automaticamente retorna 401 (unauthorized)
-   */
   public async getUserFromToken(token?: string): Promise<UserInfo> {
     try {
       const keycloakUrl = this.configService.get<string>(
@@ -41,8 +37,6 @@ export class KeycloakService {
       );
 
       const getKeyCloackUserInfoUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/userinfo`;
-      console.log("URL do Keycloak:", getKeyCloackUserInfoUrl);
-      console.log("Token enviado para validação:", token);
       const response = await lastValueFrom(
         this.httpService.get(getKeyCloackUserInfoUrl, {
           headers: {
@@ -51,8 +45,6 @@ export class KeycloakService {
           },
         }),
       );
-
-      console.log("Resposta do Keycloak:", response.data);
 
       return response.data satisfies UserInfo;
     } catch (error) {

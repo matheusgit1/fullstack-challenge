@@ -28,16 +28,6 @@ export class RabbitmqService {
 
     const wallet = await this.walletRepository.findOrCreate(message.userId);
 
-    console.log("processando cashin para carteira", wallet.id, "com valor", message.amount, {
-      walletId: wallet.id,
-      userId: message.userId,
-      amount: message.amount,
-      type: TransactionType.CREDIT,
-      source: TransactionSource.BET_PLACED,
-      externalId: message.externalId,
-      metadata: { timestamp: message.timestamp },
-    });
-
     await this.walletRepository.processTransaction(
       wallet.id,
       message.userId,

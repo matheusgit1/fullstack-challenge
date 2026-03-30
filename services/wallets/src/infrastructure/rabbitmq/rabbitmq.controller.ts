@@ -27,7 +27,6 @@ export class RabbitmqController {
 
   @MessagePattern("cash")
   async onCash(@Payload() message: CashinMessage, @Ctx() context: RmqContext) {
-    // console.log("[RabbitMQ] cashin message received:", message);
     this.logger.log("[RabbitMQ] cash message received:", message);
 
     const type = message.cashType;
