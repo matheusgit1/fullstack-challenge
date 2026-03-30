@@ -1,5 +1,3 @@
-// services/games/src/presentation/dtos/index.ts
-
 import { ApiProperty } from "@nestjs/swagger";
 import { RoundStatus, BetStatus } from "./enums/enums";
 

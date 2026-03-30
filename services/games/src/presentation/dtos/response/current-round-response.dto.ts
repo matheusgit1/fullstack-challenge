@@ -1,5 +1,3 @@
-// services/games/src/presentation/dtos/current-round-response.dto.ts
-
 import { ApiProperty } from "@nestjs/swagger";
 import { BetDto, RoundDto } from "../index";
 

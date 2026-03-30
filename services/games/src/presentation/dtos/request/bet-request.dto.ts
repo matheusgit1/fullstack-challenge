@@ -1,4 +1,3 @@
-// services/games/src/presentation/dtos/bet-request.dto.ts
 
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, Min, Max } from "class-validator";

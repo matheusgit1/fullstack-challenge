@@ -1,5 +1,3 @@
-// services/games/src/presentation/controllers/games.controller.ts
-
 import {
   Controller,
   Get,
@@ -7,7 +5,6 @@ import {
   Body,
   Query,
   Param,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
@@ -17,7 +14,6 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from "@nestjs/swagger";
-// import { GamesService } from '../../application/services/games.service';
 import { BetRequestDto, BetResponseDto } from "../dtos/request/bet-request.dto";
 import {
   CashoutRequestDto,
@@ -36,7 +32,7 @@ import {
   RoundHistoryQueryDto,
 } from "../dtos/response/round-history-response.dto";
 import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
-import { AuthGuard } from "@nestjs/passport";
+import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 
 @ApiTags("games")
 @Controller("games")
@@ -84,7 +80,7 @@ export class GamesController {
   }
 
   @Post("bet")
-  @UseGuards(AuthGuard("jwt"))
+  @Auth(AuthGuardType.GUARD)
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Fazer aposta na rodada atual" })
@@ -99,7 +95,7 @@ export class GamesController {
   }
 
   @Post("bet/cashout")
-  @UseGuards(AuthGuard("jwt"))
+  @Auth(AuthGuardType.GUARD)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Sacar no multiplicador atual" })
   @ApiResponse({ status: 200, type: CashoutResponseDto })

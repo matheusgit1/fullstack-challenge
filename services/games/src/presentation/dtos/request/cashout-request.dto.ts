@@ -1,4 +1,4 @@
-// services/games/src/presentation/dtos/cashout-request.dto.ts
+
 
 import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsNumber, Min } from "class-validator";

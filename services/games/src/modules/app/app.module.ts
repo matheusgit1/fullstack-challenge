@@ -3,7 +3,6 @@ import { AuthModule } from "@/infrastructure/auth/auth.module";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
 import { EventListenerService } from "@/infrastructure/events/event-listener.service";
 import { TimerService } from "@/infrastructure/events/timer.service";
-// import { TimerService } from "@/infrastructure/timer/timer.service";
 import { WebsocketGateway } from "@/infrastructure/websocket/websocket.gateway";
 import { GamesController } from "@/presentation/controllers/games.controller";
 import { GamesService } from "@/presentation/services/games.service";
@@ -12,7 +11,6 @@ import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ScheduleModule } from "@nestjs/schedule";
-import { WebSocketGateway } from "@nestjs/websockets";
 
 @Module({
   imports: [

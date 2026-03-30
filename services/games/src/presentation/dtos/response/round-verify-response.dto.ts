@@ -1,5 +1,3 @@
-// services/games/src/presentation/dtos/round-verify-response.dto.ts
-
 import { ApiProperty } from "@nestjs/swagger";
 
 export class RoundVerifyResponseDto {

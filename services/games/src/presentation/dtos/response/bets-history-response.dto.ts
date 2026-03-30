@@ -1,5 +1,3 @@
-// services/games/src/presentation/dtos/bets-history-response.dto.ts
-
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { BetDto } from "../index";
 import { BetStatus } from "../enums/enums";

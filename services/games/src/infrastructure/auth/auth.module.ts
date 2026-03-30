@@ -1,25 +1,20 @@
+import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from "@nestjs/axios";
+import { Module, Global } from "@nestjs/common";
+import { KeycloakModule } from "../keycloack/keycloack.module";
+import { KeycloakService } from "../keycloack/keycloack.service";
 
-import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { JwtStrategy } from "./strategies/jwt.strategy";
-import { AuthService } from "./auth.service";
-import { AuthController } from "./auth.controller";
-import { HttpService, HttpModule } from "@nestjs/axios";
-import { ConfigModule } from "@nestjs/config";
-
+@Global()
 @Module({
   imports: [
-    PassportModule,
-    JwtModule.register({}),
+    KeycloakModule,
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
     }),
-    ConfigModule,
+    ConfigModule
   ],
-  providers: [JwtStrategy, AuthService],
-  controllers: [AuthController],
-  exports: [JwtStrategy, PassportModule],
+  providers: [KeycloakService],
+  exports: [KeycloakService],
 })
 export class AuthModule {}

@@ -1,12 +1,11 @@
-
 export class Money {
   constructor(private readonly amount: number) {
     if (amount < 0) {
-      throw new Error('Money amount cannot be negative');
+      throw new Error("Money amount cannot be negative");
     }
 
     if (Math.round(amount * 100) !== amount * 100) {
-      throw new Error('Money must have at most 2 decimal places');
+      throw new Error("Money must have at most 2 decimal places");
     }
   }
 
