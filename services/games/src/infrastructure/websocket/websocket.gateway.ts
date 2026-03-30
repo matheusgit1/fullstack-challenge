@@ -7,7 +7,7 @@ import {
 } from "@nestjs/websockets";
 import { Server, WebSocket } from "ws";
 import { Injectable, Logger } from "@nestjs/common";
-import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
+import { OnEvent } from "@nestjs/event-emitter";
 
 interface ConnectedClient {
   ws: WebSocket;
@@ -108,19 +108,19 @@ export class WebsocketGateway
 
   @OnEvent("betting.running")
   handleNewBetting(payload: any) {
-    this.logger.log(`New betting event received: ${payload}`);
+    this.logger.log(`betting.running received`);
     this.broadcast("betting.running", payload);
   }
 
   @OnEvent("betting.crashed")
   handleGameCrashed(payload: any) {
-    this.logger.log(`Game crashed event received: ${payload}`);
+    this.logger.log(`betting.crashed received`);
     this.broadcast("betting.crashed", payload);
   }
 
   @OnEvent("round.betting.started")
   handleNewRound(payload: any) {
-    this.logger.log(`New round event received: ${payload}`);
+    this.logger.log(`round.betting.started received`);
     this.broadcast("round.betting.started", payload);
   }
 

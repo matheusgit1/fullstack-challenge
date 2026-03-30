@@ -12,7 +12,6 @@ export class KeycloakService {
     try {
       const keycloakUrl = appConfig.keycloakUrl;
       const realm = appConfig.realm;
-      const audience = appConfig.audience;
 
       const getKeyCloackUserInfoUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/userinfo`;
       const response = await lastValueFrom(

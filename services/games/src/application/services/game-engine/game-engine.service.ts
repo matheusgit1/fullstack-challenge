@@ -9,6 +9,7 @@ import {
 } from "@/infrastructure/database/orm/entites/round.entity";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { appConfig } from "configs/app.config";
 
 @Injectable()
 export class GameEngineService {
@@ -18,12 +19,12 @@ export class GameEngineService {
   constructor(
     private readonly roundRepository: RoundRepository,
     private readonly provablyFairService: ProvablyFairService,
-    private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
   public async startNewRound(): Promise<void> {
     this.logger.log("Starting new betting round...");
+    const { houseEdgePercent, bettingDurationSeconds } = appConfig;
     const { serverSeed, serverSeedHash, clientSeed, nonce } =
       await this.provablyFairService.getNextSeedForRound();
 
@@ -31,10 +32,9 @@ export class GameEngineService {
       serverSeed,
       clientSeed,
       nonce,
-      this.configService.get("HOUSE_EDGE_PERCENT", 1),
+      houseEdgePercent,
     );
 
-    const bettingDurationSeconds = 15;
     const bettingEndsAt = new Date(Date.now() + bettingDurationSeconds * 1000);
     const startedAt = new Date(bettingEndsAt.getTime() + 500);
     const timeToCrashMs = this.calculateTimeToCrash(crashPoint, 0.001) * 1000;

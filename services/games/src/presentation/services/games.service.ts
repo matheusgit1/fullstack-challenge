@@ -129,7 +129,7 @@ export class GamesService {
   }
 
   public async getCurrentRound(): Promise<CurrentRoundResponseDto> {
-    const currentRound = await this.roundRepository.findCurrentRound();
+    const currentRound = await this.roundRepository.findCurrentBettingRound();
     if (!currentRound) {
       throw new Error("No active round found");
     }

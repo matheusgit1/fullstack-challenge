@@ -17,9 +17,17 @@ export class RoundRepository {
     });
   }
 
-  async findCurrentRound(): Promise<Round | null> {
+  async findCurrentBettingRound(): Promise<Round | null> {
     return this.repository.findOne({
       where: [{ status: RoundStatus.BETTING }, { status: RoundStatus.RUNNING }],
+      order: { createdAt: "DESC" },
+      relations: ["bets"],
+    });
+  }
+
+  async findCurrentRunningRound(): Promise<Round | null> {
+    return this.repository.findOne({
+      where: [{ status: RoundStatus.RUNNING }],
       order: { createdAt: "DESC" },
       relations: ["bets"],
     });

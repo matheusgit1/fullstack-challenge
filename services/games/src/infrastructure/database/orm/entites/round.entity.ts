@@ -73,8 +73,8 @@ export class Round {
   @Column({ type: "varchar", length: 128 })
   serverSeedHash: string;
 
-  @Column({ type: "varchar", length: 64, nullable: true })
-  clientSeed: string | null;
+  @Column({ type: "varchar", length: 64 })
+  clientSeed: string;
 
   @Column({ type: "int", default: 0 })
   nonce: number;

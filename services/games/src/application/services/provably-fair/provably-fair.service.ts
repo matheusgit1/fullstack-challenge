@@ -119,11 +119,14 @@ export class ProvablyFairService {
     };
   }
 
-  async markSeedAsUsed(seedId: string): Promise<void> {
-    await this.seedRepository.update(seedId, {
-      isUsed: true,
-      usedAt: new Date(),
-    });
+  async markSeedAsUsed(clientSeed: string): Promise<void> {
+    await this.seedRepository.update(
+      { clientSeed: clientSeed },
+      {
+        isUsed: true,
+        usedAt: new Date(),
+      },
+    );
   }
 
   async rotateSeed(newClientSeed?: string): Promise<ProvablyFairSeed> {
