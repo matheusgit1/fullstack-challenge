@@ -3,7 +3,6 @@ import { BetRepository } from "./../../infrastructure/database/orm/repository/be
 import { Injectable } from "@nestjs/common";
 import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
 import { PaginatedResponseDto } from "../dtos/index";
-import { BetStatus, RoundStatus } from "../dtos/enums/enums";
 import {
   RoundHistoryItemDto,
   RoundHistoryQueryDto,
@@ -20,6 +19,8 @@ import {
 } from "../dtos/request/cashout-request.dto";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
+import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 
 @Injectable()
 export class GamesService {

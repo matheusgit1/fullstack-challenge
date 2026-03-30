@@ -1,5 +1,6 @@
+import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { ApiProperty } from "@nestjs/swagger";
-import { RoundStatus, BetStatus } from "./enums/enums";
 
 export class BetDto {
   constructor(partial: BetDto) {
@@ -91,5 +92,3 @@ export class PaginatedResponseDto<T> {
   @ApiProperty({ example: 10 })
   totalPages: number;
 }
-
-export { RoundStatus, BetStatus } from "./enums/enums";
