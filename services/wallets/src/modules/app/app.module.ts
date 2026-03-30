@@ -1,4 +1,3 @@
-import { HttpModule } from "@nestjs/axios";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { WalletRepository } from "@/infrastructure/database/orm/repository/wallet.repository";
 import { WalletsController } from "@/presentation/controllers/wallets.controller";

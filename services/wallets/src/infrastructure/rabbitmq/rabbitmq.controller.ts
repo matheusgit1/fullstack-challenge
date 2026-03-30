@@ -6,6 +6,18 @@ import {
   RmqContext,
 } from "@nestjs/microservices";
 import { RabbitmqService } from "./rabbitmq.service";
+import { TransactionSource } from "../database/orm/entites/transaction.entity";
+
+export interface CashMessage {
+  cashType: TransactionSource;
+  userId: string;
+  amount: number;
+  timestamp: string;
+  externalId: string;
+}
+
+export type CashinMessage = CashMessage;
+export type CashoutMessage = CashMessage;
 
 @Controller()
 export class RabbitmqController {
@@ -13,39 +25,31 @@ export class RabbitmqController {
 
   constructor(private readonly rabbitmqService: RabbitmqService) {}
 
-  @MessagePattern("cashin")
-  async onCashin(@Payload() message: any, @Ctx() context: RmqContext) {
-    this.logger.log("[RabbitMQ] cashin message received:", message);
+  @MessagePattern("cash")
+  async onCash(@Payload() message: CashinMessage, @Ctx() context: RmqContext) {
+    // console.log("[RabbitMQ] cashin message received:", message);
+    this.logger.log("[RabbitMQ] cash message received:", message);
+
+    const type = message.cashType;
 
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
     try {
-      await this.rabbitmqService.processCashin(message);
+      switch (type) {
+        case TransactionSource.BET_PLACED:
+          await this.rabbitmqService.processCashin(message);
+          break;
+        case TransactionSource.BET_LOST:
+          await this.rabbitmqService.processCashout(message);
+          break;
+        default:
+          break;
+      }
       channel.ack(originalMsg);
       this.logger.log("[RabbitMQ] cashin message acked successfully");
     } catch (err) {
       this.logger.error("[RabbitMQ] erro ao processar cashin", err as Error);
-      channel.nack(originalMsg, false, false);
-    }
-  }
-
-  @MessagePattern("bet_placed")
-  async onBetPlaced(@Payload() message: any, @Ctx() context: RmqContext) {
-    this.logger.log("[RabbitMQ] bet_placed message received:", message);
-
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-
-    try {
-      await this.rabbitmqService.processBetPlaced(message);
-      channel.ack(originalMsg);
-      this.logger.log("[RabbitMQ] bet_placed message acked successfully");
-    } catch (err) {
-      this.logger.error(
-        "[RabbitMQ] erro ao processar bet_placed",
-        err as Error,
-      );
       channel.nack(originalMsg, false, false);
     }
   }

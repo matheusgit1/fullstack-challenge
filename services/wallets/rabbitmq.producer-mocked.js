@@ -1,12 +1,33 @@
 const amqp = require('amqplib');
+const crypto = require('crypto');
+const userId = '82883971-8818-4e16-8e4a-c645a759d935'
+
+const type = {
+  BET_PLACED: "bet_placed",
+  BET_LOST: "bet_lost",
+}
 
 async function send() {
   const queue = 'cashin';
-  const msg = {
-    pattern: 'bet_placed', // importante pro Nest reconhecer
+  const msg_cashin = {
+    pattern: 'cash',
     data: {
-      userId: 1,
-      amount: 100
+      cashType: type.BET_PLACED,
+      userId: userId,
+      amount: 100,
+      externalId: crypto.randomUUID(), // 🔥 obrigatório
+      timestamp: new Date().toISOString()
+    }
+  };
+
+  const msg_cashout = {
+    pattern: 'cash',
+    data: {
+      cashType: type.BET_LOST,
+      userId: userId,
+      amount: 50,
+      externalId: crypto.randomUUID(), // 🔥 obrigatório
+      timestamp: new Date().toISOString()
     }
   };
 
@@ -18,11 +39,18 @@ async function send() {
 
     channel.sendToQueue(
       queue,
-      Buffer.from(JSON.stringify(msg)),
+      Buffer.from(JSON.stringify(msg_cashin)),
       { persistent: true }
     );
 
-    console.log('Mensagem enviada:', msg);
+    channel.sendToQueue(
+      queue,
+      Buffer.from(JSON.stringify(msg_cashout)),
+      { persistent: true }
+    );
+
+    console.log('Mensagem enviada:', msg_cashin);
+    console.log('Mensagem enviada:', msg_cashout);
 
     setTimeout(() => {
       connection.close();

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch src/main.ts",
+    "start:debug": "nest start --debug --watch",
     "start": "bun run src/main.ts",
     "test": "bun test tests/unit",
     "test:e2e": "bun test tests/e2e"

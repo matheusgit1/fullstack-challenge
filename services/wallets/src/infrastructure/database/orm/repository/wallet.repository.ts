@@ -1,10 +1,19 @@
 // services/wallets/src/infrastructure/database/repositories/wallet.repository.ts
 
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, QueryRunner } from 'typeorm';
-import { Wallet } from '../entites/wallet.entity';
-import { Transaction, TransactionSource, TransactionStatus, TransactionType } from '../entites/transaction.entity';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
+import { Wallet } from "../entites/wallet.entity";
+import {
+  Transaction,
+  TransactionSource,
+  TransactionStatus,
+  TransactionType,
+} from "../entites/transaction.entity";
 
 @Injectable()
 export class WalletRepository {
@@ -30,7 +39,7 @@ export class WalletRepository {
 
   async findOrCreate(userId: string): Promise<Wallet> {
     let wallet = await this.findByUserId(userId);
-    
+
     if (!wallet) {
       wallet = this.repository.create({
         userId,
@@ -38,27 +47,24 @@ export class WalletRepository {
       });
       wallet = await this.repository.save(wallet);
     }
-    
+
     return wallet;
   }
 
   async createWallet(userId: string): Promise<Wallet> {
     const existing = await this.findByUserId(userId);
     if (existing) {
-      throw new ConflictException('Carteira já existe para este usuário');
+      throw new ConflictException("Carteira já existe para este usuário");
     }
-    
+
     const wallet = this.repository.create({
       userId,
       balanceInCents: 0,
     });
-    
+
     return this.repository.save(wallet);
   }
 
-  /**
-   * Processa uma transação com controle de concorrência otimista
-   */
   async processTransaction(
     walletId: string,
     userId: string,
@@ -68,51 +74,41 @@ export class WalletRepository {
     externalId: string,
     metadata?: Record<string, any>,
   ): Promise<{ wallet: Wallet; transaction: Transaction }> {
-    // Usar query runner para transação
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Buscar wallet com lock para evitar concorrência
       const wallet = await queryRunner.manager
-        .createQueryBuilder(Wallet, 'wallet')
-        .setLock('pessimistic_write')
-        .where('wallet.id = :id', { id: walletId })
+        .createQueryBuilder(Wallet, "wallet")
+        .setLock("pessimistic_write")
+        .where("wallet.id = :id", { id: walletId })
         .getOne();
 
       if (!wallet) {
-        throw new NotFoundException('Carteira não encontrada');
+        throw new NotFoundException("Carteira não encontrada");
       }
 
       let newBalanceInCents: number;
-      
-      if (type === 'credit') {
+
+      if (type === TransactionType.CREDIT) {
         wallet.credit(amountInCents);
         newBalanceInCents = wallet.balanceInCents;
       } else {
         if (!wallet.canDebit(amountInCents)) {
-          throw new Error('Saldo insuficiente');
+          throw new Error("Saldo insuficiente");
         }
         wallet.debit(amountInCents);
         newBalanceInCents = wallet.balanceInCents;
       }
-
+      console.log(
+        "typeoff newBalanceInCents",
+        Number(wallet.balanceInCents),
+        typeof newBalanceInCents,
+      );
+      console.log("wallets: ", wallet);
       // Salvar wallet (version incrementa automaticamente)
       await queryRunner.manager.save(wallet);
-
-
-      // const transaction = queryRunner.manager.create(Transaction, {
-      //   walletId: wallet.id,
-      //   userId,
-      //   source,
-      //   externalId,
-      //   type,
-      //   amountInCents,
-      //   balanceAfterInCents: newBalanceInCents,
-      //   status: TransactionStatus.COMPLETED,
-      //   metadata,
-      // });
 
       const transaction = new Transaction({
         walletId: wallet.id,
@@ -125,7 +121,9 @@ export class WalletRepository {
         status: TransactionStatus.COMPLETED,
         metadata,
       });
-      
+
+      console.log("transaction: ", transaction);
+
       await queryRunner.manager.save(transaction);
 
       await queryRunner.commitTransaction();
@@ -145,19 +143,21 @@ export class WalletRepository {
     limit: number = 20,
   ): Promise<[Transaction[], number]> {
     const skip = (page - 1) * limit;
-    
+
     return this.transactionRepository.findAndCount({
       where: { userId },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
       skip,
       take: limit,
     });
   }
 
-  async getTransactionByExternalId(externalId: string, source: string): Promise<Transaction | null> {
+  async getTransactionByExternalId(
+    externalId: string,
+    source: TransactionSource,
+  ): Promise<Transaction | null> {
     return this.transactionRepository.findOne({
-      // where: { externalId, source },
-      where: { externalId },
+      where: { externalId, source: source },
     });
   }
 }

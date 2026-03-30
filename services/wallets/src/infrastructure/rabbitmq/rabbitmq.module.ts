@@ -1,11 +1,13 @@
 import { Module } from "@nestjs/common";
 import { RabbitmqController } from "./rabbitmq.controller";
 import { RabbitmqService } from "./rabbitmq.service";
+import { OrmModule } from "../database/orm/orm.module";
+import { WalletRepository } from "../database/orm/repository/wallet.repository";
 
 @Module({
-  imports: [],
+  imports: [OrmModule],
   controllers: [RabbitmqController],
-  providers: [RabbitmqService],
   exports: [RabbitmqService],
+  providers: [RabbitmqService, WalletRepository],
 })
 export class RabbitmqModule {}

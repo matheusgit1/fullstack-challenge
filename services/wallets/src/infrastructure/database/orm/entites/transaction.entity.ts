@@ -19,16 +19,12 @@ export enum TransactionStatus {
 
 export enum TransactionSource {
   BET_PLACED = "bet_placed",
-  BET_CASHED_OUT = "bet_cashed_out",
   BET_LOST = "bet_lost",
-  DEPOSIT = "deposit",
-  WITHDRAWAL = "withdrawal",
-  BONUS = "bonus",
 }
 
 @Entity("transactions")
 @Index(["walletId", "createdAt"])
-@Index(["externalId", "source"], { unique: true }) // Garantir idempotência
+@Index(["externalId", "source"], { unique: true }) // Garantir que não haja transações duplicadas para a mesma fonte (importante para idempotência)
 export class Transaction {
   constructor(partial: Partial<Transaction>) {
     Object.assign(this, partial);
@@ -51,10 +47,22 @@ export class Transaction {
   @Column({ type: "enum", enum: TransactionType })
   type: TransactionType;
 
-  @Column({ type: "bigint" })
+  @Column({
+    type: "bigint",
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
+  })
   amountInCents: number;
 
-  @Column({ type: "bigint" })
+  @Column({
+    type: "bigint",
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
+  })
   balanceAfterInCents: number;
 
   @Column({

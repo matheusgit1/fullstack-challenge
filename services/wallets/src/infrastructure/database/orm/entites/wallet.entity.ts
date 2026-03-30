@@ -6,19 +6,26 @@ import {
   UpdateDateColumn,
   Index,
   VersionColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity('wallets')
-@Index(['userId'], { unique: true })
+@Entity("wallets")
+@Index(["userId"], { unique: true })
 export class Wallet {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'uuid', unique: true })
+  @Column({ type: "uuid", unique: true })
   userId: string;
 
   // Armazenar em centavos (BIGINT) para evitar problemas de ponto flutuante
-  @Column({ type: 'bigint', default: 0 })
+  @Column({
+    type: "bigint",
+    default: 0,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
+  })
   balanceInCents: number;
 
   // Versão para controle de concorrência otimista
@@ -47,14 +54,14 @@ export class Wallet {
 
   debit(amountInCents: number): void {
     if (!this.canDebit(amountInCents)) {
-      throw new Error('Saldo insuficiente');
+      throw new Error("Saldo insuficiente");
     }
     this.balanceInCents -= amountInCents;
   }
 
   credit(amountInCents: number): void {
     if (amountInCents < 0) {
-      throw new Error('Valor de crédito deve ser positivo');
+      throw new Error("Valor de crédito deve ser positivo");
     }
     this.balanceInCents += amountInCents;
   }
