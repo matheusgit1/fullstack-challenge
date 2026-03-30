@@ -20,7 +20,6 @@ import { AuthGuard } from "@/infrastructure/auth/auth.guard";
   ],
   controllers: [WalletsController],
   providers: [
-    ConfigService,
     WalletsService,
     WalletRepository,
     { provide: APP_GUARD, useClass: AuthGuard },

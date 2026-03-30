@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 import type { Request } from "express";
+import { appConfig } from "@/configs/app.config";
 
 export interface UserInfo {
   sub: string;
@@ -16,31 +17,18 @@ export interface UserInfo {
 
 @Injectable()
 export class KeycloakService {
-  constructor(
-    private readonly configService: ConfigService,
-    private httpService: HttpService,
-  ) {}
+  constructor(private httpService: HttpService) {}
 
   public async getUserFromToken(token?: string): Promise<UserInfo> {
     try {
-      const keycloakUrl = this.configService.get<string>(
-        "KEYCLOAK_URL",
-        "http://localhost:8080",
-      );
-      const realm = this.configService.get<string>(
-        "KEYCLOAK_REALM",
-        "crash-game",
-      );
-      const audience = this.configService.get<string>(
-        "KEYCLOAK_CLIENT_ID",
-        "crash-game-client",
-      );
+      const keycloakUrl = appConfig.keycloakUrl;
+      const realm = appConfig.realm;
+      const audience = appConfig.audience;
 
       const getKeyCloackUserInfoUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/userinfo`;
       const response = await lastValueFrom(
         this.httpService.get(getKeyCloackUserInfoUrl, {
           headers: {
-            // "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Bearer ${token}`,
           },
         }),
@@ -48,12 +36,6 @@ export class KeycloakService {
 
       return response.data satisfies UserInfo;
     } catch (error) {
-      console.error(
-        "Erro ao validar token:",
-        error,
-        error.response.data,
-        error.message,
-      );
       throw new UnauthorizedException("Erro ao validar token");
     }
   }
