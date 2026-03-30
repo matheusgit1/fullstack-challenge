@@ -1,5 +1,3 @@
-
-
 import {
   Entity,
   Column,
@@ -8,33 +6,36 @@ import {
   UpdateDateColumn,
   OneToMany,
   Index,
-} from 'typeorm';
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
+import { ProvablyFairSeed } from "./provably-fair.entity";
 
 export enum RoundStatus {
-  BETTING = 'betting',
-  RUNNING = 'running',
-  CRASHED = 'crashed',
+  BETTING = "betting",
+  RUNNING = "running",
+  CRASHED = "crashed",
 }
 
-@Entity('rounds')
-@Index(['status', 'createdAt'])
+@Entity("rounds")
+@Index(["status", "createdAt"])
 export class Round {
   constructor(partial: Partial<Round>) {
     Object.assign(this, partial);
   }
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: RoundStatus,
     default: RoundStatus.BETTING,
   })
   status: RoundStatus;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     default: 1.0,
@@ -46,46 +47,46 @@ export class Round {
   multiplier: number;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
-    nullable: true,
+    nullable: false,
     transformer: {
       to: (value: number | null) => value,
-      from: (value: string | null) => value ? parseFloat(value) : null,
+      from: (value: string | null) => (value ? parseFloat(value) : null),
     },
   })
-  crashPoint: number | null;
+  crashPoint: number;
 
   // 🟡 FASE DE APOSTA
-  @Column({ type: 'timestamp' })
+  @Column({ type: "timestamp" })
   bettingStartedAt: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: "timestamp" })
   bettingEndsAt: Date;
 
   // 🟢 FASE RUNNING
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   startedAt: Date;
 
   // 🔴 FASE CRASH
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   crashedAt: Date;
 
   // Provably Fair
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ type: "varchar", length: 128, nullable: true })
   serverSeed: string | null;
 
-  @Column({ type: 'varchar', length: 128 })
+  @Column({ type: "varchar", length: 128 })
   serverSeedHash: string;
 
-  @Column({ type: 'varchar', length: 64, nullable: true })
+  @Column({ type: "varchar", length: 64, nullable: true })
   clientSeed: string | null;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: "int", default: 0 })
   nonce: number;
 
-  @OneToMany('Bet', 'round', { cascade: true })
+  @OneToMany("Bet", "round", { cascade: true })
   bets: any[];
 
   @CreateDateColumn()
@@ -93,10 +94,6 @@ export class Round {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // =========================
-  // 🧠 REGRAS DE NEGÓCIO
-  // =========================
 
   isBettingPhase(): boolean {
     return this.status === RoundStatus.BETTING;
@@ -118,12 +115,10 @@ export class Round {
     return this.isRunning();
   }
 
-  // ⏱️ duração da fase de aposta
   getBettingDurationMs(): number {
     return this.bettingEndsAt.getTime() - this.bettingStartedAt.getTime();
   }
 
-  // ⏱️ tempo restante para apostar
   getRemainingBettingTimeMs(): number {
     return Math.max(0, this.bettingEndsAt.getTime() - Date.now());
   }

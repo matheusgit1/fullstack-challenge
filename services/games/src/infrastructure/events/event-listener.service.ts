@@ -18,6 +18,6 @@ export class EventListenerService {
   }
 
   private async processNewBetting(payload: any) {
-    console.log(`Processing new betting action at ${payload.timestamp}`);
+    console.log(`Processing new betting action at ${payload}`);
   }
 }

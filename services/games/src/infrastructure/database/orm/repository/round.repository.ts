@@ -1,5 +1,3 @@
-
-
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import {
@@ -8,6 +6,7 @@ import {
   MoreThan,
   Between,
   FindOptionsWhere,
+  FindOneOptions,
 } from "typeorm";
 import { Round, RoundStatus } from "../entites/round.entity";
 import { Bet } from "../entites/bet.entity";
@@ -21,6 +20,17 @@ export class RoundRepository {
     private readonly betRepository: Repository<Bet>,
   ) {}
 
+  async findOne(options: FindOneOptions<Round>): Promise<Round | null> {
+    return this.repository.findOne(options);
+  }
+
+  async findBettingRound(): Promise<Round | null> {
+    return this.repository.findOne({
+      where: { status: RoundStatus.BETTING },
+      order: { createdAt: "DESC" },
+    });
+  }
+
   async findCurrentRound(): Promise<Round | null> {
     return this.repository.findOne({
       where: [{ status: RoundStatus.BETTING }, { status: RoundStatus.RUNNING }],
@@ -31,10 +41,7 @@ export class RoundRepository {
 
   async findActiveRound(): Promise<Round | null> {
     return this.repository.findOne({
-      where: [
-        { status: RoundStatus.BETTING},
-        { status: RoundStatus.RUNNING },
-      ],
+      where: [{ status: RoundStatus.BETTING }, { status: RoundStatus.RUNNING }],
       order: { createdAt: "DESC" },
       relations: ["bets"],
     });

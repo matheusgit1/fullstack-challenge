@@ -21,6 +21,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(port, "0.0.0.0");
   console.log(`Games service running on port ${port}`);
+  console.log(`Documentação disponível em http://localhost:${port}/api-games`);
 }
 
 bootstrap();

@@ -14,7 +14,7 @@ export class TimerService {
     private readonly gameEngineService: GameEngineService,
   ) {}
 
-  @Interval("betting.phase", 1000 * 10)
+  @Interval("betting.phase", 1000 * 15)
   async handleBettingPhase() {
     const activeRound = await this.roundRepository.findActiveRound();
     if (activeRound && activeRound.isBettingPhase()) {
@@ -41,7 +41,7 @@ export class TimerService {
     await this.gameEngineService.startNewRound();
   }
 
-  @Interval("betting.running", 1000 * 10)
+  @Interval("betting.running", 1000 * 60)
   async handleNewBetting() {
     const activeRound = await this.roundRepository.findActiveRound();
     if (activeRound && activeRound.isRunning()) {

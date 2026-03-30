@@ -7,6 +7,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  Req,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -33,6 +34,7 @@ import {
 } from "../dtos/response/round-history-response.dto";
 import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
 import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
+import type { Request } from "express";
 
 @ApiTags("games")
 @Controller("games")
@@ -70,13 +72,15 @@ export class GamesController {
   }
 
   @Get("bets/me")
-  @ApiBearerAuth()
+  @Auth(AuthGuardType.GUARD)
   @ApiOperation({ summary: "Histórico de apostas do jogador" })
   @ApiResponse({ status: 200, type: PaginatedResponseDto<BetHistoryItemDto> })
   async getMyBets(
+    @Req() req: Request,
     @Query() query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
-    return this.gamesService.getMyBets(query);
+    const userId = req.user?.sub || "anonymous";
+    return this.gamesService.getMyBets(userId, query);
   }
 
   @Post("bet")
@@ -90,8 +94,13 @@ export class GamesController {
     description:
       "Saldo insuficiente / Fora da fase de apostas / Aposta duplicada",
   })
-  async placeBet(@Body() dto: BetRequestDto): Promise<BetResponseDto> {
-    return this.gamesService.placeBet(dto);
+  async placeBet(
+    @Body() dto: BetRequestDto,
+    @Req() req: Request,
+  ): Promise<BetResponseDto> {
+    const userId = req.user?.sub || "anonymous";
+    const userToken = req.headers.authorization?.split(" ")[1] || "";
+    return this.gamesService.placeBet(userToken, userId, dto);
   }
 
   @Post("bet/cashout")
@@ -103,7 +112,12 @@ export class GamesController {
     status: 400,
     description: "Nenhuma aposta pendente / Rodada não está ativa",
   })
-  async cashout(@Body() dto: CashoutRequestDto): Promise<CashoutResponseDto> {
-    return this.gamesService.cashout(dto);
+  async cashout(
+    @Req() req: Request,
+    @Body() dto: CashoutRequestDto,
+  ): Promise<CashoutResponseDto> {
+    const userToken = req.headers.authorization?.split(" ")[1] || "";
+    const userId = req.user?.sub || "anonymous";
+    return this.gamesService.cashout(userId, userToken, dto);
   }
 }

@@ -11,10 +11,7 @@ export class BetDto {
   @ApiProperty({ example: "user_123" })
   userId: string;
 
-  @ApiProperty({ example: "PlayerTest" })
-  username: string;
-
-  @ApiProperty({ example: 100.0, description: "Valor da aposta em reais" })
+  @ApiProperty({ example: 10000, description: "Valor da aposta em centavos" })
   amount: number;
 
   @ApiProperty({

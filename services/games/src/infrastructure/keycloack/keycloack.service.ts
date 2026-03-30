@@ -2,22 +2,13 @@ import { HttpService } from "@nestjs/axios";
 import { appConfig } from "../../../configs/app.config";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
-
-export interface UserInfo {
-  sub: string;
-  email_verified: boolean;
-  name: string;
-  preferred_username: string;
-  given_name: string;
-  family_name: string;
-  email: string;
-}
+import { User } from "@/types/user";
 
 @Injectable()
 export class KeycloakService {
   constructor(private httpService: HttpService) {}
 
-  public async getUserFromToken(token?: string): Promise<UserInfo> {
+  public async getUserFromToken(token?: string): Promise<User> {
     try {
       const keycloakUrl = appConfig.keycloakUrl;
       const realm = appConfig.realm;
@@ -32,7 +23,7 @@ export class KeycloakService {
         }),
       );
 
-      return response.data satisfies UserInfo;
+      return response.data satisfies User;
     } catch (error) {
       throw new UnauthorizedException("Erro ao validar token");
     }

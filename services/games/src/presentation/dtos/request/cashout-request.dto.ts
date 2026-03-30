@@ -1,5 +1,3 @@
-
-
 import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsNumber, Min } from "class-validator";
 import { BetDto } from "../index";
@@ -7,15 +5,23 @@ import { RoundStatus } from "../enums/enums";
 
 export class CashoutRequestDto {
   @ApiProperty({
-    required: false,
+    required: true,
     description: "Auto cashout: define multiplicador alvo (opcional)",
     example: 2.5,
     minimum: 1,
   })
-  @IsOptional()
   @IsNumber()
   @Min(1)
-  targetMultiplier?: number;
+  targetMultiplier: number;
+
+  @ApiProperty({
+    required: true,
+    description: "ID da aposta cashout",
+  })
+  betId: string;
+
+  @ApiProperty({ description: "ID da rodada" })
+  roundId: string;
 }
 
 export class CashoutResponseDto {
@@ -31,9 +37,11 @@ export class CashoutResponseDto {
   @ApiProperty({ description: "Valor ganho" })
   winAmount: number;
 
-  @ApiProperty({ description: "Saldo atualizado após o cashout" })
-  newBalance: number;
 
-  @ApiProperty({ description: "Status da rodada após o cashout", enum: RoundStatus, example: RoundStatus.BETTING })
+  @ApiProperty({
+    description: "Status da rodada após o cashout",
+    enum: RoundStatus,
+    example: RoundStatus.BETTING,
+  })
   roundStatus: RoundStatus;
 }

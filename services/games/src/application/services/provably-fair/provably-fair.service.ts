@@ -5,12 +5,14 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { createHash, randomBytes } from "crypto";
 import { ProvablyFairSeed } from "@/infrastructure/database/orm/entites/provably-fair.entity";
+import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 
 @Injectable()
 export class ProvablyFairService {
   constructor(
     @InjectRepository(ProvablyFairSeed)
     private readonly seedRepository: Repository<ProvablyFairSeed>,
+    private readonly roundRepository: RoundRepository,
   ) {}
 
   /**
@@ -89,7 +91,6 @@ export class ProvablyFairService {
     await this.seedRepository.increment({ id: seedId }, "nonce", 1);
   }
 
-
   async calculateCrashPoint(
     serverSeed: string,
     clientSeed: string,
@@ -163,10 +164,7 @@ export class ProvablyFairService {
   /**
    * Troca para um novo seed (jogador pode solicitar)
    */
-  async rotateSeed(
-    userId: string,
-    newClientSeed?: string,
-  ): Promise<ProvablyFairSeed> {
+  async rotateSeed(newClientSeed?: string): Promise<ProvablyFairSeed> {
     // Marcar seed atual como usado
     const currentSeed = await this.getActiveSeed();
     if (currentSeed) {
@@ -181,7 +179,6 @@ export class ProvablyFairService {
    * Obtém histórico de seeds de um jogador
    */
   async getUserSeedsHistory(
-    userId: string,
     page: number = 1,
     limit: number = 20,
   ): Promise<[ProvablyFairSeed[], number]> {
@@ -192,5 +189,34 @@ export class ProvablyFairService {
       skip,
       take: limit,
     });
+  }
+
+  async getProvablyFairDataForRound(
+    roundId: string,
+  ): Promise<ProvablyFairSeed> {
+    // Buscar round com a relação do provably fair seed
+    const round = await this.roundRepository.findOne({
+      where: { id: roundId },
+    });
+
+    console.log("Round encontrado:", round);
+
+    if (!round) {
+      throw new BadRequestException("Round não encontrado");
+    }
+
+    const fair = await this.seedRepository.findOne({
+      where: { clientSeed: round.clientSeed || "" },
+    });
+
+    console.log("Seed encontrada para o round:", fair);
+
+    if (!fair) {
+      throw new BadRequestException("Seed não encontrada para o round");
+    }
+
+    return fair;
+
+    // Se o round não tem um seed específico, buscar o último seed ativo
   }
 }

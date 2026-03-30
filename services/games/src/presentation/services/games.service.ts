@@ -1,3 +1,5 @@
+import { ProxyService } from "./../../infrastructure/proxy/proxy.service";
+import { BetRepository } from "./../../infrastructure/database/orm/repository/bet.repository";
 import { Injectable } from "@nestjs/common";
 import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
 import { PaginatedResponseDto } from "../dtos/index";
@@ -16,97 +18,215 @@ import {
   CashoutRequestDto,
   CashoutResponseDto,
 } from "../dtos/request/cashout-request.dto";
+import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
+import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
 
 @Injectable()
 export class GamesService {
-  public constructor() {}
+  public constructor(
+    private readonly roundRepository: RoundRepository,
+    private readonly provablyFairService: ProvablyFairService,
+    private readonly betRepository: BetRepository,
+    private readonly proxyService: ProxyService,
+  ) {}
 
-  async cashout(dto: CashoutRequestDto): Promise<CashoutResponseDto> {
+  async cashout(
+    userId: string,
+    userToken: string,
+    dto: CashoutRequestDto,
+  ): Promise<CashoutResponseDto> {
+    const [round, bet] = await Promise.all([
+      this.roundRepository.findOne({
+        where: { id: dto.roundId },
+      }),
+      this.betRepository.findOne({
+        where: { id: dto.betId, userId: userId },
+        relations: ["round"],
+      }),
+    ]);
+
+    if (!round) {
+      throw new Error("Nenhuma rodada ativa");
+    }
+
+    if (round.status !== RoundStatus.RUNNING) {
+      throw new Error("Saque não pode ser feito");
+    }
+
+    if (!bet) {
+      throw new Error("Nenhuma aposta encontrada");
+    }
+
+    if (bet?.roundId !== dto.roundId) {
+      throw new Error("Aposta não pertence à rodada informada");
+    }
+    console.log(
+      "multiplicador alvo",
+      dto.targetMultiplier,
+      "multiplicador atual",
+      round.crashPoint,
+    );
+    if (dto.targetMultiplier > round.crashPoint) {
+      throw new Error(
+        "Multiplicador alvo não deve ser maior que o multiplicador atual",
+      );
+    }
+
+    // TODO enviar mensagem para processar cashout via RabbitMQ e retornar resposta real no wallet
+
     return new CashoutResponseDto({
       bet: {
-        id: "bet_123456789",
-        userId: "user_123",
-        username: "PlayerTest",
-        amount: 100,
-        multiplier: 2.5,
+        id: bet.id,
+        userId: userId,
+        amount: bet.amount,
+        multiplier: dto.targetMultiplier,
         status: BetStatus.CASHED_OUT,
         cashedOutAt: new Date(),
-        createdAt: new Date(),
+        createdAt: bet.createdAt,
       },
-      multiplier: 2.5,
-      winAmount: 250,
-      newBalance: 1250,
-      roundStatus: RoundStatus.BETTING,
+      multiplier: dto.targetMultiplier,
+      winAmount: bet.amount * dto.targetMultiplier - bet.amount,
+      roundStatus: round.status,
     });
   }
 
-  async placeBet(dto: BetRequestDto): Promise<BetResponseDto> {
+  async placeBet(
+    userToken: string,
+    userId: string,
+    dto: BetRequestDto,
+  ): Promise<BetResponseDto> {
+    const userBalance = await this.proxyService.getUserBalance(userToken);
+
+    const isAvailableBet = userBalance.balanceInCents / 100 > dto.amount / 100;
+    if (!isAvailableBet) {
+      throw new Error("Saldo insuficiente");
+    }
+
+    const round = await this.roundRepository.findOne({
+      where: { id: dto.roundId },
+    });
+
+    if (!round) {
+      throw new Error("Nenhuma rodada ativa");
+    }
+
+    if (round.status !== RoundStatus.BETTING) {
+      throw new Error("Aposta indisponível");
+    }
+
+    const bet = await this.betRepository.createBet({
+      userId: userId,
+      roundId: dto.roundId,
+      amount: dto.amount,
+      status: BetStatus.PENDING,
+    });
+
     return new BetResponseDto({
       bet: {
-        id: "bet_123456789",
-        userId: "user_123",
-        username: "PlayerTest",
+        id: bet.id,
+        userId: userId,
         amount: dto.amount,
-        multiplier: null,
+        multiplier: 1,
         status: BetStatus.PENDING,
         cashedOutAt: null,
         createdAt: new Date(),
       },
-      newBalance: 1000 - dto.amount,
-      roundId: "round_123456789",
+      newBalance: userBalance.balanceInCents - dto.amount,
+      roundId: round.id,
     });
   }
 
   public async getCurrentRound(): Promise<CurrentRoundResponseDto> {
+    const currentRound = await this.roundRepository.findCurrentRound();
+    if (!currentRound) {
+      throw new Error("No active round found");
+    }
     return new CurrentRoundResponseDto({
-      id: "round_123456789",
-      status: RoundStatus.BETTING,
-      multiplier: 1.0,
-      myBet: null,
-      bets: [],
-      serverSeedHash: "a3f5c8d2e1b4...",
-      crashPoint: null,
-      bettingEndsAt: new Date("2024-01-01T12:00:00Z"),
-      startedAt: null,
-      crashedAt: null,
+      id: currentRound.id,
+      status: currentRound.status,
+      multiplier: currentRound.multiplier,
+      myBet: null, //adicionar no futuro caso haja autenticação e aposta do usuário
+      bets: currentRound.bets,
+      serverSeedHash: currentRound.serverSeedHash,
+      crashPoint: currentRound.crashPoint,
+      bettingEndsAt: currentRound.bettingEndsAt,
+      startedAt: currentRound.startedAt,
+      crashedAt: currentRound.crashedAt,
     });
   }
 
   async getRoundHistory(
     query: RoundHistoryQueryDto,
   ): Promise<PaginatedResponseDto<RoundHistoryItemDto>> {
+    query.page = query.page || 1;
+    query.limit = query.limit || 20;
+
+    const [rounds, total] = await this.roundRepository.findRoundsHistory(
+      query.page,
+      query.limit,
+    );
     return new PaginatedResponseDto<RoundHistoryItemDto>({
-      data: [],
-      page: 1,
-      limit: 10,
-      total: 0,
-      totalPages: 0,
+      data: rounds.map(
+        (round) =>
+          new RoundHistoryItemDto({
+            roundId: round.id,
+            crashPoint: round.crashPoint || 0,
+            serverSeedHash: round.serverSeedHash,
+            endedAt: round.bettingEndsAt,
+          }),
+      ),
+      page: query.page,
+      limit: query.limit,
+      total: total,
+      totalPages: Math.ceil(total / query.limit),
     });
   }
 
   async verifyRound(roundId: string): Promise<RoundVerifyResponseDto> {
+    const fair =
+      await this.provablyFairService.getProvablyFairDataForRound(roundId);
+
     return new RoundVerifyResponseDto({
-      roundId: roundId,
-      crashPoint: 5.23,
-      serverSeed: "server_seed_123",
-      clientSeed: "client_seed_456",
-      nonce: 0,
-      serverSeedHash: "server_seed_hash_789",
-      calculationFormula: "calculation_formula_012",
-      rawResult: "raw_result_345",
-      isValid: true,
+      fairId: fair.id,
+      serverSeed: fair.serverSeed,
+      clientSeed: fair.clientSeed,
+      nonce: fair.nonce,
+      serverSeedHash: fair.serverSeedHash,
     });
   }
 
   async getMyBets(
+    userId: string,
     query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
+    query.page = query.page || 1;
+    query.limit = query.limit || 20;
+    const [bets, total] = await this.betRepository.findUserBetsHistory(
+      userId,
+      query.page,
+      query.limit,
+      query.status,
+    );
+
     return new PaginatedResponseDto<BetHistoryItemDto>({
-      data: [],
+      data: bets.map(
+        (bet) =>
+          new BetHistoryItemDto({
+            roundCrashPoint: bet.round.crashPoint || 0,
+            roundId: bet.round.id,
+            id: bet.id,
+            userId: userId,
+            amount: bet.amount,
+            multiplier: bet.multiplier,
+            status: bet.status,
+            cashedOutAt: bet.cashedOutAt,
+            createdAt: bet.createdAt,
+          }),
+      ),
       page: query.page || 1,
       limit: query.limit || 10,
-      total: 0,
-      totalPages: 0,
+      total: total,
+      totalPages: Math.ceil(total / query.limit),
     });
   }
 }

@@ -10,6 +10,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
+import { Round } from './round.entity';
 
 export enum BetStatus {
   PENDING = 'pending',
@@ -30,9 +31,6 @@ export class Bet {
 
   @Column({ type: 'uuid' })
   userId: string;
-
-  @Column({ type: 'varchar', length: 100 })
-  username: string;
 
   @Column({
     type: 'decimal',
@@ -68,9 +66,9 @@ export class Bet {
   cashedOutAt: Date | null;
 
   // Relacionamentos
-  @ManyToOne('Round', 'bets')
+  @ManyToOne(() => Round, (round) => round.bets)
   @JoinColumn({ name: 'roundId' })
-  round: any;
+  round: Round;
 
   @CreateDateColumn()
   createdAt: Date;

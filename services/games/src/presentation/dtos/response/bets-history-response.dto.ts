@@ -14,6 +14,9 @@ export class BetsHistoryQueryDto {
 }
 
 export class BetHistoryItemDto extends BetDto {
+  constructor(partial: BetHistoryItemDto) {
+    super(partial);
+  }
   @ApiProperty({ description: "ID da rodada" })
   roundId: string;
 

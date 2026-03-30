@@ -1,5 +1,5 @@
 import { Reflector } from "@nestjs/core";
-import { Request } from "express";
+import type { Request } from "express";
 import { AuthGuardType, AUTH_GUARD_TYPE } from "./auth.decorator";
 import {
   CanActivate,
@@ -18,7 +18,9 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user: any }>();
     const authGuardType: AuthGuardType = this.reflector.getAllAndOverride(
       AUTH_GUARD_TYPE,
       [context.getHandler(), context.getClass()],
@@ -28,14 +30,11 @@ export class AuthGuard implements CanActivate {
 
     switch (authGuardType) {
       case AuthGuardType.GUARD:
-        const res = await this.keycloackService.getUserFromToken(
+        const user = await this.keycloackService.getUserFromToken(
           token || "fake token",
         );
-        request.user = res;
-        if (res) {
-          return true;
-        }
-        return false;
+        request.user = user;
+        return !!user;
       case AuthGuardType.NONE:
         return true;
       default:
