@@ -10,6 +10,10 @@ export class BetRepository {
     private readonly repository: Repository<Bet>,
   ) {}
 
+  async save(bet: Bet): Promise<Bet> {
+    return await this.repository.save(bet);
+  }
+
   async findByFilters(options: FindOneOptions<Bet>): Promise<Bet | null> {
     return this.repository.findOne(options);
   }

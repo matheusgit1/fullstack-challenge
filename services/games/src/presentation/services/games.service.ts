@@ -22,6 +22,7 @@ import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.prod
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
 import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
+import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
 
 @Injectable()
 export class GamesService {
@@ -38,24 +39,21 @@ export class GamesService {
     userToken: string,
     dto: CashoutRequestDto,
   ): Promise<CashoutResponseDto> {
-    const [round, bet] = await Promise.all([
-      this.roundRepository.findByRoundId(dto.roundId),
+    const [bet] = await Promise.all([
       this.betRepository.findByFilters({
         where: { id: dto.betId, userId: userId },
         relations: ["round"],
       }),
     ]);
 
+    if (!bet || !bet.round) {
+      throw new Error("Nenhuma rodada ou aposta encontrada");
+    }
+
+    const { round } = bet;
+
     if (!round) {
       throw new Error("Nenhuma rodada ativa");
-    }
-
-    if (round.status !== RoundStatus.RUNNING) {
-      throw new Error("Saque não pode ser feito");
-    }
-
-    if (!bet) {
-      throw new Error("Nenhuma aposta encontrada");
     }
 
     if (bet?.roundId !== dto.roundId) {
@@ -68,30 +66,73 @@ export class GamesService {
       );
     }
 
-    const amountToProcess = bet.amount * dto.targetMultiplier - bet.amount;
-    const externalId = `${bet.id}-${Date.now()}`;
+    const userBalance = await this.proxyService.getUserBalance(userToken);
+    const isAvailableBet = userBalance.balanceInCents > bet.amount;
+    if (!isAvailableBet) {
+      throw new Error("Saldo insuficiente para realizar saque");
+    }
 
-    await this.rabbitmqProducer.publishCash(
-      "bet_lost",
-      userId,
-      amountToProcess,
-      externalId,
-    );
+    const amountToProcess = bet.amount * dto.targetMultiplier;
+    const externalId = bet.id;
 
-    return new CashoutResponseDto({
-      bet: {
-        id: bet.id,
+    if (round.isCrashed()) {
+      await this.rabbitmqProducer.publishCash({
+        cashType: TransactionSource.BET_LOST,
         userId: userId,
         amount: bet.amount,
+        timestamp: new Date().toISOString(),
+        externalId: externalId,
+      });
+
+      bet.lose();
+      await this.betRepository.save(bet);
+
+      return new CashoutResponseDto({
+        bet: {
+          id: bet.id,
+          userId: userId,
+          amount: bet.amount,
+          multiplier: dto.targetMultiplier,
+          status: bet.status,
+          cashedOutAt: new Date(),
+          createdAt: bet.createdAt,
+        },
         multiplier: dto.targetMultiplier,
-        status: BetStatus.CASHED_OUT,
-        cashedOutAt: new Date(),
-        createdAt: bet.createdAt,
-      },
-      multiplier: dto.targetMultiplier,
-      winAmount: bet.amount * dto.targetMultiplier - bet.amount,
-      roundStatus: round.status,
-    });
+        winAmount: bet.amount,
+        roundStatus: round.status,
+      });
+    }
+
+    if (round.isRunning()) {
+      await this.rabbitmqProducer.publishCash({
+        cashType: TransactionSource.BET_PLACED,
+        userId: userId,
+        amount: amountToProcess,
+        timestamp: new Date().toISOString(),
+        externalId: externalId,
+      });
+
+      bet.cashout(dto.targetMultiplier);
+
+      await this.betRepository.save(bet);
+
+      return new CashoutResponseDto({
+        bet: {
+          id: bet.id,
+          userId: userId,
+          amount: bet.amount,
+          multiplier: dto.targetMultiplier,
+          status: bet.status,
+          cashedOutAt: new Date(),
+          createdAt: bet.createdAt,
+        },
+        multiplier: dto.targetMultiplier,
+        winAmount: bet.amount * dto.targetMultiplier - bet.amount,
+        roundStatus: round.status,
+      });
+    }
+
+    throw new Error("Rodada já finalizada, saque indisponível");
   }
 
   async placeBet(
@@ -101,7 +142,7 @@ export class GamesService {
   ): Promise<BetResponseDto> {
     const userBalance = await this.proxyService.getUserBalance(userToken);
 
-    const isAvailableBet = userBalance.balanceInCents / 100 > dto.amount / 100;
+    const isAvailableBet = userBalance.balanceInCents > dto.amount;
     if (!isAvailableBet) {
       throw new Error("Saldo insuficiente");
     }
@@ -112,7 +153,7 @@ export class GamesService {
       throw new Error("Nenhuma rodada ativa");
     }
 
-    if (round.status !== RoundStatus.BETTING) {
+    if (!round.isBettingPhase) {
       throw new Error("Aposta indisponível");
     }
 
@@ -141,8 +182,9 @@ export class GamesService {
   public async getCurrentRound(): Promise<CurrentRoundResponseDto> {
     const currentRound = await this.roundRepository.findCurrentBettingRound();
     if (!currentRound) {
-      throw new Error("No active round found");
+      throw new Error("Nenhuma rodada ativa");
     }
+
     return new CurrentRoundResponseDto({
       id: currentRound.id,
       status: currentRound.status,
@@ -201,8 +243,10 @@ export class GamesService {
     userId: string,
     query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
+    
     query.page = query.page || 1;
     query.limit = query.limit || 20;
+
     const [bets, total] = await this.betRepository.findUserBetsHistory(
       userId,
       query.page,

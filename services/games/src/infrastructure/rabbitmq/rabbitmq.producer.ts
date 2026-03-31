@@ -1,7 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import * as amqp from "amqplib";
+import { rabbitConfig } from "configs/rabbitmq.config";
+import { TransactionSource } from "./rabbitmq.types";
 
+export interface CashMessage {
+  cashType: TransactionSource;
+  userId: string;
+  amount: number;
+  timestamp: string;
+  externalId: string;
+}
 @Injectable()
 export class RabbitmqProducerService {
   private channel: amqp.Channel | null = null;
@@ -9,11 +17,9 @@ export class RabbitmqProducerService {
   private readonly uri: string;
   private readonly defaultQueue: string;
 
-  constructor(private configService: ConfigService) {
-    this.uri =
-      this.configService.get("RABBITMQ_URI") ||
-      "amqp://admin:admin@localhost:5672";
-    this.defaultQueue = this.configService.get("RABBITMQ_QUEUE") || "cashin";
+  constructor() {
+    this.uri = rabbitConfig.uri;
+    this.defaultQueue = rabbitConfig.queue;
   }
 
   async connect() {
@@ -27,144 +33,7 @@ export class RabbitmqProducerService {
     }
   }
 
-  async publishBetPlaced(
-    userId: string,
-    betAmount: number,
-    gameType: string,
-    externalId: string,
-  ) {
-    if (!this.channel) {
-      await this.connect();
-    }
-
-    const message = {
-      pattern: "game.bet.placed",
-      data: {
-        userId,
-        betAmount,
-        gameType,
-        externalId,
-        timestamp: new Date().toISOString(),
-      },
-    };
-
-    try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
-      this.logger.log("📤 Aposta enviada:", message);
-    } catch (error) {
-      this.logger.error("❌ Erro ao enviar aposta:", error as Error);
-      throw error;
-    }
-  }
-
-  async publishGameResult(
-    userId: string,
-    gameType: string,
-    resultAmount: number,
-    betAmount: number,
-    externalId: string,
-    isWon: boolean,
-  ) {
-    if (!this.channel) {
-      await this.connect();
-    }
-
-    const message = {
-      pattern: "game.result",
-      data: {
-        userId,
-        gameType,
-        resultAmount,
-        betAmount,
-        externalId,
-        isWon,
-        timestamp: new Date().toISOString(),
-      },
-    };
-
-    try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
-      this.logger.log("📤 Resultado do jogo enviado:", message);
-    } catch (error) {
-      this.logger.error("❌ Erro ao enviar resultado do jogo:", error as Error);
-      throw error;
-    }
-  }
-
-  async publishWithdraw(userId: string, amount: number, externalId: string) {
-    if (!this.channel) {
-      await this.connect();
-    }
-
-    const message = {
-      pattern: "wallet.withdraw",
-      data: {
-        userId,
-        amount,
-        externalId,
-        timestamp: new Date().toISOString(),
-      },
-    };
-
-    try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
-      this.logger.log("📤 Saque enviado:", message);
-    } catch (error) {
-      this.logger.error("❌ Erro ao enviar saque:", error as Error);
-      throw error;
-    }
-  }
-
-  async publishDeposit(userId: string, amount: number, externalId: string) {
-    if (!this.channel) {
-      await this.connect();
-    }
-
-    const message = {
-      pattern: "wallet.deposit",
-      data: {
-        userId,
-        amount,
-        externalId,
-        timestamp: new Date().toISOString(),
-      },
-    };
-
-    try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
-      this.logger.log("📤 Depósito enviado:", message);
-    } catch (error) {
-      this.logger.error("❌ Erro ao enviar depósito:", error as Error);
-      throw error;
-    }
-  }
-
-  async publishCash(
-    cashType: string,
-    userId: string,
-    amount: number,
-    externalId: string,
-  ) {
+  async publishCash(messageToSend: CashMessage) {
     if (!this.channel) {
       await this.connect();
     }
@@ -172,10 +41,10 @@ export class RabbitmqProducerService {
     const message = {
       pattern: "cash",
       data: {
-        cashType,
-        userId,
-        amount,
-        externalId,
+        cashType: messageToSend.cashType,
+        userId: messageToSend.userId,
+        amount: messageToSend.amount,
+        externalId: messageToSend.externalId,
         timestamp: new Date().toISOString(),
       },
     };
