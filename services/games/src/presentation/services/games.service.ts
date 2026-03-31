@@ -18,6 +18,7 @@ import {
   CashoutResponseDto,
 } from "../dtos/request/cashout-request.dto";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
+import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
 import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
@@ -29,6 +30,7 @@ export class GamesService {
     private readonly provablyFairService: ProvablyFairService,
     private readonly betRepository: BetRepository,
     private readonly proxyService: ProxyService,
+    private readonly rabbitmqProducer: RabbitmqProducerService,
   ) {}
 
   async cashout(
@@ -66,7 +68,15 @@ export class GamesService {
       );
     }
 
-    // TODO enviar mensagem para processar cashout via RabbitMQ e retornar resposta real no wallet
+    const amountToProcess = bet.amount * dto.targetMultiplier - bet.amount;
+    const externalId = `${bet.id}-${Date.now()}`;
+
+    await this.rabbitmqProducer.publishCash(
+      "bet_lost",
+      userId,
+      amountToProcess,
+      externalId,
+    );
 
     return new CashoutResponseDto({
       bet: {

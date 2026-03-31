@@ -48,8 +48,7 @@ export class TimerService {
   @Interval("multiple.updated", 5 * 1000)
   async handleNewCrashed() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
-    console.log("multiple.updated: ", activeRound);
-    console.log(activeRound && activeRound.isRunning());
+
     if (activeRound && activeRound.isRunning()) {
       if (Date.now() < new Date(activeRound.crashedAt).getTime()) {
         const newMultiplier = this.calculateMultiplierInterpolation(
@@ -57,7 +56,6 @@ export class TimerService {
           activeRound.crashedAt,
           activeRound.crashPoint,
         );
-
 
         if (newMultiplier > activeRound.multiplier) {
           activeRound.multiplier = newMultiplier;
@@ -71,7 +69,7 @@ export class TimerService {
           this.eventEmitter.emit("multiplier.updated", {
             roundId: activeRound.id,
             multiplier: newMultiplier,
-            crashPoint: activeRound.crashPoint
+            crashPoint: activeRound.crashPoint,
           });
         }
       }

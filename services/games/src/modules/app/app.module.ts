@@ -7,6 +7,7 @@ import { RoundRepository } from "@/infrastructure/database/orm/repository/round.
 import { TimerService } from "@/infrastructure/events/timer.service";
 import { ProxyModule } from "@/infrastructure/proxy/proxy.module";
 import { ProxyService } from "@/infrastructure/proxy/proxy.service";
+import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
 import { WebsocketGateway } from "@/infrastructure/websocket/websocket.gateway";
 import { GamesController } from "@/presentation/controllers/games.controller";
 import { GamesService } from "@/presentation/services/games.service";
@@ -37,7 +38,8 @@ import { ScheduleModule } from "@nestjs/schedule";
     OrmModule,
     ServicesModule,
     ProvablyFairModule,
-    ProxyModule
+    ProxyModule,
+    RabbitmqModule,
   ],
   controllers: [GamesController],
   providers: [
