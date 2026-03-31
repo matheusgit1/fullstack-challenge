@@ -1,5 +1,3 @@
-
-
 import {
   Entity,
   Column,
@@ -9,31 +7,31 @@ import {
   ManyToOne,
   JoinColumn,
   Index,
-} from 'typeorm';
-import { Round } from './round.entity';
+} from "typeorm";
+import { Round } from "./round.entity";
 
 export enum BetStatus {
-  PENDING = 'pending',
-  CASHED_OUT = 'cashed_out',
-  LOST = 'lost',
+  PENDING = "pending",
+  CASHED_OUT = "cashed_out",
+  LOST = "lost",
 }
 
-@Entity('bets')
-@Index(['roundId', 'userId'], { unique: true }) // Uma aposta por usuário por rodada
-@Index(['userId', 'createdAt'])
-@Index(['roundId', 'status'])
+@Entity("bets")
+@Index(["roundId", "userId"], { unique: true }) // Uma aposta por usuário por rodada
+@Index(["userId", "createdAt"])
+@Index(["roundId", "status"])
 export class Bet {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: "uuid" })
   roundId: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: "uuid" })
   userId: string;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     transformer: {
@@ -44,30 +42,30 @@ export class Bet {
   amount: number;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     nullable: true,
     transformer: {
-      to: (value: number | null) => value,
-      from: (value: string | null) => value ? parseFloat(value) : null,
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
     },
   })
-  multiplier: number | null;
+  multiplier: number;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: BetStatus,
     default: BetStatus.PENDING,
   })
   status: BetStatus;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   cashedOutAt: Date | null;
 
   // Relacionamentos
   @ManyToOne(() => Round, (round) => round.bets)
-  @JoinColumn({ name: 'roundId' })
+  @JoinColumn({ name: "roundId" })
   round: Round;
 
   @CreateDateColumn()
@@ -90,7 +88,7 @@ export class Bet {
 
   cashout(multiplier: number): void {
     if (!this.isPending()) {
-      throw new Error('Apenas apostas pendentes podem ser sacadas');
+      throw new Error("Apenas apostas pendentes podem ser sacadas");
     }
     this.status = BetStatus.CASHED_OUT;
     this.multiplier = multiplier;
@@ -99,13 +97,13 @@ export class Bet {
 
   lose(): void {
     if (!this.isPending()) {
-      throw new Error('Apenas apostas pendentes podem ser perdidas');
+      throw new Error("Apenas apostas pendentes podem ser perdidas");
     }
     this.status = BetStatus.LOST;
   }
 
   getWinAmount(): number {
-    if (!this.isCashedOut() || !this.multiplier) {
+    if (!this.isCashedOut()) {
       return 0;
     }
     return this.amount * this.multiplier;

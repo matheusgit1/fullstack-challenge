@@ -20,7 +20,6 @@ import {
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
-import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
 
@@ -243,7 +242,6 @@ export class GamesService {
     userId: string,
     query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
-    
     query.page = query.page || 1;
     query.limit = query.limit || 20;
 
