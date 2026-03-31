@@ -32,9 +32,9 @@ import {
   RoundHistoryItemDto,
   RoundHistoryQueryDto,
 } from "../dtos/response/round-history-response.dto";
+import type { Request } from "express";
 import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
 import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
-import type { Request } from "express";
 
 @ApiTags("games")
 @Controller("games")
