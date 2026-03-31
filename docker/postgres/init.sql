@@ -1,17 +1,14 @@
-DO
-$$
-BEGIN
-   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'games') THEN
-      CREATE DATABASE games;
-   END IF;
+SELECT 'CREATE DATABASE games'
+WHERE NOT EXISTS (
+  SELECT FROM pg_database WHERE datname = 'games'
+)\gexec
 
-   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'wallets') THEN
-      CREATE DATABASE wallets;
-   END IF;
+SELECT 'CREATE DATABASE wallets'
+WHERE NOT EXISTS (
+  SELECT FROM pg_database WHERE datname = 'wallets'
+)\gexec
 
-
-   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'admin') THEN
-      CREATE DATABASE admin;
-   END IF;
-END
-$$;
+SELECT 'CREATE DATABASE admin'
+WHERE NOT EXISTS (
+  SELECT FROM pg_database WHERE datname = 'admin'
+)\gexec
