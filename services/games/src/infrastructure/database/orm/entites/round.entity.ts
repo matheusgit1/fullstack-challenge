@@ -115,4 +115,12 @@ export class Round {
   getRemainingBettingTimeMs(): number {
     return Math.max(0, this.bettingEndsAt.getTime() - Date.now());
   }
+
+  setStatus(status: RoundStatus) {
+    this.status = status;
+  }
+
+  setMultiplier(multiplier: number) {
+    this.multiplier = multiplier;
+  }
 }

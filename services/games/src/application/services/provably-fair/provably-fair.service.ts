@@ -1,4 +1,3 @@
-// services/games/src/application/services/provably-fair.service.ts
 
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -119,7 +118,7 @@ export class ProvablyFairService {
     };
   }
 
-  async markSeedAsUsed(clientSeed: string): Promise<void> {
+  async setSeedAsUsed(clientSeed: string): Promise<void> {
     await this.seedRepository.update(
       { clientSeed: clientSeed },
       {
@@ -133,7 +132,7 @@ export class ProvablyFairService {
     // Marcar seed atual como usado
     const currentSeed = await this.getActiveSeed();
     if (currentSeed) {
-      await this.markSeedAsUsed(currentSeed.id);
+      await this.setSeedAsUsed(currentSeed.id);
     }
 
     return this.generateNewSeed(newClientSeed);

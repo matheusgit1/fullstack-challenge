@@ -1,3 +1,4 @@
+import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -31,6 +32,8 @@ export class WebsocketGateway
 
   private readonly logger = new Logger(WebsocketGateway.name);
   private clients: Map<string, ConnectedClient> = new Map();
+
+  public constructor(private readonly betRepository: BetRepository) {}
 
   handleConnection(client: WebSocket, req: Request) {
     const clientId = this.generateClientId();
@@ -116,6 +119,20 @@ export class WebsocketGateway
   handleMultiplyIncrease(payload: any) {
     this.logger.log(`multiplier.updated received`);
     this.broadcast("multiplier.updated", payload);
+  }
+
+  @OnEvent("betting.loose")
+  async handleGameLoose(payload: any) {
+    this.logger.log(`betting.loose received`);
+    console.log("Payload received in WebSocketGateway:", payload);
+    const betLoosers = await this.betRepository.findLooserBetsByRoundId(
+      payload.roundId,
+    );
+    this.logger.log(`Found ${betLoosers.length} pending bets to update`);
+    this.broadcast("betting.loose", {
+      ...payload,
+      data: { ...payload.data, bets: betLoosers.map((bet) => bet.id) },
+    });
   }
 
   @OnEvent("betting.crashed")

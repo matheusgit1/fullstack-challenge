@@ -59,7 +59,7 @@ export class GamesService {
       throw new Error("Aposta não pertence à rodada informada");
     }
 
-    if (dto.targetMultiplier > round.crashPoint) {
+    if (round.multiplier > round.crashPoint) {
       throw new Error(
         "Multiplicador alvo não deve ser maior que o multiplicador atual",
       );
@@ -71,7 +71,7 @@ export class GamesService {
       throw new Error("Saldo insuficiente para realizar saque");
     }
 
-    const amountToProcess = bet.amount * dto.targetMultiplier;
+    const amountToProcess = bet.amount * round.multiplier;
     const externalId = bet.id;
 
     if (round.isCrashed()) {
@@ -91,12 +91,12 @@ export class GamesService {
           id: bet.id,
           userId: userId,
           amount: bet.amount,
-          multiplier: dto.targetMultiplier,
+          multiplier: round.multiplier,
           status: bet.status,
           cashedOutAt: new Date(),
           createdAt: bet.createdAt,
         },
-        multiplier: dto.targetMultiplier,
+        multiplier: round.multiplier,
         winAmount: bet.amount,
         roundStatus: round.status,
       });
@@ -111,7 +111,7 @@ export class GamesService {
         externalId: externalId,
       });
 
-      bet.cashout(dto.targetMultiplier);
+      bet.cashout(round.multiplier);
 
       await this.betRepository.save(bet);
 
@@ -120,13 +120,13 @@ export class GamesService {
           id: bet.id,
           userId: userId,
           amount: bet.amount,
-          multiplier: dto.targetMultiplier,
+          multiplier: round.multiplier,
           status: bet.status,
           cashedOutAt: new Date(),
           createdAt: bet.createdAt,
         },
-        multiplier: dto.targetMultiplier,
-        winAmount: bet.amount * dto.targetMultiplier - bet.amount,
+        multiplier: round.multiplier,
+        winAmount: bet.amount * round.multiplier - bet.amount,
         roundStatus: round.status,
       });
     }
@@ -188,7 +188,7 @@ export class GamesService {
       id: currentRound.id,
       status: currentRound.status,
       multiplier: currentRound.multiplier,
-      myBet: null, //adicionar no futuro caso haja autenticação e aposta do usuário
+      myBet: null,
       bets: currentRound.bets,
       serverSeedHash: currentRound.serverSeedHash,
       crashPoint: currentRound.crashPoint,

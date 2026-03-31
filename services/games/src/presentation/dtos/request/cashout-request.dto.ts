@@ -6,16 +6,6 @@ import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity"
 export class CashoutRequestDto {
   @ApiProperty({
     required: true,
-    description: "Auto cashout: define multiplicador alvo (opcional)",
-    example: 2.5,
-    minimum: 1,
-  })
-  @IsNumber()
-  @Min(1)
-  targetMultiplier: number;
-
-  @ApiProperty({
-    required: true,
     description: "ID da aposta cashout",
   })
   betId: string;
