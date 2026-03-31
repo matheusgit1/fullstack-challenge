@@ -110,7 +110,7 @@ export class WalletRepository {
         externalId,
         type,
         amountInCents,
-        balanceAfterInCents: newBalanceInCents,
+        balanceAfterInCents: newBalanceInCents < 0 ? 0 : newBalanceInCents,
         status: TransactionStatus.COMPLETED,
         metadata,
       });
