@@ -8,6 +8,11 @@ services:
         paths:
           - /games
         strip_path: false
+        
+      - name: games-ws
+        paths:
+          - /ws
+        strip_path: false
 
   - name: wallets-service
     url: http://wallets:4002

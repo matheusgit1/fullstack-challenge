@@ -10,28 +10,6 @@
       "Password": "admin",
       "SSLMode": "prefer",
       "Comments": "Games Database"
-    },
-    "2": {
-      "Name": "PostgreSQL - Games DB (games)",
-      "Group": "PostgreSQL",
-      "Host": "postgres",
-      "Port": 5432,
-      "MaintenanceDB": "games",
-      "Username": "admin",
-      "Password": "admin",
-      "SSLMode": "prefer",
-      "Comments": "Games Database"
-    },
-    "3": {
-      "Name": "PostgreSQL - Wallets DB",
-      "Group": "PostgreSQL",
-      "Host": "postgres",
-      "Port": 5432,
-      "MaintenanceDB": "wallets",
-      "Username": "admin",
-      "Password": "admin",
-      "SSLMode": "prefer",
-      "Comments": "Wallets Database"
     }
   }
 }
