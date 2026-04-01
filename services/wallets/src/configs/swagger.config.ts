@@ -4,18 +4,21 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 export function setupSwagger(app: INestApplication<any>) {
   const config = new DocumentBuilder()
     .setTitle("Wallet API")
-    .setDescription("Wallet service API")
+    .setDescription("The games API description")
     .setVersion("1.0")
     .addBearerAuth(
       {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
+        name: "Authorization",
+        description: "Enter JWT token",
+        in: "header",
       },
-      "Authorization",
+      "access-token",
     )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api-wallet", app, document);
+  SwaggerModule.setup("api-wallets", app, document);
 }

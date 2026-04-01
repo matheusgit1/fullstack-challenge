@@ -20,6 +20,7 @@ export class Wallet {
   @Column({
     type: "bigint",
     default: 0,
+    comment: "Saldo em centavos",
     transformer: {
       to: (value: number) => value,
       from: (value: string) => Number(value),
@@ -52,6 +53,7 @@ export class Wallet {
     if (!this.canDebit(amountInCents)) {
       throw new Error("Saldo insuficiente");
     }
+
     this.balanceInCents -= amountInCents;
   }
 

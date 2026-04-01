@@ -1,8 +1,6 @@
 import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
-import type { Request } from "express";
 import { appConfig } from "@/configs/app.config";
 
 export interface UserInfo {
@@ -23,7 +21,6 @@ export class KeycloakService {
     try {
       const keycloakUrl = appConfig.keycloakUrl;
       const realm = appConfig.realm;
-      const audience = appConfig.audience;
 
       const getKeyCloackUserInfoUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/userinfo`;
       const response = await lastValueFrom(

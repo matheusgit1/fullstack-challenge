@@ -20,6 +20,7 @@ export enum TransactionStatus {
 export enum TransactionSource {
   BET_PLACED = "bet_placed",
   BET_LOST = "bet_lost",
+  BET_RESERVE = "bet_reserve",
 }
 
 @Entity("transactions")
@@ -73,7 +74,7 @@ export class Transaction {
   status: TransactionStatus;
 
   @Column({ type: "jsonb", nullable: true })
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
 
   @Column({ type: "text", nullable: true })
   errorMessage: string | null;

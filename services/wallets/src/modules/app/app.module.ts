@@ -1,4 +1,4 @@
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { WalletRepository } from "@/infrastructure/database/orm/repository/wallet.repository";
 import { WalletsController } from "@/presentation/controllers/wallets.controller";
 import { WalletsService } from "@/presentation/services/wallets.service";

@@ -1,4 +1,4 @@
-import 'reflect-metadata'
+import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./modules/app/app.module";
 import { setupMicroservices } from "./configs/rabbitmq.config";
@@ -8,6 +8,7 @@ import { appConfig } from "./configs/app.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix("wallets");
 
   setupMicroservices(app);
   setupWebsocket(app);
@@ -16,6 +17,9 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(appConfig.port, "0.0.0.0", () => {
     console.log(`🚀 Wallet running on port ${appConfig.port}`);
+    console.log(
+      `📚 Documentação disponível em http://localhost:${appConfig.port}/api-wallets`,
+    );
   });
 }
 

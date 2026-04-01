@@ -1,5 +1,10 @@
 import { Controller, Post, Get, Request } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
 import { WalletResponseDto } from "../dtos/wallet-response.dto";
 import { ErrorResponseDto } from "../dtos/error-response.dto";
 import { WalletsService } from "../services/wallets.service";
@@ -8,17 +13,18 @@ import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 import type { Request as ExpressRequest } from "express";
 
 @ApiTags("wallets")
-@Controller("wallets")
+@ApiBearerAuth("access-token")
+@Controller("")
 export class WalletsController {
   constructor(private readonly walletService: WalletsService) {}
 
   @Get("health")
-  @Auth(AuthGuardType.GUARD)
+  @Auth(AuthGuardType.NONE)
   check(): HealthCheckResponseDto {
     return { status: "ok", service: "wallets" };
   }
 
-  @Post("/")
+  @Post("")
   @Auth(AuthGuardType.GUARD)
   @ApiOperation({ summary: "Cria carteira para o jogador autenticado" })
   @ApiResponse({ status: 201, type: WalletResponseDto })
