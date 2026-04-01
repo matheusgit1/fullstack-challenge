@@ -37,16 +37,18 @@ import { HealthCheckResponseDto } from "../dtos/response/health-check-response.d
 import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 
 @ApiTags("games")
-@Controller("games")
+@Controller("/")
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
   @Get("health")
+  @Auth(AuthGuardType.NONE)
   check(): HealthCheckResponseDto {
     return { status: "ok", service: "games" };
   }
 
   @Get("rounds/current")
+  @Auth(AuthGuardType.NONE)
   @ApiOperation({ summary: "Obter estado da rodada atual com apostas" })
   @ApiResponse({ status: 200, type: CurrentRoundResponseDto })
   async getCurrentRound(): Promise<CurrentRoundResponseDto> {
@@ -54,6 +56,7 @@ export class GamesController {
   }
 
   @Get("rounds/history")
+  @Auth(AuthGuardType.NONE)
   @ApiOperation({ summary: "Histórico paginado de rodadas" })
   @ApiResponse({ status: 200, type: PaginatedResponseDto<RoundHistoryItemDto> })
   async getRoundHistory(
@@ -63,6 +66,7 @@ export class GamesController {
   }
 
   @Get("rounds/:roundId/verify")
+  @Auth(AuthGuardType.NONE)
   @ApiOperation({ summary: "Dados de verificação provably fair" })
   @ApiResponse({ status: 200, type: RoundVerifyResponseDto })
   async verifyRound(

@@ -71,14 +71,12 @@ export class GamesService {
       throw new Error("Saldo insuficiente para realizar saque");
     }
 
-    const amountToProcess = bet.amount * round.multiplier;
     const externalId = bet.id;
 
     if (round.isCrashed()) {
-      await this.rabbitmqProducer.publishCash({
+      await this.rabbitmqProducer.publishCashout({
         cashType: TransactionSource.BET_LOST,
         userId: userId,
-        amount: bet.amount,
         timestamp: new Date().toISOString(),
         externalId: externalId,
       });
@@ -103,10 +101,10 @@ export class GamesService {
     }
 
     if (round.isRunning()) {
-      await this.rabbitmqProducer.publishCash({
+      await this.rabbitmqProducer.publishCashin({
         cashType: TransactionSource.BET_PLACED,
         userId: userId,
-        amount: amountToProcess,
+        multiplier: round.multiplier,
         timestamp: new Date().toISOString(),
         externalId: externalId,
       });
@@ -163,6 +161,14 @@ export class GamesService {
       status: BetStatus.PENDING,
     });
 
+    await this.rabbitmqProducer.publishReserve({
+      cashType: TransactionSource.BET_RESERVE,
+      userId: userId,
+      amount: dto.amount,
+      timestamp: new Date().toISOString(),
+      externalId: bet.id,
+    });
+
     return new BetResponseDto({
       bet: {
         id: bet.id,
@@ -213,9 +219,10 @@ export class GamesService {
         (round) =>
           new RoundHistoryItemDto({
             roundId: round.id,
-            crashPoint: round.crashPoint || 0,
+            crashPoint: round.isRunning() ? "secret" : round.crashPoint,
             serverSeedHash: round.serverSeedHash,
             endedAt: round.bettingEndsAt,
+            status: round.status,
           }),
       ),
       page: query.page,

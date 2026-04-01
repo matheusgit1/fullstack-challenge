@@ -1,6 +1,7 @@
 export enum TransactionSource {
   BET_PLACED = "bet_placed",
   BET_LOST = "bet_lost",
+  BET_RESERVE = "bet_reserve",
 }
 
 export interface CashMessage {

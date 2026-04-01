@@ -48,6 +48,7 @@ export class Round {
     precision: 10,
     scale: 2,
     nullable: false,
+    default: 1.5,
     transformer: {
       to: (value: number | null) => value,
       from: (value: string | null) => (value ? parseFloat(value) : null),

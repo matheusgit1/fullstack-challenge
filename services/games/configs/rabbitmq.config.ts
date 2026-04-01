@@ -19,7 +19,7 @@ export function setupMicroservices(app: INestApplication<any>) {
         durable: true,
       },
       noAck: false,
-      prefetchCount: 10,
+      // prefetchCount: 10,
     },
   });
 }

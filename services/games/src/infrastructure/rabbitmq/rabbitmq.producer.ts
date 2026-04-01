@@ -3,13 +3,28 @@ import * as amqp from "amqplib";
 import { rabbitConfig } from "configs/rabbitmq.config";
 import { TransactionSource } from "./rabbitmq.types";
 
-export interface CashMessage {
+export interface CashReserveMessage {
   cashType: TransactionSource;
   userId: string;
   amount: number;
   timestamp: string;
   externalId: string;
 }
+export type CashinMessage = {
+  cashType: TransactionSource;
+  userId: string;
+  multiplier: number; // multiplicador da aposta
+  timestamp: string;
+  externalId: string;
+};
+
+export type CashoutMessage = {
+  cashType: TransactionSource;
+  userId: string;
+  timestamp: string;
+  externalId: string;
+};
+
 @Injectable()
 export class RabbitmqProducerService {
   private channel: amqp.Channel | null = null;
@@ -33,7 +48,7 @@ export class RabbitmqProducerService {
     }
   }
 
-  async publishCash(messageToSend: CashMessage) {
+  async publishCashout(messageToSend: CashoutMessage) {
     if (!this.channel) {
       await this.connect();
     }
@@ -42,6 +57,65 @@ export class RabbitmqProducerService {
       pattern: "cash",
       data: {
         cashType: messageToSend.cashType,
+        userId: messageToSend.userId,
+        externalId: messageToSend.externalId,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    try {
+      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
+      this.channel!.sendToQueue(
+        this.defaultQueue,
+        Buffer.from(JSON.stringify(message)),
+        { persistent: true },
+      );
+      this.logger.log("📤 Cash message enviada:", message);
+    } catch (error) {
+      this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
+      throw error;
+    }
+  }
+
+  async publishCashin(messageToSend: CashinMessage) {
+    if (!this.channel) {
+      await this.connect();
+    }
+
+    const message = {
+      pattern: "cash",
+      data: {
+        cashType: messageToSend.cashType,
+        userId: messageToSend.userId,
+        multiplier: messageToSend.multiplier,
+        externalId: messageToSend.externalId,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    try {
+      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
+      this.channel!.sendToQueue(
+        this.defaultQueue,
+        Buffer.from(JSON.stringify(message)),
+        { persistent: true },
+      );
+      this.logger.log("📤 Cash message enviada:", message);
+    } catch (error) {
+      this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
+      throw error;
+    }
+  }
+
+  async publishReserve(messageToSend: CashReserveMessage) {
+    if (!this.channel) {
+      await this.connect();
+    }
+
+    const message = {
+      pattern: "cash",
+      data: {
+        cashType: TransactionSource.BET_RESERVE,
         userId: messageToSend.userId,
         amount: messageToSend.amount,
         externalId: messageToSend.externalId,
@@ -56,7 +130,7 @@ export class RabbitmqProducerService {
         Buffer.from(JSON.stringify(message)),
         { persistent: true },
       );
-      this.logger.log("📤 Cash message enviada:", message);
+      this.logger.log("📤 Reserve Cash message enviada:", message);
     } catch (error) {
       this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
       throw error;

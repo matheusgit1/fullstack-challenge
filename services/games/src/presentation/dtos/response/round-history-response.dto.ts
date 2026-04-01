@@ -1,3 +1,4 @@
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { ApiProperty } from "@nestjs/swagger";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -9,7 +10,10 @@ export class RoundHistoryItemDto {
   roundId: string;
 
   @ApiProperty({ example: 5.23, description: "Ponto de crash" })
-  crashPoint: number;
+  crashPoint: number | string;
+
+  @ApiProperty({ example: RoundStatus.CRASHED, description: "Status da rodada", examples: Object.values(RoundStatus) })
+  status: RoundStatus
 
   @ApiProperty({ example: "a3f5c8d2e1b4...", description: "Hash do seed" })
   serverSeedHash: string;

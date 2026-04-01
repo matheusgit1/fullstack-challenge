@@ -3,6 +3,8 @@ import { HttpModule } from "@nestjs/axios";
 import { Module, Global } from "@nestjs/common";
 import { KeycloakModule } from "../keycloack/keycloack.module";
 import { KeycloakService } from "../keycloack/keycloack.service";
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Global()
 @Module({
@@ -14,7 +16,8 @@ import { KeycloakService } from "../keycloack/keycloack.service";
     }),
     ConfigModule
   ],
-  providers: [KeycloakService],
-  exports: [KeycloakService],
+  controllers: [AuthController],
+  providers: [KeycloakService, AuthService],
+  exports: [KeycloakService, AuthService],
 })
 export class AuthModule {}

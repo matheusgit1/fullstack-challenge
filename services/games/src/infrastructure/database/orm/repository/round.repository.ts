@@ -47,7 +47,7 @@ export class RoundRepository {
     const skip = (page - 1) * limit;
 
     return this.repository.findAndCount({
-      where: { status: RoundStatus.CRASHED },
+      // where: { status: RoundStatus.CRASHED },
       order: { crashedAt: "DESC" },
       skip,
       take: limit,
