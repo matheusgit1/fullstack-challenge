@@ -4,7 +4,7 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { RoundRepository } from "../database/orm/repository/round.repository";
 import { RoundStatus } from "@/presentation/dtos";
 import { GameEngineService } from "@/application/services/game-engine/game-engine.service";
-import { appConfig } from "configs/app.config";
+import { appConfig } from "@/configs/app.config";
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
 import { BetRepository } from "../database/orm/repository/bet.repository";
 
@@ -85,6 +85,8 @@ export class TimerService {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
     if (activeRound && activeRound.isRunning()) {
       if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
+        const tracingId = activeRound.id;
+        this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
         activeRound.setStatus(RoundStatus.CRASHED);
         await Promise.all([
           this.roundRepository.saveRound(activeRound),
@@ -97,11 +99,13 @@ export class TimerService {
 
         this.eventEmitter.emit("betting.loose", {
           roundId: activeRound.id,
+          tracingId: tracingId,
         });
 
         this.eventEmitter.emit("betting.crashed", {
           roundId: activeRound.id,
           round: activeRound,
+          tracingId: tracingId,
         });
       }
     }

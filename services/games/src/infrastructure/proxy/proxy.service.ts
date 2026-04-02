@@ -1,6 +1,6 @@
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
-import { appConfig } from "configs/app.config";
+import { appConfig } from "@/configs/app.config";
 import { lastValueFrom } from "rxjs";
 
 export interface UserWallet {

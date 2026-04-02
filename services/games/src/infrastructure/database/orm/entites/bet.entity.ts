@@ -21,6 +21,9 @@ export enum BetStatus {
 @Index(["userId", "createdAt"])
 @Index(["roundId", "status"])
 export class Bet {
+  constructor(partial: Partial<Bet>) {
+    Object.assign(this, partial);
+  }
   @PrimaryGeneratedColumn("uuid")
   id: string;
 

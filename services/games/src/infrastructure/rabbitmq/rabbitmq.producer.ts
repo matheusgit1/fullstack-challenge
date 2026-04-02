@@ -1,9 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common";
 import * as amqp from "amqplib";
-import { rabbitConfig } from "configs/rabbitmq.config";
+import { rabbitConfig } from "@/configs/rabbitmq.config";
 import { TransactionSource } from "./rabbitmq.types";
+import { TracingService } from "../tracing/tracing.service";
 
-export interface CashReserveMessage {
+export interface BaseMessage {
+  tracingId: string;
+}
+
+export interface CashReserveMessage extends BaseMessage {
   cashType: TransactionSource;
   userId: string;
   amount: number;
@@ -13,17 +18,17 @@ export interface CashReserveMessage {
 export type CashinMessage = {
   cashType: TransactionSource;
   userId: string;
-  multiplier: number; // multiplicador da aposta
+  multiplier: number;
   timestamp: string;
   externalId: string;
-};
+} & BaseMessage;
 
 export type CashoutMessage = {
   cashType: TransactionSource;
   userId: string;
   timestamp: string;
   externalId: string;
-};
+} & BaseMessage;
 
 @Injectable()
 export class RabbitmqProducerService {
@@ -32,7 +37,7 @@ export class RabbitmqProducerService {
   private readonly uri: string;
   private readonly defaultQueue: string;
 
-  constructor() {
+  constructor(private readonly tracingService: TracingService) {
     this.uri = rabbitConfig.uri;
     this.defaultQueue = rabbitConfig.queue;
   }
@@ -41,14 +46,18 @@ export class RabbitmqProducerService {
     try {
       const connection = await amqp.connect(this.uri);
       this.channel = await connection.createChannel();
-      this.logger.log("✅ Conectado ao RabbitMQ");
+      this.logger.log("Conectado ao RabbitMQ");
     } catch (error) {
-      this.logger.error("❌ Erro ao conectar ao RabbitMQ:", error as Error);
+      this.logger.error("Erro ao conectar ao RabbitMQ:", error as Error);
       throw error;
     }
   }
 
   async publishCashout(messageToSend: CashoutMessage) {
+    const tracePrefix = this.tracingService.formatTracingPrefix(
+      messageToSend.tracingId,
+    );
+
     if (!this.channel) {
       await this.connect();
     }
@@ -60,20 +69,31 @@ export class RabbitmqProducerService {
         userId: messageToSend.userId,
         externalId: messageToSend.externalId,
         timestamp: new Date().toISOString(),
+        tracingId: messageToSend.tracingId, // Adiciona tracingId à mensagem
       },
     };
 
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
-      this.logger.log("📤 Cash message enviada:", message);
+      this.logger.log(
+        `${tracePrefix} BET_LOST message enviada para userId: ${messageToSend.userId}`,
+        { externalId: messageToSend.externalId },
+      );
     } catch (error) {
-      this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
+      this.logger.error(
+        `${tracePrefix} Erro ao enviar BET_LOST message`,
+        error as Error,
+      );
       throw error;
     }
   }
 
   async publishCashin(messageToSend: CashinMessage) {
+    const tracePrefix = this.tracingService.formatTracingPrefix(
+      messageToSend.tracingId,
+    );
+
     if (!this.channel) {
       await this.connect();
     }
@@ -86,20 +106,34 @@ export class RabbitmqProducerService {
         multiplier: messageToSend.multiplier,
         externalId: messageToSend.externalId,
         timestamp: new Date().toISOString(),
+        tracingId: messageToSend.tracingId,
       },
     };
 
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
-      this.logger.log("📤 Cash message enviada:", message);
+      this.logger.log(
+        `${tracePrefix} BET_PLACED message enviada para userId: ${messageToSend.userId}`,
+        {
+          multiplier: messageToSend.multiplier,
+          externalId: messageToSend.externalId,
+        },
+      );
     } catch (error) {
-      this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
+      this.logger.error(
+        `${tracePrefix} Erro ao enviar BET_PLACED message`,
+        error as Error,
+      );
       throw error;
     }
   }
 
   async publishReserve(messageToSend: CashReserveMessage) {
+    const tracePrefix = this.tracingService.formatTracingPrefix(
+      messageToSend.tracingId,
+    );
+
     if (!this.channel) {
       await this.connect();
     }
@@ -112,15 +146,22 @@ export class RabbitmqProducerService {
         amount: messageToSend.amount,
         externalId: messageToSend.externalId,
         timestamp: new Date().toISOString(),
+        tracingId: messageToSend.tracingId,
       },
     };
 
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
-      this.logger.log("📤 Reserve Cash message enviada:", message);
+      this.logger.log(
+        `${tracePrefix} BET_RESERVE message enviada para userId: ${messageToSend.userId}`,
+        { amount: messageToSend.amount, externalId: messageToSend.externalId },
+      );
     } catch (error) {
-      this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
+      this.logger.error(
+        `${tracePrefix} Erro ao enviar BET_RESERVE message`,
+        error as Error,
+      );
       throw error;
     }
   }

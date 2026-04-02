@@ -3,7 +3,6 @@
 import {
   Injectable,
   ConflictException,
-  NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, DataSource } from "typeorm";
@@ -11,8 +10,6 @@ import { Wallet } from "../entites/wallet.entity";
 import {
   Transaction,
   TransactionSource,
-  TransactionStatus,
-  TransactionType,
 } from "../entites/transaction.entity";
 
 @Injectable()

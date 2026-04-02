@@ -9,7 +9,7 @@ import {
 } from "@/infrastructure/database/orm/entites/round.entity";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { appConfig } from "configs/app.config";
+import { appConfig } from "@/configs/app.config";
 
 @Injectable()
 export class GameEngineService {

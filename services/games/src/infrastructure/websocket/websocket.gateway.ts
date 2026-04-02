@@ -1,3 +1,7 @@
+import {
+  CashoutMessage,
+  RabbitmqProducerService,
+} from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
 import {
   WebSocketGateway,
@@ -9,6 +13,9 @@ import {
 import { Server, WebSocket } from "ws";
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
+import { TransactionSource } from "../rabbitmq/rabbitmq.types";
+import { BetStatus } from "@/presentation/dtos";
+import { Bet } from "../database/orm/entites/bet.entity";
 
 interface ConnectedClient {
   ws: WebSocket;
@@ -33,7 +40,10 @@ export class WebsocketGateway
   private readonly logger = new Logger(WebsocketGateway.name);
   private clients: Map<string, ConnectedClient> = new Map();
 
-  public constructor(private readonly betRepository: BetRepository) {}
+  public constructor(
+    private readonly betRepository: BetRepository,
+    private readonly rabbitmqProducerService: RabbitmqProducerService,
+  ) {}
 
   handleConnection(client: WebSocket, req: Request) {
     const clientId = this.generateClientId();
@@ -122,22 +132,70 @@ export class WebsocketGateway
   }
 
   @OnEvent("betting.loose")
-  async handleGameLoose(payload: any) {
-    this.logger.log(`betting.loose received`);
-    console.log("Payload received in WebSocketGateway:", payload);
+  async handleGameLoose(payload: { roundId: string; tracingId: string }) {
+    this.logger.log(
+      `[Trace:${payload.tracingId}] betting.loose received`,
+      payload,
+    );
+
     const betLoosers = await this.betRepository.findLooserBetsByRoundId(
       payload.roundId,
     );
-    this.logger.log(`Found ${betLoosers.length} pending bets to update`);
+
+    this.logger.log(
+      `[Trace:${payload.tracingId}] Found ${betLoosers.length} pending bets to update`,
+    );
+    for (const bet of betLoosers) {
+      this.logger.log(`[Trace:${payload.tracingId}] Updating bet ${bet.id}`);
+      const saveBetPromise = this.betRepository.save(
+        new Bet({ ...bet, status: BetStatus.LOST }),
+      );
+      const notifyRabbitMqCashoutPromise = this.notifyRabbitMqCashout({
+        cashType: TransactionSource.BET_LOST,
+        userId: bet.userId,
+        timestamp: new Date().toISOString(),
+        externalId: bet.id,
+        tracingId: payload.tracingId,
+      });
+
+      await Promise.all([saveBetPromise, notifyRabbitMqCashoutPromise]);
+    }
+
     this.broadcast("betting.loose", {
       ...payload,
-      data: { ...payload.data, bets: betLoosers.map((bet) => bet.id) },
+      data: { ...payload, bets: betLoosers.map((bet) => bet.id) },
     });
   }
 
   @OnEvent("betting.crashed")
-  handleGameCrashed(payload: any) {
-    this.logger.log(`betting.crashed received`);
+  async handleGameCrashed(payload: any) {
+    this.logger.log(
+      `[Trace:${payload.tracingId}] betting.crashed received`,
+      payload,
+    );
+
+    const betLoosers = await this.betRepository.findLooserBetsByRoundId(
+      payload.roundId,
+    );
+
+    this.logger.log(
+      `[Trace:${payload.tracingId}] Found ${betLoosers.length} pending bets to update`,
+    );
+    for (const bet of betLoosers) {
+      this.logger.log(`[Trace:${payload.tracingId}] Updating bet ${bet.id}`);
+      const saveBetPromise = this.betRepository.save(
+        new Bet({ ...bet, status: BetStatus.LOST }),
+      );
+      const notifyRabbitMqCashoutPromise = this.notifyRabbitMqCashout({
+        cashType: TransactionSource.BET_LOST,
+        userId: bet.userId,
+        timestamp: new Date().toISOString(),
+        externalId: bet.id,
+        tracingId: payload.tracingId,
+      });
+
+      await Promise.all([saveBetPromise, notifyRabbitMqCashoutPromise]);
+    }
     this.broadcast("betting.crashed", payload);
   }
 
@@ -149,5 +207,9 @@ export class WebsocketGateway
 
   private generateClientId(): string {
     return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async notifyRabbitMqCashout(message: CashoutMessage) {
+    await this.rabbitmqProducerService.publishCashout(message);
   }
 }

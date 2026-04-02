@@ -24,12 +24,14 @@ export class GamesManager {
     round: Round,
     userId: string,
     externalId: string,
+    tracingId: string,
   ) {
     await this.rabbitmqProducer.publishCashout({
       cashType: TransactionSource.BET_LOST,
       userId: userId,
       timestamp: new Date().toISOString(),
       externalId: externalId,
+      tracingId: tracingId,
     });
 
     bet.lose();
@@ -56,6 +58,7 @@ export class GamesManager {
     round: Round,
     userId: string,
     externalId: string,
+    tracingId: string,
   ) {
     await this.rabbitmqProducer.publishCashin({
       cashType: TransactionSource.BET_PLACED,
@@ -63,6 +66,7 @@ export class GamesManager {
       multiplier: round.multiplier,
       timestamp: new Date().toISOString(),
       externalId: externalId,
+      tracingId
     });
 
     bet.cashout(round.multiplier);

@@ -12,7 +12,7 @@ export class WalletsService {
   }
 
   async getWallet(userId: string): Promise<WalletResponseDto> {
-    const wallet = await this.walletRepository.findByUserId(userId);
+    const wallet = await this.walletRepository.findOrCreate(userId);
 
     if (!wallet) {
       throw new NotFoundException("Carteira não encontrada");

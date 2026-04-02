@@ -65,6 +65,7 @@ export class GamesService {
         round,
         userId,
         externalId,
+        "tracingId",
       );
       return cashout;
     }
@@ -75,6 +76,7 @@ export class GamesService {
         round,
         userId,
         externalId,
+        "tracingId",
       );
 
       return cashin;
@@ -118,6 +120,7 @@ export class GamesService {
       amount: dto.amount,
       timestamp: new Date().toISOString(),
       externalId: bet.id,
+      tracingId: "tracingId",
     });
 
     return new BetResponseDto({

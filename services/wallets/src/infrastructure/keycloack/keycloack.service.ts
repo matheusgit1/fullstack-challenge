@@ -19,8 +19,7 @@ export class KeycloakService {
 
   public async getUserFromToken(token?: string): Promise<UserInfo> {
     try {
-      const keycloakUrl = appConfig.keycloakUrl;
-      const realm = appConfig.realm;
+      const { keycloakUrl, realm } = appConfig;
 
       const getKeyCloackUserInfoUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/userinfo`;
       const response = await lastValueFrom(
