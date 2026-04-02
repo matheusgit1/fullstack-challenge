@@ -65,11 +65,7 @@ export class RabbitmqProducerService {
 
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
+      this.sendMessage(this.defaultQueue, message);
       this.logger.log("📤 Cash message enviada:", message);
     } catch (error) {
       this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
@@ -95,11 +91,7 @@ export class RabbitmqProducerService {
 
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
+      this.sendMessage(this.defaultQueue, message);
       this.logger.log("📤 Cash message enviada:", message);
     } catch (error) {
       this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
@@ -125,11 +117,7 @@ export class RabbitmqProducerService {
 
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.channel!.sendToQueue(
-        this.defaultQueue,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
+      this.sendMessage(this.defaultQueue, message);
       this.logger.log("📤 Reserve Cash message enviada:", message);
     } catch (error) {
       this.logger.error("❌ Erro ao enviar Cash message:", error as Error);
@@ -142,5 +130,13 @@ export class RabbitmqProducerService {
       await this.channel.close();
     }
     this.logger.log("Conexão com RabbitMQ fechada");
+  }
+
+  private sendMessage(queue: string, message: any, repeat: number = 3) {
+    for (let i = 0; i < repeat; i++) {
+      this.channel!.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
+        persistent: true,
+      });
+    }
   }
 }

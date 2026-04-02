@@ -37,6 +37,7 @@ import { HealthCheckResponseDto } from "../dtos/response/health-check-response.d
 import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 
 @ApiTags("games")
+@ApiBearerAuth("access-token")
 @Controller("/")
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}

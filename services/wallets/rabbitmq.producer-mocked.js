@@ -45,20 +45,20 @@ const msg_cashin = {
     cashType: type.BET_PLACED,
     userId: userId,
     multiplier: 1.3,
-    externalId:  idForBetPlaced, 
+    externalId:  '5ef2a971-d37f-4a67-aa51-68ad06f425ba', 
     timestamp: new Date().toISOString()
   }
 };
 
-// const msg_cashout = {
-//   pattern: 'cash',
-//   data: {
-//     cashType: type.BET_LOST,
-//     userId: userId,
-//     externalId: idForBetLost, 
-//     timestamp: new Date().toISOString()
-//   }
-// };
+const msg_cashout = {
+  pattern: 'cash',
+  data: {
+    cashType: type.BET_LOST,
+    userId: userId,
+    externalId: 'f3763609-a46a-435f-a7a7-f75d9351c3f4', 
+    timestamp: new Date().toISOString()
+  }
+};
 
 const msgs = [
   msg_reserve_win,
@@ -76,15 +76,23 @@ async function send() {
 
     await channel.assertQueue(queue, { durable: true });
 
-    for (const msg of msgs) {
-      channel.sendToQueue(
+    channel.sendToQueue(
         queue,
-        Buffer.from(JSON.stringify(msg)),
+        Buffer.from(JSON.stringify(msg_cashin)),
         { persistent: true }
       );
 
-      console.log('Mensagem enviada:', msg);
-    }
+      console.log('Mensagem enviada:', msg_cashin);
+
+    // for (const msg of msgs) {
+    //   channel.sendToQueue(
+    //     queue,
+    //     Buffer.from(JSON.stringify(msg)),
+    //     { persistent: true }
+    //   );
+
+    //   console.log('Mensagem enviada:', msg);
+    // }
 
     // channel.sendToQueue(
     //   queue,

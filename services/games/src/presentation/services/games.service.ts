@@ -22,6 +22,7 @@ import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.prod
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
+import { GamesManager } from "./games.manager";
 
 @Injectable()
 export class GamesService {
@@ -31,6 +32,7 @@ export class GamesService {
     private readonly betRepository: BetRepository,
     private readonly proxyService: ProxyService,
     private readonly rabbitmqProducer: RabbitmqProducerService,
+    private readonly gamesManager: GamesManager,
   ) {}
 
   async cashout(
@@ -38,95 +40,44 @@ export class GamesService {
     userToken: string,
     dto: CashoutRequestDto,
   ): Promise<CashoutResponseDto> {
-    const [bet] = await Promise.all([
-      this.betRepository.findByFilters({
-        where: { id: dto.betId, userId: userId },
-        relations: ["round"],
-      }),
-    ]);
+    const bet = await this.betRepository.findByFilters({
+      where: { id: dto.betId, userId: userId },
+      relations: ["round"],
+    });
 
     if (!bet || !bet.round) {
       throw new Error("Nenhuma rodada ou aposta encontrada");
     }
-
+    this.getErrorByStatus(bet.status);
     const { round } = bet;
 
-    if (!round) {
-      throw new Error("Nenhuma rodada ativa");
-    }
-
-    if (bet?.roundId !== dto.roundId) {
-      throw new Error("Aposta não pertence à rodada informada");
-    }
-
-    if (round.multiplier > round.crashPoint) {
-      throw new Error(
-        "Multiplicador alvo não deve ser maior que o multiplicador atual",
-      );
-    }
-
     const userBalance = await this.proxyService.getUserBalance(userToken);
-    const isAvailableBet = userBalance.balanceInCents > bet.amount;
-    if (!isAvailableBet) {
+    const isBetAvailable = userBalance.balanceInCents > bet.amount;
+    if (!isBetAvailable) {
       throw new Error("Saldo insuficiente para realizar saque");
     }
 
     const externalId = bet.id;
 
     if (round.isCrashed()) {
-      await this.rabbitmqProducer.publishCashout({
-        cashType: TransactionSource.BET_LOST,
-        userId: userId,
-        timestamp: new Date().toISOString(),
-        externalId: externalId,
-      });
-
-      bet.lose();
-      await this.betRepository.save(bet);
-
-      return new CashoutResponseDto({
-        bet: {
-          id: bet.id,
-          userId: userId,
-          amount: bet.amount,
-          multiplier: round.multiplier,
-          status: bet.status,
-          cashedOutAt: new Date(),
-          createdAt: bet.createdAt,
-        },
-        multiplier: round.multiplier,
-        winAmount: bet.amount,
-        roundStatus: round.status,
-      });
+      const cashout = await this.gamesManager.processCashout(
+        bet,
+        round,
+        userId,
+        externalId,
+      );
+      return cashout;
     }
 
     if (round.isRunning()) {
-      await this.rabbitmqProducer.publishCashin({
-        cashType: TransactionSource.BET_PLACED,
-        userId: userId,
-        multiplier: round.multiplier,
-        timestamp: new Date().toISOString(),
-        externalId: externalId,
-      });
+      const cashin = await this.gamesManager.processCashin(
+        bet,
+        round,
+        userId,
+        externalId,
+      );
 
-      bet.cashout(round.multiplier);
-
-      await this.betRepository.save(bet);
-
-      return new CashoutResponseDto({
-        bet: {
-          id: bet.id,
-          userId: userId,
-          amount: bet.amount,
-          multiplier: round.multiplier,
-          status: bet.status,
-          cashedOutAt: new Date(),
-          createdAt: bet.createdAt,
-        },
-        multiplier: round.multiplier,
-        winAmount: bet.amount * round.multiplier - bet.amount,
-        roundStatus: round.status,
-      });
+      return cashin;
     }
 
     throw new Error("Rodada já finalizada, saque indisponível");
@@ -279,5 +230,19 @@ export class GamesService {
       total: total,
       totalPages: Math.ceil(total / query.limit),
     });
+  }
+
+  private getErrorByStatus(status: BetStatus) {
+    const dictionary = {
+      [BetStatus.PENDING]: () => {},
+      [BetStatus.LOST]: () => {
+        throw new Error("Aposta perdida");
+      },
+      [BetStatus.CASHED_OUT]: () => {
+        throw new Error("Aposta sacada");
+      },
+    };
+
+    return dictionary[status]();
   }
 }

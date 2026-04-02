@@ -6,7 +6,7 @@ export const rabbitConfig = {
     process.env.RABBITMQ_URI ||
     process.env.RABBITMQ_URL ||
     "amqp://admin:admin@localhost:5672",
-  queue: "cashin",
+  queue: process.env.RABBITMQ_QUEUE || "cashin",
 };
 
 export function setupMicroservices(app: INestApplication<any>) {
@@ -18,7 +18,7 @@ export function setupMicroservices(app: INestApplication<any>) {
       queueOptions: {
         durable: true,
       },
-      noAck: false,
+      noAck: true,
       // prefetchCount: 10,
     },
   });

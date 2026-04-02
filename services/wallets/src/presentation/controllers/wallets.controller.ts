@@ -14,7 +14,7 @@ import type { Request as ExpressRequest } from "express";
 
 @ApiTags("wallets")
 @ApiBearerAuth("access-token")
-@Controller("")
+@Controller("/")
 export class WalletsController {
   constructor(private readonly walletService: WalletsService) {}
 

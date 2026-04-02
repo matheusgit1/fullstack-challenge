@@ -8,8 +8,10 @@ import { TimerService } from "@/infrastructure/events/timer.service";
 import { ProxyModule } from "@/infrastructure/proxy/proxy.module";
 import { ProxyService } from "@/infrastructure/proxy/proxy.service";
 import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
+import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import { WebsocketGateway } from "@/infrastructure/websocket/websocket.gateway";
 import { GamesController } from "@/presentation/controllers/games.controller";
+import { GamesManager } from "@/presentation/services/games.manager";
 import { GamesService } from "@/presentation/services/games.service";
 import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
@@ -49,6 +51,8 @@ import { ScheduleModule } from "@nestjs/schedule";
     WebsocketGateway,
     RoundRepository,
     ProxyService,
+    GamesManager,
+    RabbitmqProducerService,
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
 })
