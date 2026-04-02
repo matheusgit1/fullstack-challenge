@@ -4,7 +4,7 @@ import { RabbitmqProducerService } from "./rabbitmq.producer";
 import { RABBITMQ_PRODUCER_SERVICE } from "@/domain/rabbitmq/rabbitmq.producer";
 
 @Module({
-  exports: [RabbitmqProducerService, TracingService],
+  exports: [RabbitmqProducerService, TracingService, RABBITMQ_PRODUCER_SERVICE],
   providers: [
     RabbitmqProducerService,
     {

@@ -1,22 +1,36 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { RoundRepository } from "../database/orm/repository/round.repository";
-import { GameEngineService } from "@/application/services/game-engine/game-engine.service";
 import { appConfig } from "@/configs/app.config";
-import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
-import { BetRepository } from "../database/orm/repository/bet.repository";
-import { RoundStatus } from "../database/orm/entites/round.entity";
+import { RoundStatus } from "../../database/orm/entites/round.entity";
+import {
+  type IRoundRepository,
+  ROUND_REPOSITORY,
+} from "@/domain/orm/repositories/round.repository";
+import {
+  BET_REPOSITORY,
+  type IBetRepository,
+} from "@/domain/orm/repositories/bet.repository";
+import { GAME_ENGINE_SERVICE } from "@/domain/game/game.engine";
+import { PROVABY_SERVICE } from "@/domain/core/provably-fair/provably-fair.service";
+
+
+type IGameEngineService = any;
+type IProvablyFairService = any;
 
 @Injectable()
 export class TimerService {
   private readonly logger = new Logger(TimerService.name);
   constructor(
     private readonly eventEmitter: EventEmitter2,
-    private readonly roundRepository: RoundRepository,
-    private readonly gameEngineService: GameEngineService,
-    private readonly provablyFairService: ProvablyFairService,
-    private readonly betRepository: BetRepository,
+    @Inject(ROUND_REPOSITORY)
+    private readonly roundRepository: IRoundRepository,
+    @Inject(GAME_ENGINE_SERVICE)
+    private readonly gameEngineService: IGameEngineService,
+    @Inject(PROVABY_SERVICE)
+    private readonly provablyFairService: IProvablyFairService,
+    @Inject(BET_REPOSITORY)
+    private readonly betRepository: IBetRepository,
   ) {}
 
   @Interval("betting.phase", appConfig.bettingDurationSeconds * 1000)

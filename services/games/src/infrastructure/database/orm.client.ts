@@ -16,7 +16,7 @@ export default class TypeORMConfig {
       synchronize: process.env.NODE_ENV !== "production",
       entities: [__dirname + "/../**/*.entity.{js,ts}"],
       extra: {
-        max: 20, // Configuração do pool
+        max: 20,
       },
       logging: process.env.DB_LOGGING === "true",
       autoLoadEntities: true,

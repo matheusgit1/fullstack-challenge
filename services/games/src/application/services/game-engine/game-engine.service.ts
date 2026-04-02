@@ -1,7 +1,6 @@
 // services/games/src/application/services/game-engine.service.ts
 
 import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { ProvablyFairService } from "../provably-fair/provably-fair.service";
 import {
   Round,
@@ -10,14 +9,10 @@ import {
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { appConfig } from "@/configs/app.config";
-
-export interface IGameEngineService {
-  startNewRound(): Promise<void>;
-  endCurrentRound(): Promise<void>;
-}
+import { IGameEngineService } from "@/domain/game/game.engine";
 
 @Injectable()
-export class GameEngineService {
+export class GameEngineService implements IGameEngineService {
   private readonly logger = new Logger(GameEngineService.name);
   private currentRound: Round | null = null;
 

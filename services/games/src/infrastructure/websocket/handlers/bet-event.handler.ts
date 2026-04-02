@@ -1,13 +1,20 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { WebSocketService } from "../websocket.service";
-import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
 import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import {
   Bet,
   BetStatus,
 } from "@/infrastructure/database/orm/entites/bet.entity";
-import { TransactionSource } from "@/domain/rabbitmq/rabbitmq.producer";
+import {
+  type IRabbitmqProducerService,
+  RABBITMQ_PRODUCER_SERVICE,
+  TransactionSource,
+} from "@/domain/rabbitmq/rabbitmq.producer";
+import {
+  BET_REPOSITORY,
+  type IBetRepository,
+} from "@/domain/orm/repositories/bet.repository";
 
 interface GameEventPayload {
   roundId: string;
@@ -29,8 +36,10 @@ export class BetEventHandler {
 
   constructor(
     private readonly webSocketService: WebSocketService,
-    private readonly betRepository: BetRepository,
-    private readonly rabbitmqProducer: RabbitmqProducerService,
+    @Inject(BET_REPOSITORY)
+    private readonly betRepository: IBetRepository,
+    @Inject(RABBITMQ_PRODUCER_SERVICE)
+    private readonly rabbitmqProducer: IRabbitmqProducerService,
   ) {}
 
   @OnEvent("betting.running")

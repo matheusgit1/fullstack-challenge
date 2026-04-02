@@ -9,7 +9,8 @@ import { AuthModule } from "@/infrastructure/auth/auth.module";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
 import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
-import { TimerService } from "@/infrastructure/events/timer.service";
+import { TimerModule } from "@/infrastructure/events/timer/timer.module";
+import { TimerService } from "@/infrastructure/events/timer/timer.service";
 import { GlobalExceptionFilter } from "@/infrastructure/filters/global-execeptions.filters";
 import { LoggingInterceptor } from "@/infrastructure/interceptor/logging.interceptor";
 import { TracingMiddleware } from "@/infrastructure/middleware/tracing.middleware";
@@ -36,19 +37,11 @@ import { ScheduleModule } from "@nestjs/schedule";
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    EventEmitterModule.forRoot({
-      wildcard: false,
-      delimiter: ".",
-      newListener: false,
-      removeListener: false,
-      maxListeners: 10,
-      verboseMemoryLeak: true,
-      ignoreErrors: false,
-    }),
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
     }),
+    TimerModule,
     AuthModule,
     OrmModule,
     ServicesModule,

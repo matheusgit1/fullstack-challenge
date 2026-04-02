@@ -11,7 +11,6 @@ import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
     GameEngineModule,
     ProvablyFairModule,
   ],
-  providers: [],
   exports: [TypeOrmModule, GameEngineModule],
 })
 export class ServicesModule {}
