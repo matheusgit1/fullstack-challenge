@@ -18,9 +18,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<Request & { user: any }>();
+    const request = context.switchToHttp().getRequest<Request>();
     const authGuardType: AuthGuardType = this.reflector.getAllAndOverride(
       AUTH_GUARD_TYPE,
       [context.getHandler(), context.getClass()],
@@ -34,6 +32,7 @@ export class AuthGuard implements CanActivate {
           token || "fake token",
         );
         request.user = user;
+        request.token = token;
         return !!user;
       case AuthGuardType.NONE:
         return true;

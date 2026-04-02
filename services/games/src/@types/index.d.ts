@@ -15,6 +15,7 @@ declare global {
     interface Request {
       user?: User;
       hash: string;
+      token?: string;
     }
   }
 }

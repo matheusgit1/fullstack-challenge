@@ -1,6 +1,6 @@
 import { WalletProxy } from "../../infrastructure/proxy/services/wallets.service";
 import { BetRepository } from "./../../infrastructure/database/orm/repository/bet.repository";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
 import { PaginatedResponseDto } from "../dtos/index";
 import {
@@ -23,6 +23,8 @@ import { ProvablyFairService } from "@/application/services/provably-fair/provab
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
 import { GamesManager } from "./games.manager";
+import { REQUEST } from "@nestjs/core";
+import type { Request } from "express";
 
 @Injectable()
 export class GamesService {
@@ -33,6 +35,7 @@ export class GamesService {
     private readonly proxyService: WalletProxy,
     private readonly rabbitmqProducer: RabbitmqProducerService,
     private readonly gamesManager: GamesManager,
+    @Inject(REQUEST) private readonly request: Request,
   ) {}
 
   async cashout(
@@ -40,8 +43,9 @@ export class GamesService {
     userToken: string,
     dto: CashoutRequestDto,
   ): Promise<CashoutResponseDto> {
+    const { user, hash } = this.request;
     const bet = await this.betRepository.findByFilters({
-      where: { id: dto.betId, userId: userId },
+      where: { id: dto.betId, userId: user?.sub || "anonymous" },
       relations: ["round"],
     });
 
@@ -148,13 +152,10 @@ export class GamesService {
       id: currentRound.id,
       status: currentRound.status,
       multiplier: currentRound.multiplier,
-      myBet: null,
       bets: currentRound.bets,
       serverSeedHash: currentRound.serverSeedHash,
-      crashPoint: currentRound.crashPoint,
       bettingEndsAt: currentRound.bettingEndsAt,
       startedAt: currentRound.startedAt,
-      crashedAt: currentRound.crashedAt,
     });
   }
 
