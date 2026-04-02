@@ -1,37 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common";
 import * as amqp from "amqplib";
 import { rabbitConfig } from "@/configs/rabbitmq.config";
-import { TransactionSource } from "./rabbitmq.types";
 import { TracingService } from "../../application/tracing/tracing.service";
-
-export interface BaseMessage {
-  tracingId: string;
-}
-
-export interface CashReserveMessage extends BaseMessage {
-  cashType: TransactionSource;
-  userId: string;
-  amount: number;
-  timestamp: string;
-  externalId: string;
-}
-export type CashinMessage = {
-  cashType: TransactionSource;
-  userId: string;
-  multiplier: number;
-  timestamp: string;
-  externalId: string;
-} & BaseMessage;
-
-export type CashoutMessage = {
-  cashType: TransactionSource;
-  userId: string;
-  timestamp: string;
-  externalId: string;
-} & BaseMessage;
+import {
+  type CashinMessage,
+  type CashoutMessage,
+  type CashReserveMessage,
+  type IRabbitmqProducerService,
+  TransactionSource,
+} from "@/domain/rabbitmq/rabbitmq.producer";
 
 @Injectable()
-export class RabbitmqProducerService {
+export class RabbitmqProducerService implements IRabbitmqProducerService {
   private channel: amqp.Channel | null = null;
   private readonly logger = new Logger(RabbitmqProducerService.name);
   private readonly uri: string;
@@ -42,7 +22,7 @@ export class RabbitmqProducerService {
     this.defaultQueue = rabbitConfig.queue;
   }
 
-  async connect() {
+  private async connect() {
     try {
       const connection = await amqp.connect(this.uri);
       this.channel = await connection.createChannel();
@@ -166,7 +146,7 @@ export class RabbitmqProducerService {
     }
   }
 
-  async closeConnection() {
+  private async closeConnection() {
     if (this.channel) {
       await this.channel.close();
     }

@@ -2,18 +2,10 @@ import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { appConfig } from "@/configs/app.config";
 import { lastValueFrom } from "rxjs";
-
-export interface UserWallet {
-  id: string;
-  userId: string;
-  balance: number;
-  balanceInCents: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { UserWallet } from "@/domain/proxy/wallet.proxy";
 
 @Injectable()
-export class WalletProxy {
+export class WalletProxy implements IWalletProxy {
   constructor(private readonly httpService: HttpService) {}
 
   async getUserBalance(token: string): Promise<UserWallet> {

@@ -1,11 +1,15 @@
+
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, FindOptionsWhere, FindOneOptions } from "typeorm";
 import { Bet, BetStatus } from "../entites/bet.entity";
-import { Round } from "../entites/round.entity";
+import { type IBetRepository } from "@/domain/orm/repositories/bet.repository";
+
+
+
 
 @Injectable()
-export class BetRepository {
+export class BetRepository implements IBetRepository {
   constructor(
     @InjectRepository(Bet)
     private readonly repository: Repository<Bet>,

@@ -2,11 +2,11 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { RoundRepository } from "../database/orm/repository/round.repository";
-import { RoundStatus } from "@/presentation/dtos";
 import { GameEngineService } from "@/application/services/game-engine/game-engine.service";
 import { appConfig } from "@/configs/app.config";
 import { ProvablyFairService } from "@/application/services/provably-fair/provably-fair.service";
 import { BetRepository } from "../database/orm/repository/bet.repository";
+import { RoundStatus } from "../database/orm/entites/round.entity";
 
 @Injectable()
 export class TimerService {

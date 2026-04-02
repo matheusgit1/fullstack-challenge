@@ -1,13 +1,13 @@
-
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { createHash, randomBytes } from "crypto";
 import { ProvablyFairSeed } from "@/infrastructure/database/orm/entites/provably-fair.entity";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
+import { type IProvablyFairService } from "@/domain/core/provably-fair/provably-fair.service";
 
 @Injectable()
-export class ProvablyFairService {
+export class ProvablyFairService implements IProvablyFairService {
   constructor(
     @InjectRepository(ProvablyFairSeed)
     private readonly seedRepository: Repository<ProvablyFairSeed>,
@@ -163,7 +163,6 @@ export class ProvablyFairService {
     const fair = await this.seedRepository.findOne({
       where: { clientSeed: round.clientSeed || "" },
     });
-
 
     if (!fair) {
       throw new BadRequestException("Seed não encontrada para o round");

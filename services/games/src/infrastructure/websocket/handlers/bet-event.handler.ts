@@ -3,9 +3,11 @@ import { OnEvent } from "@nestjs/event-emitter";
 import { WebSocketService } from "../websocket.service";
 import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
 import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
-import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
-import { BetStatus } from "@/presentation/dtos";
-import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
+import {
+  Bet,
+  BetStatus,
+} from "@/infrastructure/database/orm/entites/bet.entity";
+import { TransactionSource } from "@/domain/rabbitmq/rabbitmq.producer";
 
 interface GameEventPayload {
   roundId: string;

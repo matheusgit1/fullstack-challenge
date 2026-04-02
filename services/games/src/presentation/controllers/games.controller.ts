@@ -1,3 +1,4 @@
+import { CurrentRoundUseCase } from "./../usecases/current-round.usecase";
 import {
   Controller,
   Get,
@@ -26,8 +27,6 @@ import {
   BetsHistoryQueryDto,
   BetHistoryItemDto,
 } from "../dtos/response/bets-history-response.dto";
-import { PaginatedResponseDto } from "../dtos/index";
-import { GamesService } from "../services/games.service";
 import {
   RoundHistoryItemDto,
   RoundHistoryQueryDto,
@@ -35,12 +34,25 @@ import {
 import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
 import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 import { BaseSuccessResponseDto } from "../dtos/response/__base__.dto";
+import { HistoryRoundUsecase } from "../usecases/history-round.usecase";
+import { VerifyRoundUsecase } from "../usecases/verify-round.usecase";
+import { PaginatedResponseDto } from "../dtos/response/round.dto";
+import { GetMyBetsUseCase } from "../usecases/my-bets.usecase";
+import { BetUseCase } from "../usecases/bet.usecase";
+import { CashOutUsecase } from "../usecases/cashout.usecase";
 
 @ApiTags("games")
 @ApiBearerAuth("access-token")
 @Controller("/")
 export class GamesController {
-  constructor(private readonly gamesService: GamesService) {}
+  constructor(
+    private readonly currentRoundUseCase: CurrentRoundUseCase,
+    private readonly historyRoundUseCase: HistoryRoundUsecase,
+    private readonly verifyRoundUseCase: VerifyRoundUsecase,
+    private readonly getMyBetsUseCase: GetMyBetsUseCase,
+    private readonly betUseCase: BetUseCase,
+    private readonly cashoutUseCase: CashOutUsecase,
+  ) {}
 
   @Get("health")
   @Auth(AuthGuardType.NONE)
@@ -56,7 +68,7 @@ export class GamesController {
     type: BaseSuccessResponseDto(CurrentRoundResponseDto),
   })
   async getCurrentRound(): Promise<CurrentRoundResponseDto> {
-    return this.gamesService.getCurrentRound();
+    return this.currentRoundUseCase.handler();
   }
 
   @Get("rounds/history")
@@ -69,7 +81,7 @@ export class GamesController {
   async getRoundHistory(
     @Query() query: RoundHistoryQueryDto,
   ): Promise<PaginatedResponseDto<RoundHistoryItemDto>> {
-    return this.gamesService.getRoundHistory(query);
+    return this.historyRoundUseCase.handler(query);
   }
 
   @Get("rounds/:roundId/verify")
@@ -82,7 +94,7 @@ export class GamesController {
   async verifyRound(
     @Param("roundId") roundId: string,
   ): Promise<RoundVerifyResponseDto> {
-    return this.gamesService.verifyRound(roundId);
+    return await this.verifyRoundUseCase.handler(roundId);
   }
 
   @Get("bets/me")
@@ -95,7 +107,7 @@ export class GamesController {
   async getMyBets(
     @Query() query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
-    return this.gamesService.getMyBets(query);
+    return this.getMyBetsUseCase.handler(query);
   }
 
   @Post("bet")
@@ -110,7 +122,7 @@ export class GamesController {
       "Saldo insuficiente / Fora da fase de apostas / Aposta duplicada",
   })
   async placeBet(@Body() dto: BetRequestDto): Promise<BetResponseDto> {
-    return this.gamesService.placeBet(dto);
+    return this.betUseCase.handler(dto);
   }
 
   @Post("bet/cashout")
@@ -126,6 +138,6 @@ export class GamesController {
     description: "Nenhuma aposta pendente / Rodada não está ativa",
   })
   async cashout(@Body() dto: CashoutRequestDto): Promise<CashoutResponseDto> {
-    return this.gamesService.cashout(dto);
+    return await this.cashoutUseCase.handler(dto);
   }
 }

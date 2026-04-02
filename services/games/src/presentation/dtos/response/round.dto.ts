@@ -1,9 +1,6 @@
-// services/games/src/presentation/dtos/round.dto.ts
-
-import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { ApiProperty } from "@nestjs/swagger";
-import { BetDto } from "..";
+import { BetDto } from "./bet.dto";
 
 export class RoundDto {
   public constructor(partial: RoundDto) {

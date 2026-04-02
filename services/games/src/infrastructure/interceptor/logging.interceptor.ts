@@ -3,7 +3,7 @@ import { ExecutionContext } from "@nestjs/common";
 import { NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { Request } from "express";
+import { type Request } from "express";
 
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger();

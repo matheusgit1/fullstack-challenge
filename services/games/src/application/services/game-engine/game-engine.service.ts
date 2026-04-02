@@ -11,6 +11,11 @@ import { RoundRepository } from "@/infrastructure/database/orm/repository/round.
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { appConfig } from "@/configs/app.config";
 
+export interface IGameEngineService {
+  startNewRound(): Promise<void>;
+  endCurrentRound(): Promise<void>;
+}
+
 @Injectable()
 export class GameEngineService {
   private readonly logger = new Logger(GameEngineService.name);
@@ -72,7 +77,7 @@ export class GameEngineService {
     });
   }
 
-  calculateTimeToCrash(crashPoint: number, k: number = 0.1): number {
+  private calculateTimeToCrash(crashPoint: number, k: number = 0.1): number {
     return Math.log(crashPoint) / k;
   }
 }

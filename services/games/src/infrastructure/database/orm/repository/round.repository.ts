@@ -2,9 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, FindOneOptions } from "typeorm";
 import { Round, RoundStatus } from "../entites/round.entity";
+import type { IRoundRepository } from "@/domain/orm/repositories/round.repository";
 
 @Injectable()
-export class RoundRepository {
+export class RoundRepository implements IRoundRepository {
   constructor(
     @InjectRepository(Round)
     private readonly repository: Repository<Round>,

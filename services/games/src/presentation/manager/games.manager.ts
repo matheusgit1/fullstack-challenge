@@ -1,16 +1,23 @@
 import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
-import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
-import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
-import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { CashoutResponseDto } from "../dtos/request/cashout-request.dto";
 import { Round } from "@/infrastructure/database/orm/entites/round.entity";
+import {
+  type IRabbitmqProducerService,
+  RABBITMQ_PRODUCER_SERVICE,
+  TransactionSource,
+} from "@/domain/rabbitmq/rabbitmq.producer";
+import {
+  BET_REPOSITORY,
+  type IBetRepository,
+} from "@/domain/orm/repositories/bet.repository";
 
 @Injectable()
 export class GamesManager {
   constructor(
-    private readonly betRepository: BetRepository,
-    private readonly rabbitmqProducer: RabbitmqProducerService,
+    @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,
+    @Inject(RABBITMQ_PRODUCER_SERVICE)
+    private readonly rabbitmqProducer: IRabbitmqProducerService,
   ) {}
 
   public async processCashout(
