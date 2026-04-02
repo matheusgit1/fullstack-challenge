@@ -2,7 +2,6 @@ import { HttpService } from "@nestjs/axios";
 import { appConfig } from "../../configs/app.config";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
-import { User } from "@/types/user";
 
 export interface KeycloakTokenResponse {
   access_token: string;
@@ -68,7 +67,6 @@ export class KeycloakService {
           },
         ),
       );
-      console.log("Resposta do Keycloak:", response.data);
       return response.data satisfies KeycloakTokenResponse;
     } catch (error) {
       console.error("Erro ao obter token", error);

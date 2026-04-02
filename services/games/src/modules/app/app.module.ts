@@ -5,6 +5,10 @@ import { AuthModule } from "@/infrastructure/auth/auth.module";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { TimerService } from "@/infrastructure/events/timer.service";
+import { GlobalExceptionFilter } from "@/infrastructure/filters/global-execeptions.filters";
+import { LoggingInterceptor } from "@/infrastructure/interceptor/logging.interceptor";
+import { ResponseInterceptor } from "@/infrastructure/interceptor/response.interceptor";
+import { TracingMiddleware } from "@/infrastructure/middleware/tracing.middleware";
 import { ProxyModule } from "@/infrastructure/proxy/proxy.module";
 import { WalletProxy } from "@/infrastructure/proxy/services/wallets.service";
 import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
@@ -14,9 +18,9 @@ import { GamesController } from "@/presentation/controllers/games.controller";
 import { GamesManager } from "@/presentation/services/games.manager";
 import { GamesService } from "@/presentation/services/games.service";
 import { HttpModule } from "@nestjs/axios";
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { APP_GUARD } from "@nestjs/core";
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ScheduleModule } from "@nestjs/schedule";
 
@@ -42,7 +46,7 @@ import { ScheduleModule } from "@nestjs/schedule";
     ProvablyFairModule,
     ProxyModule,
     RabbitmqModule,
-    WebsocketModule, // Adicione o módulo WebSocket aqui
+    WebsocketModule,
   ],
   controllers: [GamesController],
   providers: [
@@ -53,7 +57,12 @@ import { ScheduleModule } from "@nestjs/schedule";
     WalletProxy,
     GamesManager,
     RabbitmqProducerService,
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TracingMiddleware).forRoutes("*");
+  }
+}

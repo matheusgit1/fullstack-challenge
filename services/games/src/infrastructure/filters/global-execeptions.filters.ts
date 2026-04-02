@@ -1,0 +1,55 @@
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
+import { Request, Response } from "express";
+
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
+    const { hash } = request;
+
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message = "Internal server error";
+    let errorType = "InternalError";
+
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+
+      const res = exception.getResponse();
+
+      if (typeof res === "string") {
+        message = res;
+      } else if (typeof res === "object") {
+        message = (res as any).message || message;
+      }
+
+      if (exception instanceof BadRequestException) {
+        errorType = "BadRequest";
+      } else if (exception instanceof NotFoundException) {
+        errorType = "NotFound";
+      } else {
+        errorType = exception.constructor.name;
+      }
+    }
+
+    response.status(status).json({
+      success: false,
+      error: {
+        type: errorType,
+        message,
+        path: request.url,
+        timestamp: new Date().toISOString(),
+      },
+      tracingId: hash,
+    });
+  }
+}

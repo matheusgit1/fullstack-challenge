@@ -156,8 +156,6 @@ export class ProvablyFairService {
   ): Promise<ProvablyFairSeed> {
     const round = await this.roundRepository.findByRoundId(roundId);
 
-    console.log("Round encontrado:", round);
-
     if (!round) {
       throw new BadRequestException("Round não encontrado");
     }
@@ -166,7 +164,6 @@ export class ProvablyFairService {
       where: { clientSeed: round.clientSeed || "" },
     });
 
-    console.log("Seed encontrada para o round:", fair);
 
     if (!fair) {
       throw new BadRequestException("Seed não encontrada para o round");
