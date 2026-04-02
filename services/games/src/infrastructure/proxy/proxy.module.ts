@@ -1,6 +1,6 @@
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
-import { ProxyService } from "./proxy.service";
+import { WalletProxy } from "./services/wallets.service";
 
 @Module({
   imports: [
@@ -10,7 +10,7 @@ import { ProxyService } from "./proxy.service";
     }),
   ],
   controllers: [],
-  providers: [ProxyService],
-  exports: [ProxyService],
+  providers: [WalletProxy],
+  exports: [WalletProxy],
 })
 export class ProxyModule {}

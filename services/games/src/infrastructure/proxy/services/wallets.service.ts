@@ -13,7 +13,7 @@ export interface UserWallet {
 }
 
 @Injectable()
-export class ProxyService {
+export class WalletProxy {
   constructor(private readonly httpService: HttpService) {}
 
   async getUserBalance(token: string): Promise<UserWallet> {

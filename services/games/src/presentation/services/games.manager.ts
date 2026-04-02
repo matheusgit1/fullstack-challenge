@@ -2,7 +2,7 @@ import { ProvablyFairService } from "@/application/services/provably-fair/provab
 import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
 import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
-import { ProxyService } from "@/infrastructure/proxy/proxy.service";
+import { WalletProxy } from "@/infrastructure/proxy/services/wallets.service";
 import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import { TransactionSource } from "@/infrastructure/rabbitmq/rabbitmq.types";
 import { Injectable } from "@nestjs/common";
@@ -15,7 +15,7 @@ export class GamesManager {
     private readonly roundRepository: RoundRepository,
     private readonly provablyFairService: ProvablyFairService,
     private readonly betRepository: BetRepository,
-    private readonly proxyService: ProxyService,
+    private readonly proxyService: WalletProxy,
     private readonly rabbitmqProducer: RabbitmqProducerService,
   ) {}
 
@@ -66,7 +66,7 @@ export class GamesManager {
       multiplier: round.multiplier,
       timestamp: new Date().toISOString(),
       externalId: externalId,
-      tracingId
+      tracingId: tracingId,
     });
 
     bet.cashout(round.multiplier);

@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import * as amqp from "amqplib";
 import { rabbitConfig } from "@/configs/rabbitmq.config";
 import { TransactionSource } from "./rabbitmq.types";
-import { TracingService } from "../tracing/tracing.service";
+import { TracingService } from "../../application/tracing/tracing.service";
 
 export interface BaseMessage {
   tracingId: string;
@@ -69,7 +69,7 @@ export class RabbitmqProducerService {
         userId: messageToSend.userId,
         externalId: messageToSend.externalId,
         timestamp: new Date().toISOString(),
-        tracingId: messageToSend.tracingId, // Adiciona tracingId à mensagem
+        tracingId: messageToSend.tracingId,
       },
     };
 

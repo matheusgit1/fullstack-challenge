@@ -1,4 +1,4 @@
-import { ProxyService } from "./../../infrastructure/proxy/proxy.service";
+import { WalletProxy } from "../../infrastructure/proxy/services/wallets.service";
 import { BetRepository } from "./../../infrastructure/database/orm/repository/bet.repository";
 import { Injectable } from "@nestjs/common";
 import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
@@ -30,7 +30,7 @@ export class GamesService {
     private readonly roundRepository: RoundRepository,
     private readonly provablyFairService: ProvablyFairService,
     private readonly betRepository: BetRepository,
-    private readonly proxyService: ProxyService,
+    private readonly proxyService: WalletProxy,
     private readonly rabbitmqProducer: RabbitmqProducerService,
     private readonly gamesManager: GamesManager,
   ) {}

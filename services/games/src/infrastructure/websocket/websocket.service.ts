@@ -1,8 +1,6 @@
-// websocket/websocket.service.ts
 import { Injectable, Logger } from "@nestjs/common";
 import { WebSocket } from "ws";
-import { ConnectedClient, WebSocketMessage } from "./websocket.interface";
-// import { ConnectedClient, WebSocketMessage } from "./interfaces/websocket.interface";
+import { ConnectedClient, WebSocketMessage } from "./types/websocket.types";
 
 @Injectable()
 export class WebSocketService {

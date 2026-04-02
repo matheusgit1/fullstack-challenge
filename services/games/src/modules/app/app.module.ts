@@ -6,10 +6,10 @@ import { OrmModule } from "@/infrastructure/database/orm/orm.module";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { TimerService } from "@/infrastructure/events/timer.service";
 import { ProxyModule } from "@/infrastructure/proxy/proxy.module";
-import { ProxyService } from "@/infrastructure/proxy/proxy.service";
+import { WalletProxy } from "@/infrastructure/proxy/services/wallets.service";
 import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
 import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
-import { WebsocketGateway } from "@/infrastructure/websocket/websocket.gateway";
+import { WebsocketModule } from "@/infrastructure/websocket/websocket.module";
 import { GamesController } from "@/presentation/controllers/games.controller";
 import { GamesManager } from "@/presentation/services/games.manager";
 import { GamesService } from "@/presentation/services/games.service";
@@ -42,15 +42,15 @@ import { ScheduleModule } from "@nestjs/schedule";
     ProvablyFairModule,
     ProxyModule,
     RabbitmqModule,
+    WebsocketModule, // Adicione o módulo WebSocket aqui
   ],
   controllers: [GamesController],
   providers: [
     ConfigService,
     GamesService,
     TimerService,
-    WebsocketGateway,
     RoundRepository,
-    ProxyService,
+    WalletProxy,
     GamesManager,
     RabbitmqProducerService,
     { provide: APP_GUARD, useClass: AuthGuard },
