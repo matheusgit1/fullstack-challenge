@@ -38,12 +38,8 @@ export class GamesService {
     @Inject(REQUEST) private readonly request: Request,
   ) {}
 
-  async cashout(
-    userId: string,
-    userToken: string,
-    dto: CashoutRequestDto,
-  ): Promise<CashoutResponseDto> {
-    const { user, hash } = this.request;
+  async cashout(dto: CashoutRequestDto): Promise<CashoutResponseDto> {
+    const { user, hash, token } = this.request;
     const bet = await this.betRepository.findByFilters({
       where: { id: dto.betId, userId: user?.sub || "anonymous" },
       relations: ["round"],
@@ -55,7 +51,7 @@ export class GamesService {
     this.getErrorByStatus(bet.status);
     const { round } = bet;
 
-    const userBalance = await this.proxyService.getUserBalance(userToken);
+    const userBalance = await this.proxyService.getUserBalance(token!);
     const isBetAvailable = userBalance.balanceInCents > bet.amount;
     if (!isBetAvailable) {
       throw new Error("Saldo insuficiente para realizar saque");
@@ -67,9 +63,9 @@ export class GamesService {
       const cashout = await this.gamesManager.processCashout(
         bet,
         round,
-        userId,
+        user?.sub || "anonymous",
         externalId,
-        "tracingId",
+        hash,
       );
       return cashout;
     }
@@ -78,9 +74,9 @@ export class GamesService {
       const cashin = await this.gamesManager.processCashin(
         bet,
         round,
-        userId,
+        user?.sub || "anonymous",
         externalId,
-        "tracingId",
+        hash,
       );
 
       return cashin;
@@ -89,12 +85,9 @@ export class GamesService {
     throw new Error("Rodada já finalizada, saque indisponível");
   }
 
-  async placeBet(
-    userToken: string,
-    userId: string,
-    dto: BetRequestDto,
-  ): Promise<BetResponseDto> {
-    const userBalance = await this.proxyService.getUserBalance(userToken);
+  async placeBet(dto: BetRequestDto): Promise<BetResponseDto> {
+    const { user, hash, token } = this.request;
+    const userBalance = await this.proxyService.getUserBalance(token!);
 
     const isAvailableBet = userBalance.balanceInCents > dto.amount;
     if (!isAvailableBet) {
@@ -112,7 +105,7 @@ export class GamesService {
     }
 
     const bet = await this.betRepository.createBet({
-      userId: userId,
+      userId: user?.sub || "Anonymous",
       roundId: dto.roundId,
       amount: dto.amount,
       status: BetStatus.PENDING,
@@ -120,17 +113,17 @@ export class GamesService {
 
     await this.rabbitmqProducer.publishReserve({
       cashType: TransactionSource.BET_RESERVE,
-      userId: userId,
+      userId: user?.sub || "Anonymous",
       amount: dto.amount,
       timestamp: new Date().toISOString(),
       externalId: bet.id,
-      tracingId: "tracingId",
+      tracingId: hash,
     });
 
     return new BetResponseDto({
       bet: {
         id: bet.id,
-        userId: userId,
+        userId: user?.sub || "Anonymous",
         amount: dto.amount,
         multiplier: 1,
         status: BetStatus.PENDING,
@@ -201,14 +194,14 @@ export class GamesService {
   }
 
   async getMyBets(
-    userId: string,
     query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
+    const { user, hash, token } = this.request;
     query.page = query.page || 1;
     query.limit = query.limit || 20;
 
     const [bets, total] = await this.betRepository.findUserBetsHistory(
-      userId,
+      user?.sub || "anonymous",
       query.page,
       query.limit,
       query.status,
@@ -221,7 +214,7 @@ export class GamesService {
             roundCrashPoint: bet.round.crashPoint || 0,
             roundId: bet.round.id,
             id: bet.id,
-            userId: userId,
+            userId: user?.sub || "anonymous",
             amount: bet.amount,
             multiplier: bet.multiplier,
             status: bet.status,

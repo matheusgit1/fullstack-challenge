@@ -26,13 +26,12 @@ import {
   BetsHistoryQueryDto,
   BetHistoryItemDto,
 } from "../dtos/response/bets-history-response.dto";
-import { PaginatedResponseDto, RoundStatus } from "../dtos/index";
+import { PaginatedResponseDto } from "../dtos/index";
 import { GamesService } from "../services/games.service";
 import {
   RoundHistoryItemDto,
   RoundHistoryQueryDto,
 } from "../dtos/response/round-history-response.dto";
-import type { Request } from "express";
 import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
 import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 import { BaseSuccessResponseDto } from "../dtos/response/__base__.dto";
@@ -94,11 +93,9 @@ export class GamesController {
     type: BaseSuccessResponseDto(PaginatedResponseDto<BetHistoryItemDto>),
   })
   async getMyBets(
-    @Req() req: Request,
     @Query() query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
-    const userId = req.user?.sub || "anonymous";
-    return this.gamesService.getMyBets(userId, query);
+    return this.gamesService.getMyBets(query);
   }
 
   @Post("bet")
@@ -112,13 +109,8 @@ export class GamesController {
     description:
       "Saldo insuficiente / Fora da fase de apostas / Aposta duplicada",
   })
-  async placeBet(
-    @Body() dto: BetRequestDto,
-    @Req() req: Request,
-  ): Promise<BetResponseDto> {
-    const userId = req.user?.sub || "anonymous";
-    const userToken = req.headers.authorization?.split(" ")[1] || "";
-    return this.gamesService.placeBet(userToken, userId, dto);
+  async placeBet(@Body() dto: BetRequestDto): Promise<BetResponseDto> {
+    return this.gamesService.placeBet(dto);
   }
 
   @Post("bet/cashout")
@@ -133,12 +125,7 @@ export class GamesController {
     status: 400,
     description: "Nenhuma aposta pendente / Rodada não está ativa",
   })
-  async cashout(
-    @Req() req: Request,
-    @Body() dto: CashoutRequestDto,
-  ): Promise<CashoutResponseDto> {
-    const userToken = req.headers.authorization?.split(" ")[1] || "";
-    const userId = req.user?.sub || "anonymous";
-    return this.gamesService.cashout(userId, userToken, dto);
+  async cashout(@Body() dto: CashoutRequestDto): Promise<CashoutResponseDto> {
+    return this.gamesService.cashout(dto);
   }
 }
