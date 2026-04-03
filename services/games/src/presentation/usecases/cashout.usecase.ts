@@ -11,7 +11,7 @@ import {
   type IRabbitmqProducerService,
   RABBITMQ_PRODUCER_SERVICE,
 } from "@/domain/rabbitmq/rabbitmq.producer";
-import { Inject, Injectable } from "@nestjs/common";
+import { ConflictException, GoneException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { GamesManager } from "../manager/games.manager";
 import { CashoutRequestDto } from "../dtos/request/cashout-request.dto";
@@ -27,6 +27,7 @@ export class CashOutUsecase implements HandlerUsecase {
     @Inject(REQUEST) private readonly request: Request,
     private readonly gamesManager: GamesManager,
   ) {}
+
   async handler(dto: CashoutRequestDto) {
     const { user, hash, token } = this.request;
     const bet = await this.betRepository.findByFilters({
@@ -35,7 +36,7 @@ export class CashOutUsecase implements HandlerUsecase {
     });
 
     if (!bet || !bet.round) {
-      throw new Error("Nenhuma rodada ou aposta encontrada");
+      throw new ConflictException("Nenhuma rodada ou aposta encontrada");
     }
     this.getErrorByStatus(bet.status);
     const { round } = bet;
@@ -80,10 +81,10 @@ export class CashOutUsecase implements HandlerUsecase {
         //não faz nada só continua o fluxo
       },
       [BetStatus.LOST]: () => {
-        throw new Error("Aposta perdida");
+        throw new GoneException("Aposta perdida");
       },
       [BetStatus.CASHED_OUT]: () => {
-        throw new Error("Aposta sacada");
+        throw new NotFoundException("Aposta sacada");
       },
     };
 

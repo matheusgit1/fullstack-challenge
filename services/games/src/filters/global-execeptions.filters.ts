@@ -6,6 +6,8 @@ import {
   HttpStatus,
   BadRequestException,
   NotFoundException,
+  ConflictException,
+  GoneException,
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 
@@ -22,7 +24,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let errorType = "InternalError";
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus();
+      status = exception.getStatus() || HttpStatus.CONTINUE;
 
       const res = exception.getResponse();
 
@@ -36,8 +38,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         errorType = "BadRequest";
       } else if (exception instanceof NotFoundException) {
         errorType = "NotFound";
+      } else if (exception instanceof ConflictException) {
+        errorType = "Conflict";
+      } else if (exception instanceof GoneException) {
+        errorType = "Gone";
       } else {
-        errorType = exception.constructor.name;
+        errorType = "UnknownError";
       }
     }
 

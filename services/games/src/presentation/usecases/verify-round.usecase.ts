@@ -17,6 +17,9 @@ export class VerifyRoundUsecase implements HandlerUsecase {
     const fair =
       await this.provablyFairService.getProvablyFairDataForRound(roundId);
 
+    if (!fair)
+      throw new Error("Round não encontrado ou 'provably fair' corrompido");
+
     return new RoundVerifyResponseDto({
       fairId: fair.id,
       serverSeed: fair.serverSeed,

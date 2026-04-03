@@ -1,4 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common";
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { BetRequestDto, BetResponseDto } from "../dtos/request/bet-request.dto";
 import { REQUEST } from "@nestjs/core";
 import { type Request } from "express";
@@ -20,7 +25,7 @@ import {
 import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
-export class BetUseCase implements HandlerUsecase{
+export class BetUseCase implements HandlerUsecase {
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,
@@ -36,14 +41,14 @@ export class BetUseCase implements HandlerUsecase{
     const userBalance = await this.proxyService.getUserBalance(token!);
     const isAvailableBet = userBalance.balanceInCents > dto.amount;
     if (!isAvailableBet) {
-      throw new Error("Saldo insuficiente");
+      throw new ConflictException("Saldo insuficiente");
     }
     const round = await this.roundRepository.findByRoundId(dto.roundId);
     if (!round) {
-      throw new Error("Nenhuma rodada ativa");
+      throw new NotFoundException("Nenhuma rodada ativa");
     }
     if (!round.isBettingPhase()) {
-      throw new Error("Aposta indisponível");
+      throw new ConflictException("Fase de aposta encerrada");
     }
     const bet = await this.betRepository.createBet({
       userId: user?.sub || "Anonymous",

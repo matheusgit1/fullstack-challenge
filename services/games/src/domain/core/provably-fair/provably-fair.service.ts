@@ -42,7 +42,7 @@ export interface IProvablyFairService {
     page?: number,
     limit?: number,
   ): Promise<[ProvablyFairSeed[], number]>;
-  getProvablyFairDataForRound(roundId: string): Promise<ProvablyFairSeed>;
+  getProvablyFairDataForRound(roundId: string): Promise<ProvablyFairSeed | null>;
 }
 
 export const PROVABY_SERVICE = Symbol("IProvablyFairService");

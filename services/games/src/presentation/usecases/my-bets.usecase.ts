@@ -13,12 +13,12 @@ import {
 import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
-export class GetMyBetsUseCase implements HandlerUsecase{
+export class GetMyBetsUseCase implements HandlerUsecase {
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,
   ) {}
-  
+
   async handler(
     query: BetsHistoryQueryDto,
   ): Promise<PaginatedResponseDto<BetHistoryItemDto>> {

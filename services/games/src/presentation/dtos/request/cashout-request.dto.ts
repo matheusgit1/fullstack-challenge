@@ -9,9 +9,6 @@ export class CashoutRequestDto {
     description: "ID da aposta cashout",
   })
   betId: string;
-
-  @ApiProperty({ description: "ID da rodada" })
-  roundId: string;
 }
 
 export class CashoutResponseDto {

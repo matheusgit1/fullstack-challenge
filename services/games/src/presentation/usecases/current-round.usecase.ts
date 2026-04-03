@@ -1,5 +1,5 @@
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
 import { HandlerUsecase } from "../interfaces/usecase.interface";
 import {
@@ -17,7 +17,7 @@ export class CurrentRoundUseCase implements HandlerUsecase {
   async handler(): Promise<CurrentRoundResponseDto> {
     const currentRound = await this.roundRepository.findCurrentBettingRound();
     if (!currentRound) {
-      throw new Error("Nenhuma rodada ativa");
+      throw new NotFoundException("Nenhuma rodada ativa");
     }
 
     return new CurrentRoundResponseDto({
