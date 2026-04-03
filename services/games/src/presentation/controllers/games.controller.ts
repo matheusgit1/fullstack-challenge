@@ -1,4 +1,3 @@
-import { CurrentRoundUseCase } from "./../usecases/current-round.usecase";
 import {
   Controller,
   Get,
@@ -8,7 +7,6 @@ import {
   Param,
   HttpCode,
   HttpStatus,
-  Req,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -21,25 +19,26 @@ import {
   CashoutRequestDto,
   CashoutResponseDto,
 } from "../dtos/request/cashout-request.dto";
-import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
-import { RoundVerifyResponseDto } from "../dtos/response/round-verify-response.dto";
+import { BaseSuccessResponseDto } from "../dtos/response/__base__.dto";
 import {
   BetsHistoryQueryDto,
   BetHistoryItemDto,
 } from "../dtos/response/bets-history-response.dto";
+import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
+import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
 import {
   RoundHistoryItemDto,
   RoundHistoryQueryDto,
 } from "../dtos/response/round-history-response.dto";
-import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
-import { Auth, AuthGuardType } from "@/application/auth/auth.decorator";
-import { BaseSuccessResponseDto } from "../dtos/response/__base__.dto";
-import { HistoryRoundUsecase } from "../usecases/history-round.usecase";
-import { VerifyRoundUsecase } from "../usecases/verify-round.usecase";
+import { RoundVerifyResponseDto } from "../dtos/response/round-verify-response.dto";
 import { PaginatedResponseDto } from "../dtos/response/round.dto";
-import { GetMyBetsUseCase } from "../usecases/my-bets.usecase";
 import { BetUseCase } from "../usecases/bet.usecase";
 import { CashOutUsecase } from "../usecases/cashout.usecase";
+import { HistoryRoundUsecase } from "../usecases/history-round.usecase";
+import { GetMyBetsUseCase } from "../usecases/my-bets.usecase";
+import { VerifyRoundUsecase } from "../usecases/verify-round.usecase";
+import { CurrentRoundUseCase } from "./../usecases/current-round.usecase";
+import { Auth, AuthGuardType } from "@/application/auth/auth.decorator";
 
 @ApiTags("games")
 @ApiBearerAuth("access-token")

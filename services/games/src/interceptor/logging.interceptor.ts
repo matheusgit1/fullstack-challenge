@@ -1,9 +1,9 @@
 import { CallHandler, Logger } from "@nestjs/common";
 import { ExecutionContext } from "@nestjs/common";
 import { NestInterceptor } from "@nestjs/common";
+import { type Request } from "express";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { type Request } from "express";
 
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger();

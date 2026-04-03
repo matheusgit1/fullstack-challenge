@@ -1,7 +1,8 @@
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { Module } from "@nestjs/common";
-import { KeycloakService } from "./keycloack.service";
 import { HttpModule } from "@nestjs/axios";
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { KeycloakService } from "./keycloack.service";
+
 
 @Module({
   imports: [

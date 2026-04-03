@@ -1,4 +1,3 @@
-import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
 import { HandlerUsecase } from "../interfaces/usecase.interface";

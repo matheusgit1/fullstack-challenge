@@ -1,13 +1,13 @@
-import { Reflector } from "@nestjs/core";
-import type { Request } from "express";
-import { AuthGuardType, AUTH_GUARD_TYPE } from "./auth.decorator";
 import {
   CanActivate,
   Dependencies,
   ExecutionContext,
   Injectable,
 } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import type { Request } from "express";
 import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
+import { AuthGuardType, AUTH_GUARD_TYPE } from "./auth.decorator";
 
 @Injectable()
 @Dependencies(Reflector, KeycloakService)

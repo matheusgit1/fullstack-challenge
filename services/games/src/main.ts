@@ -1,17 +1,19 @@
 import "reflect-metadata";
+import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./modules/app/app.module";
 import { WsAdapter } from "@nestjs/platform-ws";
 import { setupMicroservices } from "./configs/rabbitmq.config";
 import { setupSwagger } from "./configs/swagger.config";
 import { GlobalExceptionFilter } from "./filters/global-execeptions.filters";
 import { ResponseInterceptor } from "./interceptor/response.interceptor";
+import { AppModule } from "./modules/app/app.module";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const port = 4001;
 
   app.useWebSocketAdapter(new WsAdapter(app));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   app.setGlobalPrefix("games");
 

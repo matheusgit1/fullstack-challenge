@@ -1,14 +1,12 @@
+import { createHash, randomBytes } from "crypto";
 import {
   Injectable,
-  BadRequestException,
-  NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { createHash, randomBytes } from "crypto";
+import { type IProvablyFairService } from "@/domain/core/provably-fair/provably-fair.service";
 import { ProvablyFairSeed } from "@/infrastructure/database/orm/entites/provably-fair.entity";
 import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
-import { type IProvablyFairService } from "@/domain/core/provably-fair/provably-fair.service";
 
 @Injectable()
 export class ProvablyFairService implements IProvablyFairService {

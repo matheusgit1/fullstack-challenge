@@ -1,8 +1,8 @@
+import { ConfigService, ConfigModule } from "@nestjs/config";
 import {
   TypeOrmModuleOptions,
   TypeOrmModuleAsyncOptions,
 } from "@nestjs/typeorm";
-import { ConfigService, ConfigModule } from "@nestjs/config";
 
 export default class TypeORMConfig {
   static getORMConfig(): TypeOrmModuleOptions {

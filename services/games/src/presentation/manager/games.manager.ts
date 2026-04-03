@@ -1,16 +1,16 @@
-import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
 import { Inject, Injectable } from "@nestjs/common";
 import { CashoutResponseDto } from "../dtos/request/cashout-request.dto";
-import { Round } from "@/infrastructure/database/orm/entites/round.entity";
+import {
+  BET_REPOSITORY,
+  type IBetRepository,
+} from "@/domain/orm/repositories/bet.repository";
 import {
   type IRabbitmqProducerService,
   RABBITMQ_PRODUCER_SERVICE,
   TransactionSource,
 } from "@/domain/rabbitmq/rabbitmq.producer";
-import {
-  BET_REPOSITORY,
-  type IBetRepository,
-} from "@/domain/orm/repositories/bet.repository";
+import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
+import { Round } from "@/infrastructure/database/orm/entites/round.entity";
 
 @Injectable()
 export class GamesManager {

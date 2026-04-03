@@ -7,8 +7,8 @@ import { ProvablyFairSeed } from "./entites/provably-fair.entity";
 import { Round } from "./entites/round.entity";
 import { BetRepository } from "./repository/bet.repository";
 import { RoundRepository } from "./repository/round.repository";
-import { ROUND_REPOSITORY } from "@/domain/orm/repositories/round.repository";
 import { BET_REPOSITORY } from "@/domain/orm/repositories/bet.repository";
+import { ROUND_REPOSITORY } from "@/domain/orm/repositories/round.repository";
 
 @Module({
   imports: [

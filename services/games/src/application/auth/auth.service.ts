@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
-import { LoginDto } from "./dtos/login.dto";
 import { LoginResponseDto } from "./dtos/login-response.dto";
+import { LoginDto } from "./dtos/login.dto";
 
 @Injectable()
 export class AuthService {

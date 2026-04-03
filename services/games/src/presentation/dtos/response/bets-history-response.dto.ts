@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { BetDto } from "./bet.dto";
+import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 
 export class BetsHistoryQueryDto {
   @ApiPropertyOptional({ example: 1, default: 1 })

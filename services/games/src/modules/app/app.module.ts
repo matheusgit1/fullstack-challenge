@@ -1,38 +1,36 @@
-import { ProvablyFairModule } from "@/application/game/provably-fair/provably-fair.module";
-import { GameModule } from "@/application/game/game.module";
-import { BET_REPOSITORY } from "@/domain/orm/repositories/bet.repository";
-import { ROUND_REPOSITORY } from "@/domain/orm/repositories/round.repository";
-import { WALLET_PROXY } from "@/domain/proxy/wallet.proxy";
-import { RABBITMQ_PRODUCER_SERVICE } from "@/domain/rabbitmq/rabbitmq.producer";
-import { AuthGuard } from "@/application/auth/auth.guard";
-import { AuthModule } from "@/application/auth/auth.module";
-import { OrmModule } from "@/infrastructure/database/orm/orm.module";
-import { BetRepository } from "@/infrastructure/database/orm/repository/bet.repository";
-import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
-import { TimerModule } from "@/application/events/timer/timer.module";
-import { TimerService } from "@/application/events/timer/timer.service";
-import { GlobalExceptionFilter } from "@/filters/global-execeptions.filters";
-import { LoggingInterceptor } from "@/interceptor/logging.interceptor";
-import { TracingMiddleware } from "@/middleware/tracing.middleware";
-import { ProxyModule } from "@/infrastructure/proxy/proxy.module";
-import { WalletProxy } from "@/infrastructure/proxy/services/wallets.service";
-import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
-import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
-import { WebsocketModule } from "@/infrastructure/websocket/websocket.module";
-import { GamesController } from "@/presentation/controllers/games.controller";
-import { GamesManager } from "@/presentation/manager/games.manager";
-import { BetUseCase } from "@/presentation/usecases/bet.usecase";
-import { CashOutUsecase } from "@/presentation/usecases/cashout.usecase";
-import { CurrentRoundUseCase } from "@/presentation/usecases/current-round.usecase";
-import { HistoryRoundUsecase } from "@/presentation/usecases/history-round.usecase";
-import { GetMyBetsUseCase } from "@/presentation/usecases/my-bets.usecase";
-import { VerifyRoundUsecase } from "@/presentation/usecases/verify-round.usecase";
-import { HttpModule } from "@nestjs/axios";
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
-import { EventEmitterModule } from "@nestjs/event-emitter";
-import { ScheduleModule } from "@nestjs/schedule";
+import { HttpModule } from '@nestjs/axios';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
+import { AuthGuard } from '@/application/auth/auth.guard';
+import { AuthModule } from '@/application/auth/auth.module';
+import { TimerModule } from '@/application/events/timer/timer.module';
+import { GameModule } from '@/application/game/game.module';
+import { BET_REPOSITORY } from '@/domain/orm/repositories/bet.repository';
+import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
+import { WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
+import { RABBITMQ_PRODUCER_SERVICE } from '@/domain/rabbitmq/rabbitmq.producer';
+import { GlobalExceptionFilter } from '@/filters/global-execeptions.filters';
+import { OrmModule } from '@/infrastructure/database/orm/orm.module';
+import { BetRepository } from '@/infrastructure/database/orm/repository/bet.repository';
+import { RoundRepository } from '@/infrastructure/database/orm/repository/round.repository';
+import { ProxyModule } from '@/infrastructure/proxy/proxy.module';
+import { WalletProxy } from '@/infrastructure/proxy/services/wallets.service';
+import { RabbitmqModule } from '@/infrastructure/rabbitmq/rabbitmq.module';
+import { RabbitmqProducerService } from '@/infrastructure/rabbitmq/rabbitmq.producer';
+import { WebsocketModule } from '@/infrastructure/websocket/websocket.module';
+import { LoggingInterceptor } from '@/interceptor/logging.interceptor';
+import { TracingMiddleware } from '@/middleware/tracing.middleware';
+import { GamesController } from '@/presentation/controllers/games.controller';
+import { GamesManager } from '@/presentation/manager/games.manager';
+import { BetUseCase } from '@/presentation/usecases/bet.usecase';
+import { CashOutUsecase } from '@/presentation/usecases/cashout.usecase';
+import { CurrentRoundUseCase } from '@/presentation/usecases/current-round.usecase';
+import { HistoryRoundUsecase } from '@/presentation/usecases/history-round.usecase';
+import { GetMyBetsUseCase } from '@/presentation/usecases/my-bets.usecase';
+import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase';
 
 @Module({
   imports: [
@@ -44,7 +42,7 @@ import { ScheduleModule } from "@nestjs/schedule";
     }),
     EventEmitterModule.forRoot({
       wildcard: false,
-      delimiter: ".",
+      delimiter: '.',
       newListener: false,
       removeListener: false,
       maxListeners: 10,
@@ -92,6 +90,6 @@ import { ScheduleModule } from "@nestjs/schedule";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TracingMiddleware).forRoutes("*");
+    consumer.apply(TracingMiddleware).forRoutes('*');
   }
 }

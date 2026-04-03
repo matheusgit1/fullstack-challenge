@@ -1,9 +1,8 @@
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { Module } from "@nestjs/common";
-import { ProvablyFairModule } from "./provably-fair/provably-fair.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { GameEngineModule } from "./game-engine/game-engine.module";
+import { ProvablyFairModule } from "./provably-fair/provably-fair.module";import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
 import { Round } from "@/infrastructure/database/orm/entites/round.entity";
-import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
 
 @Module({
   imports: [

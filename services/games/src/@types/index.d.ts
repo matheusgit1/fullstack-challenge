@@ -1,5 +1,3 @@
-import { type Request } from "express";
-
 declare global {
   export interface User {
     sub: string;
@@ -19,3 +17,5 @@ declare global {
     }
   }
 }
+
+export {};

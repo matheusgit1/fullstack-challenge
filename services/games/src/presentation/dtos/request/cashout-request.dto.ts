@@ -1,7 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, Min } from "class-validator";
-import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { BetDto } from "../response/bet.dto";
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 
 export class CashoutRequestDto {
   @ApiProperty({

@@ -1,4 +1,4 @@
-import { HttpModule, HttpService } from "@nestjs/axios";
+import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
 import { WalletProxy } from "./services/wallets.service";
 import { WALLET_PROXY } from "@/domain/proxy/wallet.proxy";

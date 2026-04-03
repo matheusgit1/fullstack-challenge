@@ -1,5 +1,5 @@
-import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { ApiProperty } from "@nestjs/swagger";
+import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 
 export class BetDto {
   constructor(partial: BetDto) {

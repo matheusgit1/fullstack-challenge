@@ -1,3 +1,4 @@
+import { Injectable, Logger } from "@nestjs/common";
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -6,7 +7,6 @@ import {
   SubscribeMessage,
 } from "@nestjs/websockets";
 import { Server, WebSocket } from "ws";
-import { Injectable, Logger } from "@nestjs/common";
 import { WebSocketService } from "./websocket.service";
 
 @WebSocketGateway({

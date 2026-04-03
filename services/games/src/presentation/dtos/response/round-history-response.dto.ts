@@ -1,6 +1,6 @@
-import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { ApiProperty } from "@nestjs/swagger";
 import { ApiPropertyOptional } from "@nestjs/swagger";
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 
 export class RoundHistoryItemDto {
   constructor(partial: Partial<RoundHistoryItemDto>) {

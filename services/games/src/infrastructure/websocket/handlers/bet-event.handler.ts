@@ -1,20 +1,19 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { WebSocketService } from "../websocket.service";
-import { RabbitmqProducerService } from "@/infrastructure/rabbitmq/rabbitmq.producer";
 import {
-  Bet,
-  BetStatus,
-} from "@/infrastructure/database/orm/entites/bet.entity";
+  BET_REPOSITORY,
+  type IBetRepository,
+} from "@/domain/orm/repositories/bet.repository";
 import {
   type IRabbitmqProducerService,
   RABBITMQ_PRODUCER_SERVICE,
   TransactionSource,
 } from "@/domain/rabbitmq/rabbitmq.producer";
 import {
-  BET_REPOSITORY,
-  type IBetRepository,
-} from "@/domain/orm/repositories/bet.repository";
+  Bet,
+  BetStatus,
+} from "@/infrastructure/database/orm/entites/bet.entity";
 
 interface GameEventPayload {
   roundId: string;

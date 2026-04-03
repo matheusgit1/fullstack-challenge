@@ -1,7 +1,7 @@
 import { HttpService } from "@nestjs/axios";
-import { appConfig } from "../../configs/app.config";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
+import { appConfig } from "../../configs/app.config";
 
 export interface KeycloakTokenResponse {
   access_token: string;

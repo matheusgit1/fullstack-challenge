@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { GameEngineService } from "./game-engine.service";
+import { ConfigModule } from "@nestjs/config";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { ProvablyFairModule } from "../provably-fair/provably-fair.module";
+import { GameEngineService } from "./game-engine.service";import { GAME_ENGINE_SERVICE } from "@/domain/game/game.engine";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
-import { ConfigModule } from "@nestjs/config";
-import { GAME_ENGINE_SERVICE } from "@/domain/game/game.engine";
+
 
 @Module({
   imports: [ProvablyFairModule, OrmModule, ConfigModule],

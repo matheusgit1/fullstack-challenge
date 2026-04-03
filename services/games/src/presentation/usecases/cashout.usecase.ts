@@ -1,23 +1,21 @@
 import {
+  ConflictException,
+  GoneException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { type Request } from "express";
+import { CashoutRequestDto } from "../dtos/request/cashout-request.dto";
+import { HandlerUsecase } from "../interfaces/usecase.interface";
+import { GamesManager } from "../manager/games.manager";
+import {
   BET_REPOSITORY,
   type IBetRepository,
 } from "@/domain/orm/repositories/bet.repository";
-import {
-  type IRoundRepository,
-  ROUND_REPOSITORY,
-} from "@/domain/orm/repositories/round.repository";
 import { type IWalletProxy, WALLET_PROXY } from "@/domain/proxy/wallet.proxy";
-import {
-  type IRabbitmqProducerService,
-  RABBITMQ_PRODUCER_SERVICE,
-} from "@/domain/rabbitmq/rabbitmq.producer";
-import { ConflictException, GoneException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { REQUEST } from "@nestjs/core";
-import { GamesManager } from "../manager/games.manager";
-import { CashoutRequestDto } from "../dtos/request/cashout-request.dto";
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
-import { type Request } from "express";
-import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
 export class CashOutUsecase implements HandlerUsecase {

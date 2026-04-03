@@ -1,8 +1,8 @@
+import { type FindOneOptions } from "typeorm";
 import {
   Bet,
   type BetStatus,
 } from "@/infrastructure/database/orm/entites/bet.entity";
-import { type FindOneOptions } from "typeorm";
 
 export interface IBetRepository {
   setPendingBetsToLost(roundId: string): Promise<void>;

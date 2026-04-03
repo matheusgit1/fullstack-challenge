@@ -1,6 +1,6 @@
-import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 import { ApiProperty } from "@nestjs/swagger";
 import { BetDto } from "./bet.dto";
+import { RoundStatus } from "@/infrastructure/database/orm/entites/round.entity";
 
 export class RoundDto {
   public constructor(partial: RoundDto) {

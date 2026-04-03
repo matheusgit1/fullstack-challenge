@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, Query, Req } from "@nestjs/common";
-import { AuthService } from "./auth.service";
 import type { Request } from "express";
 import { Auth, AuthGuardType } from "./auth.decorator";
-import { LoginDto } from "./dtos/login.dto";
+import { AuthService } from "./auth.service";
 import { LoginResponseDto } from "./dtos/login-response.dto";
+import { LoginDto } from "./dtos/login.dto";
 
 @Controller("auth")
 export class AuthController {

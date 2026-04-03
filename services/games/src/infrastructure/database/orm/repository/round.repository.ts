@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, FindOneOptions } from "typeorm";
+import { Repository } from "typeorm";
 import { Round, RoundStatus } from "../entites/round.entity";
 import type { IRoundRepository } from "@/domain/orm/repositories/round.repository";
 
