@@ -4,7 +4,7 @@ import { type Request, Response, NextFunction } from "express";
 
 @Injectable()
 export class TracingMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: Request, _: Response, next: NextFunction) {
     req.hash = HashGeneratorUtil.generate();
     next();
   }

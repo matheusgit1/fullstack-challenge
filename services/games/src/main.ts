@@ -4,8 +4,8 @@ import { AppModule } from "./modules/app/app.module";
 import { WsAdapter } from "@nestjs/platform-ws";
 import { setupMicroservices } from "./configs/rabbitmq.config";
 import { setupSwagger } from "./configs/swagger.config";
-import { GlobalExceptionFilter } from "./infrastructure/filters/global-execeptions.filters";
-import { ResponseInterceptor } from "./infrastructure/interceptor/response.interceptor";
+import { GlobalExceptionFilter } from "./filters/global-execeptions.filters";
+import { ResponseInterceptor } from "./interceptor/response.interceptor";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);

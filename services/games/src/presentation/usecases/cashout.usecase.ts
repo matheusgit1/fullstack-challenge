@@ -17,9 +17,10 @@ import { GamesManager } from "../manager/games.manager";
 import { CashoutRequestDto } from "../dtos/request/cashout-request.dto";
 import { BetStatus } from "@/infrastructure/database/orm/entites/bet.entity";
 import { type Request } from "express";
+import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
-export class CashOutUsecase {
+export class CashOutUsecase implements HandlerUsecase {
   constructor(
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,
     @Inject(WALLET_PROXY) private readonly proxyService: IWalletProxy,

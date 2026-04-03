@@ -32,7 +32,7 @@ import {
   RoundHistoryQueryDto,
 } from "../dtos/response/round-history-response.dto";
 import { HealthCheckResponseDto } from "../dtos/response/health-check-response.dto";
-import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
+import { Auth, AuthGuardType } from "@/application/auth/auth.decorator";
 import { BaseSuccessResponseDto } from "../dtos/response/__base__.dto";
 import { HistoryRoundUsecase } from "../usecases/history-round.usecase";
 import { VerifyRoundUsecase } from "../usecases/verify-round.usecase";

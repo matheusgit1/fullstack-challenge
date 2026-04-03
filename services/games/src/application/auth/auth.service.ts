@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { KeycloakService } from "../keycloack/keycloack.service";
+import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
 import { LoginDto } from "./dtos/login.dto";
 import { LoginResponseDto } from "./dtos/login-response.dto";
 

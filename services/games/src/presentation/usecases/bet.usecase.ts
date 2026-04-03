@@ -17,9 +17,10 @@ import {
   RABBITMQ_PRODUCER_SERVICE,
   TransactionSource,
 } from "@/domain/rabbitmq/rabbitmq.producer";
+import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
-export class BetUseCase {
+export class BetUseCase implements HandlerUsecase{
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,

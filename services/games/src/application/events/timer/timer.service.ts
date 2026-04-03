@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { appConfig } from "@/configs/app.config";
-import { RoundStatus } from "../../database/orm/entites/round.entity";
+import { RoundStatus } from "../../../infrastructure/database/orm/entites/round.entity";
 import {
   type IRoundRepository,
   ROUND_REPOSITORY,

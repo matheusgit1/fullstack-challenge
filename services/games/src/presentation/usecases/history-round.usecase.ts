@@ -8,9 +8,10 @@ import {
   type IRoundRepository,
 } from "@/domain/orm/repositories/round.repository";
 import { PaginatedResponseDto } from "../dtos/response/round.dto";
+import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
-export class HistoryRoundUsecase {
+export class HistoryRoundUsecase implements HandlerUsecase {
   constructor(
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,

@@ -8,7 +8,7 @@ import {
 } from "@/domain/orm/repositories/round.repository";
 
 @Injectable()
-export class CurrentRoundUseCase {
+export class CurrentRoundUseCase implements HandlerUsecase {
   constructor(
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,

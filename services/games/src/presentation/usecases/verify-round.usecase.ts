@@ -2,15 +2,12 @@ import {
   type IProvablyFairService,
   PROVABY_SERVICE,
 } from "@/domain/core/provably-fair/provably-fair.service";
-import {
-  ROUND_REPOSITORY,
-  type IRoundRepository,
-} from "@/domain/orm/repositories/round.repository";
 import { Inject, Injectable } from "@nestjs/common";
+import { HandlerUsecase } from "../interfaces/usecase.interface";
 import { RoundVerifyResponseDto } from "../dtos/response/round-verify-response.dto";
 
 @Injectable()
-export class VerifyRoundUsecase {
+export class VerifyRoundUsecase implements HandlerUsecase {
   constructor(
     @Inject(PROVABY_SERVICE)
     private readonly provablyFairService: IProvablyFairService,

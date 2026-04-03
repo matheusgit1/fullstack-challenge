@@ -10,9 +10,10 @@ import {
   BET_REPOSITORY,
   type IBetRepository,
 } from "@/domain/orm/repositories/bet.repository";
+import { HandlerUsecase } from "../interfaces/usecase.interface";
 
 @Injectable()
-export class GetMyBetsUseCase {
+export class GetMyBetsUseCase implements HandlerUsecase{
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,

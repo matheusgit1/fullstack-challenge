@@ -7,7 +7,7 @@ import {
   ExecutionContext,
   Injectable,
 } from "@nestjs/common";
-import { KeycloakService } from "../keycloack/keycloack.service";
+import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
 
 @Injectable()
 @Dependencies(Reflector, KeycloakService)
