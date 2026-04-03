@@ -1,5 +1,5 @@
 import { Reflector } from "@nestjs/core";
-import { Request } from "express";
+import { type Request } from "express";
 import { AuthGuardType, AUTH_GUARD_TYPE } from "./auth.decorator";
 import {
   CanActivate,

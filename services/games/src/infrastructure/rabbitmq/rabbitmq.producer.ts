@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import * as amqp from "amqplib";
 import { rabbitConfig } from "@/configs/rabbitmq.config";
-import { TracingService } from "../../application/tracing/tracing.service";
 import {
   type CashinMessage,
   type CashoutMessage,
@@ -17,7 +16,7 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
   private readonly uri: string;
   private readonly defaultQueue: string;
 
-  constructor(private readonly tracingService: TracingService) {
+  constructor() {
     this.uri = rabbitConfig.uri;
     this.defaultQueue = rabbitConfig.queue;
   }
@@ -28,16 +27,13 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
       this.channel = await connection.createChannel();
       this.logger.log("Conectado ao RabbitMQ");
     } catch (error) {
-      this.logger.error("Erro ao conectar ao RabbitMQ:", error as Error);
+      this.logger.error("Erro ao conectar ao RabbitMQ:");
+      this.logger.error(error);
       throw error;
     }
   }
 
   async publishCashout(messageToSend: CashoutMessage) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(
-      messageToSend.tracingId,
-    );
-
     if (!this.channel) {
       await this.connect();
     }
@@ -57,23 +53,16 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
       this.logger.log(
-        `${tracePrefix} BET_LOST message enviada para userId: ${messageToSend.userId}`,
+        ` BET_LOST message enviada para userId: ${messageToSend.userId}`,
         { externalId: messageToSend.externalId },
       );
     } catch (error) {
-      this.logger.error(
-        `${tracePrefix} Erro ao enviar BET_LOST message`,
-        error as Error,
-      );
+      this.logger.error(` Erro ao enviar BET_LOST message`, error as Error);
       throw error;
     }
   }
 
   async publishCashin(messageToSend: CashinMessage) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(
-      messageToSend.tracingId,
-    );
-
     if (!this.channel) {
       await this.connect();
     }
@@ -94,26 +83,23 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
       this.logger.log(
-        `${tracePrefix} BET_PLACED message enviada para userId: ${messageToSend.userId}`,
+        ` BET_PLACED message enviada para userId: ${messageToSend.userId}`,
         {
           multiplier: messageToSend.multiplier,
           externalId: messageToSend.externalId,
         },
       );
-    } catch (error) {
-      this.logger.error(
-        `${tracePrefix} Erro ao enviar BET_PLACED message`,
-        error as Error,
+      this.logger.log(
+        `BET_PLACED message enviada para userId: ${messageToSend.userId}`,
       );
+    } catch (error) {
+      this.logger.error(` Erro ao enviar BET_PLACED message`, error as Error);
+      this.logger.log(`Erro ao enviar BET_PLACED message`);
       throw error;
     }
   }
 
   async publishReserve(messageToSend: CashReserveMessage) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(
-      messageToSend.tracingId,
-    );
-
     if (!this.channel) {
       await this.connect();
     }
@@ -134,14 +120,11 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
       this.logger.log(
-        `${tracePrefix} BET_RESERVE message enviada para userId: ${messageToSend.userId}`,
+        ` BET_RESERVE message enviada para userId: ${messageToSend.userId}`,
         { amount: messageToSend.amount, externalId: messageToSend.externalId },
       );
     } catch (error) {
-      this.logger.error(
-        `${tracePrefix} Erro ao enviar BET_RESERVE message`,
-        error as Error,
-      );
+      this.logger.error(` Erro ao enviar BET_RESERVE message`, error as Error);
       throw error;
     }
   }

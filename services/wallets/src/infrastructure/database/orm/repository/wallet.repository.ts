@@ -19,7 +19,6 @@ export class WalletRepository {
     private readonly repository: Repository<Wallet>,
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
-    private readonly dataSource: DataSource,
   ) {}
 
   async findByUserId(userId: string): Promise<Wallet | null> {

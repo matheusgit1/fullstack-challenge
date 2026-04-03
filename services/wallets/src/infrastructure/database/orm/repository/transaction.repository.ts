@@ -6,7 +6,7 @@ import {
   TransactionStatus,
   TransactionType,
 } from "../entites/transaction.entity";
-import { DataSource, QueryRunner, Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { Wallet } from "../entites/wallet.entity";
 
 @Injectable()

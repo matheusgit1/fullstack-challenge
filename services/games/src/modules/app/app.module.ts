@@ -1,5 +1,5 @@
 import { ProvablyFairModule } from "@/application/services/provably-fair/provably-fair.module";
-import { ServicesModule } from "@/application/services/services.module";
+import { GameModule } from "@/application/services/services.module";
 import { BET_REPOSITORY } from "@/domain/orm/repositories/bet.repository";
 import { ROUND_REPOSITORY } from "@/domain/orm/repositories/round.repository";
 import { WALLET_PROXY } from "@/domain/proxy/wallet.proxy";
@@ -29,13 +29,13 @@ import { GetMyBetsUseCase } from "@/presentation/usecases/my-bets.usecase";
 import { VerifyRoundUsecase } from "@/presentation/usecases/verify-round.usecase";
 import { HttpModule } from "@nestjs/axios";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
-import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     HttpModule.register({
       timeout: 5000,
@@ -44,15 +44,13 @@ import { ScheduleModule } from "@nestjs/schedule";
     TimerModule,
     AuthModule,
     OrmModule,
-    ServicesModule,
-    ProvablyFairModule,
+    GameModule,
     ProxyModule,
     RabbitmqModule,
     WebsocketModule,
   ],
   controllers: [GamesController],
   providers: [
-    ConfigService,
     GamesManager,
     TimerService,
     CurrentRoundUseCase,

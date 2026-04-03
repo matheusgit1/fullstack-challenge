@@ -31,6 +31,7 @@ export class TimerService {
     private readonly provablyFairService: IProvablyFairService,
     @Inject(BET_REPOSITORY)
     private readonly betRepository: IBetRepository,
+    
   ) {}
 
   @Interval("betting.phase", appConfig.bettingDurationSeconds * 1000)

@@ -2,7 +2,7 @@ import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { appConfig } from "@/configs/app.config";
 import { lastValueFrom } from "rxjs";
-import { UserWallet } from "@/domain/proxy/wallet.proxy";
+import { IWalletProxy, UserWallet } from "@/domain/proxy/wallet.proxy";
 
 @Injectable()
 export class WalletProxy implements IWalletProxy {

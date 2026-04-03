@@ -1,17 +1,15 @@
 import { Module } from "@nestjs/common";
-import { TracingService } from "../../application/tracing/tracing.service";
 import { RabbitmqProducerService } from "./rabbitmq.producer";
 import { RABBITMQ_PRODUCER_SERVICE } from "@/domain/rabbitmq/rabbitmq.producer";
 
 @Module({
-  exports: [RabbitmqProducerService, TracingService, RABBITMQ_PRODUCER_SERVICE],
   providers: [
     RabbitmqProducerService,
     {
       provide: RABBITMQ_PRODUCER_SERVICE,
       useClass: RabbitmqProducerService,
     },
-    TracingService,
   ],
+  exports: [RabbitmqProducerService, RABBITMQ_PRODUCER_SERVICE],
 })
 export class RabbitmqModule {}

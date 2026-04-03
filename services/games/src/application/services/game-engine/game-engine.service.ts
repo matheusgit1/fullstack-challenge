@@ -59,11 +59,11 @@ export class GameEngineService implements IGameEngineService {
     this.currentRound = await this.roundRepository.createRound(round);
 
     this.logger.log(`Round created: ${this.currentRound.id}`);
-    this.logger.log(`  - Crash point: ${crashPoint}x (secret)`);
+    this.logger.log(`- Crash point: ${crashPoint}x (secret)`);
     this.logger.log(
-      `  - Server seed hash: ${serverSeedHash.substring(0, 16)}...`,
+      `- Server seed hash: ${serverSeedHash.substring(0, 16)}...`,
     );
-    this.logger.log(`  - Betting ends at: ${bettingEndsAt.toISOString()}`);
+    this.logger.log(`- Betting ends at: ${bettingEndsAt.toISOString()}`);
 
     this.eventEmitter.emit("round.betting.started", {
       roundId: this.currentRound.id,
