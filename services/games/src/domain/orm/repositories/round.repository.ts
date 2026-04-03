@@ -7,6 +7,7 @@ export interface IRoundRepository {
   findRoundWithBets(roundId: string): Promise<Round | null>;
   findRoundsHistory(page: number, limit: number): Promise<[Round[], number]>;
   saveRound(round: Round): Promise<Round>;
+  createRound(data: Partial<Round>): Promise<Round>
 }
 
 export const ROUND_REPOSITORY = Symbol("IRoundRepository");

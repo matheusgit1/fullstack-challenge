@@ -31,6 +31,7 @@ import { HttpModule } from "@nestjs/axios";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
@@ -41,6 +42,16 @@ import { ScheduleModule } from "@nestjs/schedule";
       timeout: 5000,
       maxRedirects: 5,
     }),
+    EventEmitterModule.forRoot({
+      wildcard: false,
+      delimiter: ".",
+      newListener: false,
+      removeListener: false,
+      maxListeners: 10,
+      verboseMemoryLeak: true,
+      ignoreErrors: false,
+    }),
+    EventEmitterModule,
     TimerModule,
     AuthModule,
     OrmModule,
@@ -52,7 +63,6 @@ import { ScheduleModule } from "@nestjs/schedule";
   controllers: [GamesController],
   providers: [
     GamesManager,
-    TimerService,
     CurrentRoundUseCase,
     HistoryRoundUsecase,
     VerifyRoundUsecase,

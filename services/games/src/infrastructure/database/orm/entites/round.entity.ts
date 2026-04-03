@@ -118,6 +118,17 @@ export class Round {
   }
 
   setStatus(status: RoundStatus) {
+    if (status === RoundStatus.CRASHED) {
+      this.crashedAt = new Date();
+    }
+
+    if (status === RoundStatus.RUNNING) {
+      this.startedAt = new Date();
+    }
+
+    if (status === RoundStatus.BETTING) {
+      this.bettingStartedAt = new Date();
+    }
     this.status = status;
   }
 

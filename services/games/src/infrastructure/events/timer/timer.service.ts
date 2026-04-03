@@ -11,12 +11,14 @@ import {
   BET_REPOSITORY,
   type IBetRepository,
 } from "@/domain/orm/repositories/bet.repository";
-import { GAME_ENGINE_SERVICE } from "@/domain/game/game.engine";
-import { PROVABY_SERVICE } from "@/domain/core/provably-fair/provably-fair.service";
-
-
-type IGameEngineService = any;
-type IProvablyFairService = any;
+import {
+  GAME_ENGINE_SERVICE,
+  type IGameEngineService,
+} from "@/domain/game/game.engine";
+import {
+  type IProvablyFairService,
+  PROVABY_SERVICE,
+} from "@/domain/core/provably-fair/provably-fair.service";
 
 @Injectable()
 export class TimerService {
@@ -31,7 +33,6 @@ export class TimerService {
     private readonly provablyFairService: IProvablyFairService,
     @Inject(BET_REPOSITORY)
     private readonly betRepository: IBetRepository,
-    
   ) {}
 
   @Interval("betting.phase", appConfig.bettingDurationSeconds * 1000)
@@ -39,8 +40,7 @@ export class TimerService {
     const activeRound = await this.roundRepository.findCurrentBettingRound();
     if (activeRound && activeRound.isBettingPhase()) {
       if (activeRound.bettingEndsAt < new Date(Date.now())) {
-        activeRound.setStatus(RoundStatus.RUNNING);
-        await this.roundRepository.saveRound(activeRound);
+        await this.gameEngineService.runningRound(activeRound);
 
         this.logger.log(
           "Fase de betting encerrada, emitindo evento de fase de running.",
@@ -102,15 +102,7 @@ export class TimerService {
       if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
         const tracingId = activeRound.id;
         this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
-        activeRound.setStatus(RoundStatus.CRASHED);
-        await Promise.all([
-          this.roundRepository.saveRound(activeRound),
-          this.provablyFairService.setSeedAsUsed(activeRound.clientSeed),
-          this.betRepository.setPendingBetsToLost(activeRound.id),
-        ]);
-        this.logger.log(
-          "Fase de running encerrada, emitindo evento de fase de crashed.",
-        );
+        this.gameEngineService.endRound(activeRound);
 
         this.eventEmitter.emit("betting.loose", {
           roundId: activeRound.id,
