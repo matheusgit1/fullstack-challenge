@@ -4,10 +4,7 @@ import { type Request } from 'express';
 import { BetRequestDto, BetResponseDto } from '../dtos/request/bet-request.dto';
 import { HandlerUsecase } from '../interfaces/usecase.interface';
 import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
-import {
-  type IRoundRepository,
-  ROUND_REPOSITORY,
-} from '@/domain/orm/repositories/round.repository';
+import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 import { type IWalletProxy, WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
 import {
   type IRabbitmqProducerService,

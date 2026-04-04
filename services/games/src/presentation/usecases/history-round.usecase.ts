@@ -1,7 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import {
   RoundHistoryItemDto,
-  RoundHistoryQueryDto,
 } from "../dtos/response/round-history-response.dto";
 import { PaginatedResponseDto } from "../dtos/response/round.dto";
 import { HandlerUsecase } from "../interfaces/usecase.interface";
@@ -9,6 +8,7 @@ import {
   ROUND_REPOSITORY,
   type IRoundRepository,
 } from "@/domain/orm/repositories/round.repository";
+import { RoundHistoryQueryDto } from "../dtos/request/round-history-query.dto";
 
 @Injectable()
 export class HistoryRoundUsecase implements HandlerUsecase {

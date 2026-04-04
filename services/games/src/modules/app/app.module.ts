@@ -5,7 +5,6 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthGuard } from '@/application/auth/auth.guard';
-import { AuthModule } from '@/application/auth/auth.module';
 import { TimerModule } from '@/application/events/timer/timer.module';
 import { GameModule } from '@/application/game/game.module';
 import { BET_REPOSITORY } from '@/domain/orm/repositories/bet.repository';
@@ -31,11 +30,13 @@ import { CurrentRoundUseCase } from '@/presentation/usecases/current-round.useca
 import { HistoryRoundUsecase } from '@/presentation/usecases/history-round.usecase';
 import { GetMyBetsUseCase } from '@/presentation/usecases/my-bets.usecase';
 import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase';
+import { AuthModule } from '@/application/auth/auth.module';
+import { AuthController } from '@/application/auth/auth.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ScheduleModule.forRoot(),
+    ScheduleModule.forRoot({}),
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
@@ -58,7 +59,7 @@ import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase
     RabbitmqModule,
     WebsocketModule,
   ],
-  controllers: [GamesController],
+  controllers: [AuthController, GamesController],
   providers: [
     GamesManager,
     CurrentRoundUseCase,

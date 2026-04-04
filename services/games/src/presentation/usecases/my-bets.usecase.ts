@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { type Request } from 'express';
-import { BetHistoryItemDto, BetsHistoryQueryDto } from '../dtos/response/bets-history-response.dto';
+import { BetHistoryItemDto } from '../dtos/response/bets-history-response.dto';
 import { PaginatedResponseDto } from '../dtos/response/round.dto';
 import { HandlerUsecase } from '../interfaces/usecase.interface';
 import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
+import { BetsHistoryQueryDto } from '../dtos/request/bet-history-query.dto';
 
 @Injectable()
 export class GetMyBetsUseCase implements HandlerUsecase {

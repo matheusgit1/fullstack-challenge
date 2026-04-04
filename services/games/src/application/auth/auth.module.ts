@@ -1,10 +1,10 @@
-import { HttpModule } from "@nestjs/axios";
-import { Module, Global } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { KeycloakModule } from "../../infrastructure/keycloack/keycloack.module";
-import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
+import { HttpModule } from '@nestjs/axios';
+import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { KeycloakModule } from '../../infrastructure/keycloack/keycloack.module';
+import { KeycloakService } from '../../infrastructure/keycloack/keycloack.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Global()
 @Module({

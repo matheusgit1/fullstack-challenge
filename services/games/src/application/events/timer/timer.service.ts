@@ -37,6 +37,7 @@ export class TimerService {
   @Interval("betting.phase", appConfig.bettingDurationSeconds * 1000)
   async handleBettingPhase() {
     const activeRound = await this.roundRepository.findCurrentBettingRound();
+    this.logger.log(`[Trace:NO-TRACING] Fase de betting iniciada.`);
     if (activeRound && activeRound.isBettingPhase()) {
       if (activeRound.bettingEndsAt < new Date(Date.now())) {
         await this.gameEngineService.runningRound(activeRound);
@@ -64,7 +65,7 @@ export class TimerService {
   @Interval("multiple.updated", 5 * 1000)
   async handleNewCrashed() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
-
+    this.logger.log(`[Trace:NO-TRACING] Fase de running iniciada.`);
     if (activeRound && activeRound.isRunning()) {
       if (Date.now() < new Date(activeRound.crashedAt).getTime()) {
         const newMultiplier = this.calculateMultiplierInterpolation(
@@ -97,8 +98,11 @@ export class TimerService {
   )
   async handleNewBetting() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
+    console.log(activeRound);
+    this.logger.log(`[Trace:NO-TRACING] Fase de running em analise.`);
     if (activeRound && activeRound.isRunning()) {
       if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
+        this.logger.log(`[Trace:NO-TRACING] Fase de running sendo encerrada.`);
         const tracingId = activeRound.id;
         this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
         this.gameEngineService.endRound(activeRound);
