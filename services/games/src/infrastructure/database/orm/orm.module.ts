@@ -1,38 +1,10 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { DBClientConfig } from "../orm.client";
-import { Bet } from "./entites/bet.entity";
-import { OutboxMessage } from "./entites/outbox.entity";
-import { ProvablyFairSeed } from "./entites/provably-fair.entity";
-import { Round } from "./entites/round.entity";
-import { BetRepository } from "./repository/bet.repository";
-import { RoundRepository } from "./repository/round.repository";
-import { BET_REPOSITORY } from "@/domain/orm/repositories/bet.repository";
-import { ROUND_REPOSITORY } from "@/domain/orm/repositories/round.repository";
+import { Module } from '@nestjs/common';
+import { OrmRepositoryModule } from './orm-repository.module';
+import { OrmCoreModule } from './orm-core.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forRootAsync(DBClientConfig),
-    TypeOrmModule.forFeature([Bet, OutboxMessage, ProvablyFairSeed, Round]),
-  ],
-  providers: [
-    BetRepository,
-    {
-      provide: BET_REPOSITORY,
-      useClass: BetRepository,
-    },
-    RoundRepository,
-    {
-      provide: ROUND_REPOSITORY,
-      useClass: RoundRepository,
-    },
-  ],
-  exports: [
-    TypeOrmModule,
-    BetRepository,
-    RoundRepository,
-    BET_REPOSITORY,
-    ROUND_REPOSITORY,
-  ],
+  imports: [OrmRepositoryModule, OrmCoreModule],
+  providers: [],
+  exports: [OrmRepositoryModule, OrmCoreModule],
 })
 export class OrmModule {}

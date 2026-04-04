@@ -1,12 +1,8 @@
-
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, FindOptionsWhere, FindOneOptions } from "typeorm";
-import { Bet, BetStatus } from "../entites/bet.entity";
-import { type IBetRepository } from "@/domain/orm/repositories/bet.repository";
-
-
-
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, FindOptionsWhere, FindOneOptions } from 'typeorm';
+import { Bet, BetStatus } from '../entites/bet.entity';
+import { type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 
 @Injectable()
 export class BetRepository implements IBetRepository {
@@ -16,10 +12,7 @@ export class BetRepository implements IBetRepository {
   ) {}
 
   async setPendingBetsToLost(roundId: string): Promise<void> {
-    await this.repository.update(
-      { roundId, status: BetStatus.PENDING },
-      { status: BetStatus.LOST },
-    );
+    await this.repository.update({ roundId, status: BetStatus.PENDING }, { status: BetStatus.LOST });
   }
 
   async save(bet: Bet): Promise<Bet> {
@@ -62,10 +55,10 @@ export class BetRepository implements IBetRepository {
 
     return this.repository.findAndCount({
       where,
-      order: { createdAt: "DESC" },
+      order: { createdAt: 'DESC' },
       skip,
       take: limit,
-      relations: ["round"],
+      relations: ['round'],
     });
   }
 }

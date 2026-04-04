@@ -53,6 +53,7 @@ import { AuthController } from '@/application/auth/auth.controller';
     EventEmitterModule,
     TimerModule,
     AuthModule,
+    
     OrmModule,
     GameModule,
     ProxyModule,
