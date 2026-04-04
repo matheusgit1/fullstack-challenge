@@ -2,24 +2,18 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { appConfig } from '@/configs/app.config';
-import { type IProvablyFairService, PROVABY_SERVICE } from '@/domain/core/provably-fair/provably-fair.service';
 import { GAME_ENGINE_SERVICE, type IGameEngineService } from '@/domain/game/game.engine';
-import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 
 @Injectable()
 export class TimerService {
-  private readonly logger = new Logger(TimerService.name);
+  logger = new Logger(TimerService.name);
   constructor(
     private readonly eventEmitter: EventEmitter2,
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
     @Inject(GAME_ENGINE_SERVICE)
     private readonly gameEngineService: IGameEngineService,
-    @Inject(PROVABY_SERVICE)
-    private readonly provablyFairService: IProvablyFairService,
-    @Inject(BET_REPOSITORY)
-    private readonly betRepository: IBetRepository,
   ) {}
 
   @Interval('betting.phase', appConfig.bettingDurationSeconds * 1000)
