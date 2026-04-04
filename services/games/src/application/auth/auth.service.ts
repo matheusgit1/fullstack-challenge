@@ -7,12 +7,12 @@ import { type IKeyCloakService, KEYCLOACK_PROVIDER } from '@/domain/keycloack/ke
 export class AuthService {
   constructor(@Inject(KEYCLOACK_PROVIDER) readonly keycloakService: IKeyCloakService) {}
 
-  async validateToken(token?: string): Promise<void> {
+  async validateToken(token?: string): Promise<User | void> {
     if (!token) {
       throw new Error('Token não fornecido');
     }
 
-    await this.keycloakService.getUserFromToken(token);
+    return await this.keycloakService.getUserFromToken(token);
   }
 
   public async getToken(body: LoginDto): Promise<LoginResponseDto> {
