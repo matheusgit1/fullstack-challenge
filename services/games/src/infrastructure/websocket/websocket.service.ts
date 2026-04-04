@@ -1,10 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { WebSocket } from "ws";
-import { ConnectedClient, WebSocketMessage } from "./types/websocket.types";
+import { Injectable, Logger } from '@nestjs/common';
+import { WebSocket } from 'ws';
+import { ConnectedClient, WebSocketMessage } from './types/websocket.types';
+import { type IWebSocketService } from '@/domain/websocket/websocket.service';
 
 @Injectable()
-export class WebSocketService {
-  private readonly logger = new Logger(WebSocketService.name);
+export class WebSocketService implements IWebSocketService {
+  logger = new Logger(WebSocketService.name);
   private clients: Map<string, ConnectedClient> = new Map();
 
   addClient(client: WebSocket, clientId: string): void {
@@ -17,9 +18,7 @@ export class WebSocketService {
   }
 
   removeClient(client: WebSocket): void {
-    const disconnectedClient = Array.from(this.clients.entries()).find(
-      ([_, value]) => value.ws === client,
-    );
+    const disconnectedClient = Array.from(this.clients.entries()).find(([_, value]) => value.ws === client);
 
     if (disconnectedClient) {
       const [clientId] = disconnectedClient;
@@ -49,16 +48,16 @@ export class WebSocketService {
 
   sendConnectionSuccess(client: WebSocket, clientId: string): void {
     client.send(
-      this.formatMessage("connection", {
-        status: "connected",
+      this.formatMessage('connection', {
+        status: 'connected',
         clientId: clientId,
-        message: "Successfully connected to WebSocket server",
+        message: 'Successfully connected to WebSocket server',
       }),
     );
   }
 
   sendPong(client: WebSocket, data: any): void {
-    client.send(this.formatMessage("pong", data));
+    client.send(this.formatMessage('pong', data));
   }
 
   private formatMessage(type: string, data: any): string {

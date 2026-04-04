@@ -73,7 +73,6 @@ export class TimerService {
   @Interval('betting.running', appConfig.bettingRunningCheckIntervalSeconds * 1000)
   async handleNewBetting() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
-    this.logger.log(`[Trace:NO-TRACING] Fase de running em analise.`);
     if (activeRound && activeRound.isRunning()) {
       if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
         this.logger.log(`[Trace:NO-TRACING] Fase de running sendo encerrada.`);
