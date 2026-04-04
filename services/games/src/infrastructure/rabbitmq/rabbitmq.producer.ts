@@ -11,19 +11,14 @@ import {
 
 @Injectable()
 export class RabbitmqProducerService implements IRabbitmqProducerService {
-  private channel: amqp.Channel | null = null;
-  private readonly logger = new Logger(RabbitmqProducerService.name);
-  private readonly uri: string;
-  private readonly defaultQueue: string;
+  channel: amqp.Channel | null = null;
+  logger = new Logger(RabbitmqProducerService.name);
 
-  constructor() {
-    this.uri = rabbitConfig.uri;
-    this.defaultQueue = rabbitConfig.queue;
-  }
+  constructor() {}
 
   private async connect() {
     try {
-      const connection = await amqp.connect(this.uri);
+      const connection = await amqp.connect(rabbitConfig.uri);
       this.channel = await connection.createChannel();
       this.logger.log('Conectado ao RabbitMQ');
     } catch (error) {
@@ -50,8 +45,8 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     };
 
     try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.sendMessage(this.defaultQueue, message);
+      await this.channel!.assertQueue(rabbitConfig.queue, { durable: true });
+      this.sendMessage(rabbitConfig.queue, message);
       this.logger.log(` BET_LOST message enviada para userId: ${messageToSend.userId}`, {
         externalId: messageToSend.externalId,
       });
@@ -79,8 +74,8 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     };
 
     try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.sendMessage(this.defaultQueue, message);
+      await this.channel!.assertQueue(rabbitConfig.queue, { durable: true });
+      this.sendMessage(rabbitConfig.queue, message);
       this.logger.log(` BET_PLACED message enviada para userId: ${messageToSend.userId}`, {
         multiplier: messageToSend.multiplier,
         externalId: messageToSend.externalId,
@@ -111,8 +106,8 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     };
 
     try {
-      await this.channel!.assertQueue(this.defaultQueue, { durable: true });
-      this.sendMessage(this.defaultQueue, message);
+      await this.channel!.assertQueue(rabbitConfig.queue, { durable: true });
+      this.sendMessage(rabbitConfig.queue, message);
       this.logger.log(` BET_RESERVE message enviada para userId: ${messageToSend.userId}`, {
         amount: messageToSend.amount,
         externalId: messageToSend.externalId,
