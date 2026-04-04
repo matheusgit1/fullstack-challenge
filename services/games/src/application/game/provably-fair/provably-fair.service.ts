@@ -1,26 +1,23 @@
-import { createHash, randomBytes } from "crypto";
-import {
-  Injectable,
-} from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { type IProvablyFairService } from "@/domain/core/provably-fair/provably-fair.service";
-import { ProvablyFairSeed } from "@/infrastructure/database/orm/entites/provably-fair.entity";
-import { RoundRepository } from "@/infrastructure/database/orm/repository/round.repository";
+import { createHash, randomBytes } from 'crypto';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { type IProvablyFairService } from '@/domain/core/provably-fair/provably-fair.service';
+import { ProvablyFairSeed } from '@/infrastructure/database/orm/entites/provably-fair.entity';
+import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 
 @Injectable()
 export class ProvablyFairService implements IProvablyFairService {
   constructor(
     @InjectRepository(ProvablyFairSeed)
     private readonly seedRepository: Repository<ProvablyFairSeed>,
-    private readonly roundRepository: RoundRepository,
+    @Inject(ROUND_REPOSITORY)
+    private readonly roundRepository: IRoundRepository,
   ) {}
 
   async generateNewSeed(clientSeed?: string): Promise<ProvablyFairSeed> {
-    const serverSeed = randomBytes(32).toString("hex");
-    const serverSeedHash = createHash("sha256")
-      .update(serverSeed)
-      .digest("hex");
+    const serverSeed = randomBytes(32).toString('hex');
+    const serverSeedHash = createHash('sha256').update(serverSeed).digest('hex');
 
     const finalClientSeed = clientSeed || `jungle_${Date.now()}`;
 
@@ -38,7 +35,7 @@ export class ProvablyFairService implements IProvablyFairService {
   async getActiveSeed(): Promise<ProvablyFairSeed> {
     let activeSeed = await this.seedRepository.findOne({
       where: { isUsed: false },
-      order: { createdAt: "DESC" },
+      order: { createdAt: 'DESC' },
     });
 
     if (!activeSeed) {
@@ -67,7 +64,7 @@ export class ProvablyFairService implements IProvablyFairService {
   }
 
   async incrementNonce(seedId: string): Promise<void> {
-    await this.seedRepository.increment({ id: seedId }, "nonce", 1);
+    await this.seedRepository.increment({ id: seedId }, 'nonce', 1);
   }
 
   async calculateCrashPoint(
@@ -77,7 +74,7 @@ export class ProvablyFairService implements IProvablyFairService {
     houseEdgePercent: number = 1,
   ): Promise<number> {
     const combined = `${serverSeed}:${clientSeed}:${nonce}`;
-    const hash = createHash("sha256").update(combined).digest("hex");
+    const hash = createHash('sha256').update(combined).digest('hex');
     const hex = hash.substring(0, 13);
     const int = parseInt(hex, 16);
     const max = Math.pow(2, 52);
@@ -101,14 +98,9 @@ export class ProvablyFairService implements IProvablyFairService {
     serverSeedHash: string;
     expectedHash: string;
   }> {
-    const expectedHash = createHash("sha256").update(serverSeed).digest("hex");
+    const expectedHash = createHash('sha256').update(serverSeed).digest('hex');
 
-    const calculatedCrashPoint = await this.calculateCrashPoint(
-      serverSeed,
-      clientSeed,
-      nonce,
-      houseEdgePercent,
-    );
+    const calculatedCrashPoint = await this.calculateCrashPoint(serverSeed, clientSeed, nonce, houseEdgePercent);
 
     const isValid = Math.abs(calculatedCrashPoint - expectedCrashPoint) < 0.01;
 
@@ -120,9 +112,9 @@ export class ProvablyFairService implements IProvablyFairService {
     };
   }
 
-  async setSeedAsUsed(clientSeed: string): Promise<void> {
+  async setSeedAsUsed(clientSeedId: string): Promise<void> {
     await this.seedRepository.update(
-      { clientSeed: clientSeed },
+      { id: clientSeedId },
       {
         isUsed: true,
         usedAt: new Date(),
@@ -140,22 +132,17 @@ export class ProvablyFairService implements IProvablyFairService {
     return this.generateNewSeed(newClientSeed);
   }
 
-  async getUserSeedsHistory(
-    page: number = 1,
-    limit: number = 20,
-  ): Promise<[ProvablyFairSeed[], number]> {
+  async getUserSeedsHistory(page: number = 1, limit: number = 20): Promise<[ProvablyFairSeed[], number]> {
     const skip = (page - 1) * limit;
 
     return this.seedRepository.findAndCount({
-      order: { createdAt: "DESC" },
+      order: { createdAt: 'DESC' },
       skip,
       take: limit,
     });
   }
 
-  async getProvablyFairDataForRound(
-    roundId: string,
-  ): Promise<ProvablyFairSeed | null> {
+  async getProvablyFairDataForRound(roundId: string): Promise<ProvablyFairSeed | null> {
     const round = await this.roundRepository.findByRoundId(roundId);
 
     if (!round) {
@@ -163,7 +150,7 @@ export class ProvablyFairService implements IProvablyFairService {
     }
 
     const fair = await this.seedRepository.findOne({
-      where: { clientSeed: round.clientSeed || "" },
+      where: { clientSeed: round.clientSeed || '' },
     });
 
     if (!fair) {

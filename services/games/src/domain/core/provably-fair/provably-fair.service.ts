@@ -21,7 +21,6 @@ export interface IProvablyFairService {
   getActiveSeed(): Promise<ProvablyFairSeed>;
   getNextSeedForRound(): Promise<IProvablyFairData>;
   incrementNonce(seedId: string): Promise<void>;
-
   calculateCrashPoint(
     serverSeed: string,
     clientSeed: string,
@@ -35,7 +34,6 @@ export interface IProvablyFairService {
     expectedCrashPoint: number,
     houseEdgePercent?: number,
   ): Promise<IVerificationResult>;
-
   setSeedAsUsed(clientSeed: string): Promise<void>;
   rotateSeed(newClientSeed?: string): Promise<ProvablyFairSeed>;
   getUserSeedsHistory(
