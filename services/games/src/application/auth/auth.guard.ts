@@ -1,15 +1,17 @@
-import { CanActivate, Dependencies, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, Dependencies, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { KeycloakService } from '../../infrastructure/keycloack/keycloack.service';
 import { AuthGuardType, AUTH_GUARD_TYPE } from './auth.decorator';
+import { type IKeyCloakService, KEYCLOACK_PROVIDER } from '@/domain/keycloack/keycloack.service';
 
 @Injectable()
 @Dependencies(Reflector, KeycloakService)
 export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private keycloackService: KeycloakService,
+    @Inject(KEYCLOACK_PROVIDER)
+    private keycloackService: IKeyCloakService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -23,10 +25,10 @@ export class AuthGuard implements CanActivate {
 
     switch (authGuardType) {
       case AuthGuardType.GUARD:
-        const user = await this.keycloackService.getUserFromToken(token || 'fake token');
+        const user = await this.keycloackService.getUserFromToken(token);
         request.user = user;
         request.token = token;
-        return !!user;
+        return !!token;
       case AuthGuardType.NONE:
         return true;
       default:

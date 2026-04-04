@@ -1,15 +1,15 @@
-import { Injectable } from "@nestjs/common";
-import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
-import { LoginResponseDto } from "./dtos/login-response.dto";
-import { LoginDto } from "./dtos/login.dto";
+import { Injectable, Inject } from '@nestjs/common';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { LoginDto } from './dtos/login.dto';
+import { type IKeyCloakService, KEYCLOACK_PROVIDER } from '@/domain/keycloack/keycloack.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly keycloakService: KeycloakService) {}
+  constructor(@Inject(KEYCLOACK_PROVIDER) readonly keycloakService: IKeyCloakService) {}
 
   async validateToken(token?: string): Promise<void> {
     if (!token) {
-      throw new Error("Token não fornecido");
+      throw new Error('Token não fornecido');
     }
 
     await this.keycloakService.getUserFromToken(token);
@@ -24,7 +24,7 @@ export class AuthService {
       refreshToken: tokenResponse.refresh_token,
       tokenType: tokenResponse.token_type,
       idToken: tokenResponse.id_token,
-      notBeforePolicy: Number(tokenResponse["not-before-policy"]),
+      notBeforePolicy: Number(tokenResponse['not-before-policy']),
       sessionState: tokenResponse.session_state,
       scopes: tokenResponse.scope,
     });

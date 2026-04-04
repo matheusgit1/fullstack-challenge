@@ -5,6 +5,7 @@ import { KeycloakModule } from '../../infrastructure/keycloack/keycloack.module'
 import { KeycloakService } from '../../infrastructure/keycloack/keycloack.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { KEYCLOACK_PROVIDER } from '@/domain/keycloack/keycloack.service';
 
 @Global()
 @Module({
@@ -17,7 +18,13 @@ import { AuthService } from './auth.service';
     ConfigModule,
   ],
   controllers: [AuthController],
-  providers: [KeycloakService, AuthService],
-  exports: [KeycloakService, AuthService],
+  providers: [
+    {
+      provide: KEYCLOACK_PROVIDER,
+      useClass: KeycloakService,
+    },
+    AuthService,
+  ],
+  exports: [KEYCLOACK_PROVIDER, AuthService],
 })
 export class AuthModule {}

@@ -1,23 +1,11 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
-import { Interval } from "@nestjs/schedule";
-import { appConfig } from "@/configs/app.config";
-import {
-  type IProvablyFairService,
-  PROVABY_SERVICE,
-} from "@/domain/core/provably-fair/provably-fair.service";
-import {
-  GAME_ENGINE_SERVICE,
-  type IGameEngineService,
-} from "@/domain/game/game.engine";
-import {
-  BET_REPOSITORY,
-  type IBetRepository,
-} from "@/domain/orm/repositories/bet.repository";
-import {
-  type IRoundRepository,
-  ROUND_REPOSITORY,
-} from "@/domain/orm/repositories/round.repository";
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
+import { appConfig } from '@/configs/app.config';
+import { type IProvablyFairService, PROVABY_SERVICE } from '@/domain/core/provably-fair/provably-fair.service';
+import { GAME_ENGINE_SERVICE, type IGameEngineService } from '@/domain/game/game.engine';
+import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
+import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 
 @Injectable()
 export class TimerService {
@@ -34,7 +22,7 @@ export class TimerService {
     private readonly betRepository: IBetRepository,
   ) {}
 
-  @Interval("betting.phase", appConfig.bettingDurationSeconds * 1000)
+  @Interval('betting.phase', appConfig.bettingDurationSeconds * 1000)
   async handleBettingPhase() {
     const activeRound = await this.roundRepository.findCurrentBettingRound();
     this.logger.log(`[Trace:NO-TRACING] Fase de betting iniciada.`);
@@ -42,11 +30,9 @@ export class TimerService {
       if (activeRound.bettingEndsAt < new Date(Date.now())) {
         await this.gameEngineService.runningRound(activeRound);
 
-        this.logger.log(
-          "Fase de betting encerrada, emitindo evento de fase de running.",
-        );
+        this.logger.log('Fase de betting encerrada, emitindo evento de fase de running.');
 
-        this.eventEmitter.emit("betting.running", {
+        this.eventEmitter.emit('betting.running', {
           roundId: activeRound.id,
           round: activeRound,
         });
@@ -62,7 +48,7 @@ export class TimerService {
     await this.gameEngineService.startNewRound();
   }
 
-  @Interval("multiple.updated", 5 * 1000)
+  @Interval('multiple.updated', 5 * 1000)
   async handleNewCrashed() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
     this.logger.log(`[Trace:NO-TRACING] Fase de running iniciada.`);
@@ -78,11 +64,9 @@ export class TimerService {
           activeRound.setMultiplier(newMultiplier);
           await this.roundRepository.saveRound(activeRound);
 
-          this.logger.log(
-            `Multiplicador atualizado para ${newMultiplier.toFixed(2)}x`,
-          );
+          this.logger.log(`Multiplicador atualizado para ${newMultiplier.toFixed(2)}x`);
 
-          this.eventEmitter.emit("multiplier.updated", {
+          this.eventEmitter.emit('multiplier.updated', {
             roundId: activeRound.id,
             multiplier: newMultiplier,
             crashPoint: activeRound.crashPoint,
@@ -92,13 +76,9 @@ export class TimerService {
     }
   }
 
-  @Interval(
-    "betting.running",
-    appConfig.bettingRunningCheckIntervalSeconds * 1000,
-  )
+  @Interval('betting.running', appConfig.bettingRunningCheckIntervalSeconds * 1000)
   async handleNewBetting() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
-    console.log(activeRound);
     this.logger.log(`[Trace:NO-TRACING] Fase de running em analise.`);
     if (activeRound && activeRound.isRunning()) {
       if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
@@ -107,12 +87,12 @@ export class TimerService {
         this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
         this.gameEngineService.endRound(activeRound);
 
-        this.eventEmitter.emit("betting.loose", {
+        this.eventEmitter.emit('betting.loose', {
           roundId: activeRound.id,
           tracingId: tracingId,
         });
 
-        this.eventEmitter.emit("betting.crashed", {
+        this.eventEmitter.emit('betting.crashed', {
           roundId: activeRound.id,
           round: activeRound,
           tracingId: tracingId,
@@ -121,19 +101,13 @@ export class TimerService {
     }
   }
 
-  private calculateMultiplierInterpolation(
-    startedAt: Date,
-    crashedAt: Date,
-    crashPoint: number,
-  ): number {
+  private calculateMultiplierInterpolation(startedAt: Date, crashedAt: Date, crashPoint: number): number {
     const now = Date.now();
     const startTime = startedAt.getTime();
     const crashTime = crashedAt.getTime();
 
     if (!startedAt || !crashedAt || !crashPoint || crashPoint <= 1.0) {
-      this.logger.warn(
-        "Parâmetros inválidos para interpolação de multiplicador",
-      );
+      this.logger.warn('Parâmetros inválidos para interpolação de multiplicador');
       return 1.0;
     }
 

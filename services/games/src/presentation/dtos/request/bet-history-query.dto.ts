@@ -1,6 +1,6 @@
 import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class BetsHistoryQueryDto {
   @ApiPropertyOptional({ example: 1, default: 1, nullable: true })
@@ -16,5 +16,7 @@ export class BetsHistoryQueryDto {
   limit?: number = 20;
 
   @ApiPropertyOptional({ enum: BetStatus, example: BetStatus.PENDING, nullable: true })
+  @IsEnum(BetStatus)
+  @IsOptional()
   status?: BetStatus;
 }

@@ -16,6 +16,7 @@ export class GetMyBetsUseCase implements HandlerUsecase {
 
   async handler(query: BetsHistoryQueryDto): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
     const { user, hash, token } = this.request;
+
     query.page = query.page || 1;
     query.limit = query.limit || 20;
 

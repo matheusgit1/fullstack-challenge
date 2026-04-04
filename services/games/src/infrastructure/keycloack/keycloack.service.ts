@@ -1,22 +1,11 @@
-import { HttpService } from "@nestjs/axios";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { lastValueFrom } from "rxjs";
-import { appConfig } from "../../configs/app.config";
-
-export interface KeycloakTokenResponse {
-  access_token: string;
-  expires_in: number;
-  refresh_expires_in: number;
-  refresh_token: string;
-  token_type: string;
-  id_token: string;
-  "not-before-policy": string;
-  session_state: string;
-  scope: string;
-}
+import { HttpService } from '@nestjs/axios';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { lastValueFrom } from 'rxjs';
+import { appConfig } from '../../configs/app.config';
+import type { IKeyCloakService, KeycloakTokenResponse } from '@/domain/keycloack/keycloack.service';
 
 @Injectable()
-export class KeycloakService {
+export class KeycloakService implements IKeyCloakService {
   constructor(private httpService: HttpService) {}
 
   public async getUserFromToken(token?: string): Promise<User> {
@@ -35,15 +24,12 @@ export class KeycloakService {
 
       return response.data satisfies User;
     } catch (error) {
-      console.error("Erro ao validar token", error);
-      throw new UnauthorizedException("Erro ao validar token");
+      console.error('Erro ao validar token', error);
+      throw new UnauthorizedException('Erro ao validar token');
     }
   }
 
-  async getToken(body: {
-    username: string;
-    password: string;
-  }): Promise<KeycloakTokenResponse> {
+  async getToken(body: { username: string; password: string }): Promise<KeycloakTokenResponse> {
     try {
       const keycloakUrl = appConfig.keycloakUrl;
       const realm = appConfig.realm;
@@ -54,23 +40,23 @@ export class KeycloakService {
         this.httpService.post(
           getTokenUrl,
           {
-            grant_type: "password",
+            grant_type: 'password',
             client_id: audience,
             username: body.username,
             password: body.password,
-            scope: "openid profile email",
+            scope: 'openid profile email',
           },
           {
             headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
+              'Content-Type': 'application/x-www-form-urlencoded',
             },
           },
         ),
       );
       return response.data satisfies KeycloakTokenResponse;
     } catch (error) {
-      console.error("Erro ao obter token", error);
-      throw new UnauthorizedException("Erro ao obter token");
+      console.error('Erro ao obter token', error);
+      throw new UnauthorizedException('Erro ao obter token');
     }
   }
 }

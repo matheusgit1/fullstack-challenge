@@ -25,10 +25,14 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@crash/core": ["../../packages/@crash/src"],
-      "@crash/core/*": ["../../packages/@crash/src/*"]
-    }
+      // "@crash/core": ["../../packages/@crash/src"],
+      // "@crash/core/*": ["../../packages/@crash/src/*"]
+    },
+    "types": ["jest"]
   },
-  "include": ["src/**/*", "../../packages/@crash/src/**/*"],
+  "include": [
+    "src/**/*"
+    // "../../packages/@crash/src/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }
