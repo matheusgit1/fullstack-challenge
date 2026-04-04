@@ -1,13 +1,13 @@
-import { Injectable, Logger } from "@nestjs/common";
-import * as amqp from "amqplib";
-import { rabbitConfig } from "@/configs/rabbitmq.config";
+import { Injectable, Logger } from '@nestjs/common';
+import * as amqp from 'amqplib';
+import { rabbitConfig } from '@/configs/rabbitmq.config';
 import {
   type CashinMessage,
   type CashoutMessage,
   type CashReserveMessage,
   type IRabbitmqProducerService,
   TransactionSource,
-} from "@/domain/rabbitmq/rabbitmq.producer";
+} from '@/domain/rabbitmq/rabbitmq.producer';
 
 @Injectable()
 export class RabbitmqProducerService implements IRabbitmqProducerService {
@@ -25,9 +25,9 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     try {
       const connection = await amqp.connect(this.uri);
       this.channel = await connection.createChannel();
-      this.logger.log("Conectado ao RabbitMQ");
+      this.logger.log('Conectado ao RabbitMQ');
     } catch (error) {
-      this.logger.error("Erro ao conectar ao RabbitMQ:");
+      this.logger.error('Erro ao conectar ao RabbitMQ:');
       this.logger.error(error);
       throw error;
     }
@@ -39,7 +39,7 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     }
 
     const message = {
-      pattern: "cash",
+      pattern: 'cash',
       data: {
         cashType: messageToSend.cashType,
         userId: messageToSend.userId,
@@ -52,10 +52,9 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
-      this.logger.log(
-        ` BET_LOST message enviada para userId: ${messageToSend.userId}`,
-        { externalId: messageToSend.externalId },
-      );
+      this.logger.log(` BET_LOST message enviada para userId: ${messageToSend.userId}`, {
+        externalId: messageToSend.externalId,
+      });
     } catch (error) {
       this.logger.error(` Erro ao enviar BET_LOST message`, error as Error);
       throw error;
@@ -68,7 +67,7 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     }
 
     const message = {
-      pattern: "cash",
+      pattern: 'cash',
       data: {
         cashType: messageToSend.cashType,
         userId: messageToSend.userId,
@@ -82,16 +81,11 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
-      this.logger.log(
-        ` BET_PLACED message enviada para userId: ${messageToSend.userId}`,
-        {
-          multiplier: messageToSend.multiplier,
-          externalId: messageToSend.externalId,
-        },
-      );
-      this.logger.log(
-        `BET_PLACED message enviada para userId: ${messageToSend.userId}`,
-      );
+      this.logger.log(` BET_PLACED message enviada para userId: ${messageToSend.userId}`, {
+        multiplier: messageToSend.multiplier,
+        externalId: messageToSend.externalId,
+      });
+      this.logger.log(`BET_PLACED message enviada para userId: ${messageToSend.userId}`);
     } catch (error) {
       this.logger.error(` Erro ao enviar BET_PLACED message`, error as Error);
       this.logger.log(`Erro ao enviar BET_PLACED message`);
@@ -105,7 +99,7 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     }
 
     const message = {
-      pattern: "cash",
+      pattern: 'cash',
       data: {
         cashType: TransactionSource.BET_RESERVE,
         userId: messageToSend.userId,
@@ -119,10 +113,10 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     try {
       await this.channel!.assertQueue(this.defaultQueue, { durable: true });
       this.sendMessage(this.defaultQueue, message);
-      this.logger.log(
-        ` BET_RESERVE message enviada para userId: ${messageToSend.userId}`,
-        { amount: messageToSend.amount, externalId: messageToSend.externalId },
-      );
+      this.logger.log(` BET_RESERVE message enviada para userId: ${messageToSend.userId}`, {
+        amount: messageToSend.amount,
+        externalId: messageToSend.externalId,
+      });
     } catch (error) {
       this.logger.error(` Erro ao enviar BET_RESERVE message`, error as Error);
       throw error;
@@ -133,7 +127,7 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     if (this.channel) {
       await this.channel.close();
     }
-    this.logger.log("Conexão com RabbitMQ fechada");
+    this.logger.log('Conexão com RabbitMQ fechada');
   }
 
   private sendMessage(queue: string, message: any, repeat: number = 3) {

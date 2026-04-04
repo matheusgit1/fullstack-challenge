@@ -1,15 +1,14 @@
-import { Module } from "@nestjs/common";
-import { RabbitmqProducerService } from "./rabbitmq.producer";
-import { RABBITMQ_PRODUCER_SERVICE } from "@/domain/rabbitmq/rabbitmq.producer";
+import { Module } from '@nestjs/common';
+import { RabbitmqProducerService } from './rabbitmq.producer';
+import { RABBITMQ_PRODUCER_SERVICE } from '@/domain/rabbitmq/rabbitmq.producer';
 
 @Module({
   providers: [
-    RabbitmqProducerService,
     {
       provide: RABBITMQ_PRODUCER_SERVICE,
       useClass: RabbitmqProducerService,
     },
   ],
-  exports: [RabbitmqProducerService, RABBITMQ_PRODUCER_SERVICE],
+  exports: [RABBITMQ_PRODUCER_SERVICE],
 })
 export class RabbitmqModule {}
