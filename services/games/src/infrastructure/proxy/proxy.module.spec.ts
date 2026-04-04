@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpModule, HttpService } from '@nestjs/axios';
-import { WalletProxy } from './services/wallets.service';
+import { WalletProxy } from './wallets.proxy';
 import { WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
 import { ProxyModule } from './proxy.module';
 

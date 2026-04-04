@@ -16,7 +16,7 @@ import { OrmModule } from '@/infrastructure/database/orm/orm.module';
 import { BetRepository } from '@/infrastructure/database/orm/repository/bet.repository';
 import { RoundRepository } from '@/infrastructure/database/orm/repository/round.repository';
 import { ProxyModule } from '@/infrastructure/proxy/proxy.module';
-import { WalletProxy } from '@/infrastructure/proxy/services/wallets.service';
+import { WalletProxy } from '@/infrastructure/proxy/wallets.proxy';
 import { RabbitmqModule } from '@/infrastructure/rabbitmq/rabbitmq.module';
 import { RabbitmqProducerService } from '@/infrastructure/rabbitmq/rabbitmq.producer';
 import { WebsocketModule } from '@/infrastructure/websocket/websocket.module';
@@ -53,7 +53,7 @@ import { AuthController } from '@/application/auth/auth.controller';
     EventEmitterModule,
     TimerModule,
     AuthModule,
-    
+
     OrmModule,
     GameModule,
     ProxyModule,

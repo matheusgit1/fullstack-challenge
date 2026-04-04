@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
 import { of, throwError } from 'rxjs';
-import { WalletProxy } from './wallets.service';
+import { WalletProxy } from './wallets.proxy';
 
 describe('WalletProxy', () => {
   let service: WalletProxy;
