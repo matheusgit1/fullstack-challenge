@@ -1,8 +1,6 @@
-import { HttpModule } from '@nestjs/axios';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthGuard } from '@/application/auth/auth.guard';
 import { TimerModule } from '@/application/events/timer/timer.module';
@@ -32,28 +30,15 @@ import { GetMyBetsUseCase } from '@/presentation/usecases/my-bets.usecase';
 import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase';
 import { AuthModule } from '@/application/auth/auth.module';
 import { AuthController } from '@/application/auth/auth.controller';
+import { EventModule } from '@/application/events/event/event.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot({}),
-    HttpModule.register({
-      timeout: 5000,
-      maxRedirects: 5,
-    }),
-    EventEmitterModule.forRoot({
-      wildcard: false,
-      delimiter: '.',
-      newListener: false,
-      removeListener: false,
-      maxListeners: 10,
-      verboseMemoryLeak: true,
-      ignoreErrors: false,
-    }),
-    EventEmitterModule,
+    EventModule,
     TimerModule,
     AuthModule,
-
     OrmModule,
     GameModule,
     ProxyModule,
