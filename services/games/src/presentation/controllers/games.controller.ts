@@ -46,7 +46,7 @@ export class GamesController {
     type: BaseSuccessResponseDto(CurrentRoundResponseDto),
   })
   async getCurrentRound(): Promise<CurrentRoundResponseDto> {
-    return this.currentRoundUseCase.handler();
+    return await this.currentRoundUseCase.handler();
   }
 
   @Get('rounds/history')
