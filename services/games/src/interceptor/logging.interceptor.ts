@@ -1,12 +1,12 @@
-import { CallHandler, Logger } from "@nestjs/common";
-import { ExecutionContext } from "@nestjs/common";
-import { NestInterceptor } from "@nestjs/common";
-import { type Request } from "express";
-import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
+import { CallHandler, Logger } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
+import { NestInterceptor } from '@nestjs/common';
+import { type Request } from 'express';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger();
+  logger = new Logger();
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -18,13 +18,6 @@ export class LoggingInterceptor implements NestInterceptor {
     const now = Date.now();
     return next
       .handle()
-      .pipe(
-        tap(() =>
-          this.logger.log(
-            `[${hash}] Método executado em ${Date.now() - now} ms.`,
-            metodo,
-          ),
-        ),
-      );
+      .pipe(tap(() => this.logger.log(`[${hash}] Método executado em ${Date.now() - now} ms.`, metodo)));
   }
 }
