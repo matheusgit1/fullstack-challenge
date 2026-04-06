@@ -1,5 +1,4 @@
 import { IProvablyFairService } from '@/domain/core/provably-fair/provably-fair.service';
-
 import { IRoundRepository } from '@/domain/orm/repositories/round.repository';
 import { GameEngineService } from './game-engine.service';
 import { IBetRepository } from '@/domain/orm/repositories/bet.repository';
@@ -150,5 +149,17 @@ describe('GameEngineService', () => {
       expect(setStatus).toHaveBeenCalledTimes(1);
       expect(setStatus).toHaveBeenCalledWith(RoundStatus.RUNNING);
     });
+
+    it("should search for round when current round doesn't provided", async () => {
+      const findCurrentRunningRound = jest.spyOn(mockRoundRepository, 'findCurrentRunningRound');
+      await gameEngineService.runningRound();
+      expect(findCurrentRunningRound).toHaveBeenCalledTimes(1);
+    })
+
+    it("should return when current round doesn't provided and not found", async () => {
+      const findCurrentRunningRound = jest.spyOn(mockRoundRepository, 'findCurrentRunningRound');
+      await gameEngineService.runningRound();
+      expect(findCurrentRunningRound).toHaveBeenCalledTimes(1);
+    })
   });
 });

@@ -8,7 +8,7 @@ import { CurrentRoundResponseDto } from '../dtos/response/current-round-response
 import { HealthCheckResponseDto } from '../dtos/response/health-check-response.dto';
 import { RoundHistoryItemDto } from '../dtos/response/round-history-response.dto';
 import { RoundVerifyResponseDto } from '../dtos/response/round-verify-response.dto';
-import { PaginatedResponseDto } from '../dtos/response/round.dto';
+import { PaginatedResponseDto } from '../dtos/response/paginated-reponse.dto';
 import { BetUseCase } from '../usecases/bet.usecase';
 import { CashOutUsecase } from '../usecases/cashout.usecase';
 import { HistoryRoundUsecase } from '../usecases/history-round.usecase';

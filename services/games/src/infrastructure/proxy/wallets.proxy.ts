@@ -20,7 +20,7 @@ export class WalletProxy implements IWalletProxy {
 
       return response.data satisfies UserWallet;
     } catch (error) {
-      console.error('Error fetching user balance:', error);
+      // console.error('Error fetching user balance:', error);
       throw new Error('Failed to fetch user balance');
     }
   }

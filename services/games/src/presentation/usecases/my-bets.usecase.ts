@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { type Request } from 'express';
 import { BetHistoryItemDto } from '../dtos/response/bets-history-response.dto';
-import { PaginatedResponseDto } from '../dtos/response/round.dto';
+import { PaginatedResponseDto } from '../dtos/response/paginated-reponse.dto';
 import { HandlerUsecase } from '../interfaces/usecase.interface';
 import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import { BetsHistoryQueryDto } from '../dtos/request/bet-history-query.dto';
@@ -17,13 +17,13 @@ export class GetMyBetsUseCase implements HandlerUsecase {
   async handler(query: BetsHistoryQueryDto): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
     const { user, hash, token } = this.request;
 
-    query.page = query.page || 1;
-    query.limit = query.limit || 20;
+    const page = query.page && query.page <= 0 ? 1 : query.page || 1;
+    const limit = query.limit && query.limit <= 0 ? 20 : query.limit || 20;
 
     const [bets, total] = await this.betRepository.findUserBetsHistory(
       user?.sub || 'anonymous',
-      query.page,
-      query.limit,
+      page,
+      limit,
       query.status,
     );
 
@@ -42,10 +42,10 @@ export class GetMyBetsUseCase implements HandlerUsecase {
             createdAt: bet.createdAt,
           }),
       ),
-      page: query.page || 1,
-      limit: query.limit || 10,
+      page: page,
+      limit: limit,
       total: total,
-      totalPages: Math.ceil(total / query.limit),
+      totalPages: Math.ceil(total / limit),
     });
   }
 }

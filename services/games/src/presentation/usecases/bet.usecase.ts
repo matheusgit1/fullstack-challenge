@@ -28,7 +28,7 @@ export class BetUseCase implements HandlerUsecase {
   async handler(dto: BetRequestDto): Promise<BetResponseDto> {
     const { user, hash, token } = this.request;
     const userBalance = await this.proxyService.getUserBalance(token!);
-    const isAvailableBet = userBalance.balanceInCents > dto.amount;
+    const isAvailableBet = userBalance.balanceInCents >= dto.amount;
     if (!isAvailableBet) {
       throw new ConflictException('Saldo insuficiente');
     }

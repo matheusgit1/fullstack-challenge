@@ -15,6 +15,10 @@ describe('WebsocketModule', () => {
       providers: [AppWebSocketGateway, WebSocketService, BetEventHandler],
       exports: [AppWebSocketGateway, WebSocketService],
     })
+      .overrideModule(OrmModule)
+      .useModule(class {})
+      .overrideModule(RabbitmqModule)
+      .useModule(class {})
       .overrideProvider(AppWebSocketGateway)
       .useValue({})
       .overrideProvider(WebSocketService)

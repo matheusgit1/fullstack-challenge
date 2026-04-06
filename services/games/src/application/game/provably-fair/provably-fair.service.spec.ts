@@ -1,8 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { ProvablyFairService } from './provably-fair.service';
 import { ProvablyFairSeed } from '@/infrastructure/database/orm/entites/provably-fair.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
+import { mock } from 'node:test';
 
 describe('ProvablyFairService', () => {
   let service: ProvablyFairService;
@@ -33,7 +34,10 @@ describe('ProvablyFairService', () => {
           useValue: mockRoundRepository,
         },
       ],
-    }).compile();
+    })
+      .overrideModule(TypeOrmModule)
+      .useModule(class {})
+      .compile();
 
     service = module.get(ProvablyFairService);
 
@@ -95,6 +99,64 @@ describe('ProvablyFairService', () => {
       const result = await service.getProvablyFairDataForRound('1');
 
       expect(result).toBeNull();
+    });
+
+    it('should return provably fair data', async () => {
+      const result = await service.getNextSeedForRound();
+      expect(result).not.toBeNull();
+    });
+
+    it('should verify correctly', async () => {
+      mockSeedRepository.findOne.mockResolvedValue(null);
+      const result = await service.verifyRound('serverSeed', 'serverSeedHash', 1, 1);
+      expect(result).not.toBeNull();
+    });
+
+    it('should set seed as used', async () => {
+      await service.setSeedAsUsed('seed-id');
+      expect(mockSeedRepository.update).toHaveBeenCalledWith(
+        { id: 'seed-id' },
+        { isUsed: true, usedAt: expect.any(Date) },
+      );
+    });
+
+    it("should set seed as used and generate new seed if it doesn't exist", async () => {
+      mockSeedRepository.findOne.mockResolvedValue(null);
+      const response = await service.rotateSeed('newClientSeed');
+      expect(response).not.toBeNull();
+    });
+
+    it('should get seed history with params', async () => {
+      mockSeedRepository.findAndCount.mockResolvedValue([[], 10]);
+      const response = await service.getUserSeedsHistory(1, 10);
+      expect(response).not.toBeNull();
+    });
+
+    it('should get seed history without params', async () => {
+      mockSeedRepository.findAndCount.mockResolvedValue([[], 10]);
+      const response = await service.getUserSeedsHistory();
+      expect(response).not.toBeNull();
+    });
+
+    it('should get fair data for round', async () => {
+      mockRoundRepository.findByRoundId.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
+      mockSeedRepository.findOne.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
+      const response = await service.getProvablyFairDataForRound('1');
+      expect(response).not.toBeNull();
+    });
+
+    it('should return null if round not found when get fair data for round', async () => {
+      mockRoundRepository.findByRoundId.mockResolvedValue(null);
+      mockSeedRepository.findOne.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
+      const response = await service.getProvablyFairDataForRound('1');
+      expect(response).toBeNull();
+    });
+
+    it('should return null if fair data for round is null', async () => {
+      mockRoundRepository.findByRoundId.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
+      mockSeedRepository.findOne.mockResolvedValue(null);
+      const response = await service.getProvablyFairDataForRound('1');
+      expect(response).toBeNull();
     });
   });
 });

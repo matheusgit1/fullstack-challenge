@@ -20,6 +20,7 @@ export class TimerService {
   async handleBettingPhase() {
     const activeRound = await this.roundRepository.findCurrentBettingRound();
     this.logger.log(`[Trace:NO-TRACING] Fase de betting iniciada.`);
+    console.log(`[Trace:NO-TRACING] Fase de betting iniciada.`, activeRound);
     if (activeRound && activeRound.isBettingPhase()) {
       if (activeRound.bettingEndsAt < new Date(Date.now())) {
         await this.gameEngineService.runningRound(activeRound);
@@ -34,7 +35,10 @@ export class TimerService {
 
       return;
     }
-
+    console.log(`[Trace:NO-TRACING] Fase de running iniciada. entroooou lá ele`, {
+      activeRound,
+      running: activeRound?.isRunning(),
+    });
     if (activeRound && activeRound.isRunning()) {
       await this.handleNewBetting();
       return;

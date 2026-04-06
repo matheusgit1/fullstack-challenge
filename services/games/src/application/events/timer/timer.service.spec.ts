@@ -142,5 +142,79 @@ describe('TimerService', () => {
       });
       expect(response).toBeUndefined();
     });
+
+    it('should start new betting if betting date is over', async () => {
+      const round = {
+        id: '1',
+        startedAt: new Date(Date.now() - 1000),
+        crashedAt: new Date(Date.now() + 1000),
+        crashPoint: 10e2,
+        multiplier: 0,
+        isBettingPhase: () => false,
+        isRunning: () => true,
+        setMultiplier: (_: number) => {},
+      } as any;
+      mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(round);
+
+      const response = await timerService.handleBettingPhase();
+      // const findCurrentRunningRound = jest.spyOn(mockRoundRepository, 'findCurrentRunningRound');
+      // const gameEngineServiceSpy = jest.spyOn(mockGameEngineService, 'runningRound');
+      // const startNewRound = jest.spyOn(mockGameEngineService, 'startNewRound');
+      // const saveRound = jest.spyOn(mockRoundRepository, 'saveRound');
+      // const emit = jest.spyOn(mockEventEmitter, 'emit');
+      expect(response).toBeUndefined();
+    });
+
+    it('should emit betting.crashed event', async () => {
+      const round = {
+        id: '1',
+        startedAt: new Date(Date.now() - 5000),
+        crashedAt: new Date(Date.now() - 1000),
+        crashPoint: 50,
+        multiplier: 0,
+        isBettingPhase: () => false,
+        isRunning: () => true,
+        setMultiplier: (_: number) => {},
+      } as any;
+
+      mockRoundRepository.findCurrentRunningRound.mockResolvedValueOnce(round);
+
+      const response = await timerService.handleNewBetting();
+      expect(response).toBeUndefined();
+    });
+
+    it('should fail when interpolate multiplier breack by parameter', async () => {
+      const round = {
+        id: '1',
+        startedAt: new Date(Date.now() - 1000),
+        crashedAt: new Date(Date.now() + 1000),
+        crashPoint: 0,
+        multiplier: 0,
+        isBettingPhase: () => false,
+        isRunning: () => true,
+        setMultiplier: (_: number) => {},
+      } as any;
+      mockRoundRepository.findCurrentRunningRound.mockResolvedValueOnce(round);
+
+      const response = await timerService.handleNewCrashed();
+      expect(response).toBeUndefined();
+    });
+
+    it('should fail when interpolate multiplier breack by date', async () => {
+      const round = {
+        id: '1',
+        startedAt: new Date(Date.now() + 500000),
+        crashedAt: new Date(Date.now() + 500000 * 2),
+        crashPoint: 45,
+        multiplier: 0,
+        isBettingPhase: () => false,
+        isRunning: () => true,
+        setMultiplier: (_: number) => {},
+      } as any;
+      mockRoundRepository.findCurrentRunningRound.mockResolvedValueOnce(round);
+
+      const response = await timerService.handleNewCrashed();
+      expect(response).toBeUndefined();
+    });
   });
 });

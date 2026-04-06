@@ -1,8 +1,9 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { KEYCLOACK_PROVIDER, IKeyCloakService } from '@/domain/keycloack/keycloack.service';
 import { AuthService } from './auth.service';
 import { LoginResponseDto } from './dtos/login-response.dto';
+import { AuthModule } from './auth.module';
+import { KeycloakModule } from '@/infrastructure/keycloack/keycloack.module';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -16,14 +17,13 @@ describe('AuthService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        {
-          provide: KEYCLOACK_PROVIDER,
-          useValue: mockKeycloakService,
-        },
-      ],
-    }).compile();
+      imports: [AuthModule],
+    })
+      .overrideModule(KeycloakModule)
+      .useModule(class {})
+      .overrideProvider(KEYCLOACK_PROVIDER)
+      .useValue(mockKeycloakService)
+      .compile();
 
     service = module.get<AuthService>(AuthService);
     keycloakService = module.get<IKeyCloakService>(KEYCLOACK_PROVIDER);

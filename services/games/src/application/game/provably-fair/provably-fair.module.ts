@@ -20,9 +20,7 @@ import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
       provide: ROUND_REPOSITORY,
       useClass: RoundRepository,
     },
-    RoundRepository,
-    BetRepository,
   ],
-  exports: [RoundRepository, BetRepository, TypeOrmModule, PROVABY_SERVICE],
+  exports: [TypeOrmModule, PROVABY_SERVICE],
 })
 export class ProvablyFairModule {}

@@ -2,14 +2,15 @@ import { IKeyCloakService } from '@/domain/keycloack/keycloack.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
-const mockKeycloakService: jest.Mocked<IKeyCloakService> = {
-  getUserFromToken: jest.fn(),
-  getToken: jest.fn(),
-};
+describe('AuthController', () => {
+  const mockKeycloakService: jest.Mocked<IKeyCloakService> = {
+    getUserFromToken: jest.fn(),
+    getToken: jest.fn(),
+  };
 
-const authService = new AuthService(mockKeycloakService);
+  const authService = new AuthService(mockKeycloakService);
+  const controller = new AuthController(authService);
 
-describe(AuthController.name, () => {
   beforeAll(async () => {
     jest.clearAllMocks();
   });
@@ -32,7 +33,7 @@ describe(AuthController.name, () => {
         session_state: 'session_state',
         scope: 'scope',
       });
-      const response = await authService.getToken(body);
+      const response = await controller.login(body);
       expect(response).toBeDefined();
       expect(mockKeycloakService.getToken).toHaveBeenCalledWith(body);
       expect(mockKeycloakService.getUserFromToken).not.toHaveBeenCalled();
@@ -50,14 +51,14 @@ describe(AuthController.name, () => {
     it('should validate token', async () => {
       const token = 'token';
       mockKeycloakService.getUserFromToken.mockRejectedValue(new Error('Token is invalid'));
-      await expect(authService.validateToken(token)).rejects.toThrow('Token is invalid');
+      await expect(controller.validateToken(token)).rejects.toThrow('Token is invalid');
       expect(mockKeycloakService.getToken).not.toHaveBeenCalled();
     });
 
-   it('should fail to login', async () => {
+    it('should fail to login', async () => {
       const body = { username: 'username', password: 'password' };
       mockKeycloakService.getToken.mockRejectedValue(new Error('Keycloak error'));
-      await expect(authService.getToken(body)).rejects.toThrow('Keycloak error');
+      await expect(controller.login(body)).rejects.toThrow('Keycloak error');
       expect(mockKeycloakService.getUserFromToken).not.toHaveBeenCalled();
       expect(mockKeycloakService.getToken).toHaveBeenCalledWith(body);
     });
