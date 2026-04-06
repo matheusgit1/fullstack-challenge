@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import {
   CashinMessage,
   CashoutMessage,
@@ -8,35 +8,28 @@ import {
   TransactionSource,
   TransactionType,
 } from "../database/orm/entites/transaction.entity";
-import { TransactionRepository } from "../database/orm/repository/transaction.repository";
-import { TracingService } from "../tracing/tracing.service";
+import { IRabbitmqService } from "@/domain/rabbitmq/rabbitmq.service";
+import {
+  type ITransactionRepository,
+  TRANSACTION_REPOSITORY,
+} from "@/domain/orm/repositories/transaction.repository";
 
 @Injectable()
-export class RabbitmqService {
+export class RabbitmqService implements IRabbitmqService {
   constructor(
-    private readonly transactionRepository: TransactionRepository,
-    private readonly tracingService: TracingService,
+    @Inject(TRANSACTION_REPOSITORY)
+    private readonly transactionRepository: ITransactionRepository,
   ) {}
 
   private readonly logger = new Logger(RabbitmqService.name);
 
   async processReserve(message: CashReserveMessage, tracingId: string) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(tracingId);
-
-    this.logger.log(
-      `${tracePrefix} Processando BET_RESERVE para userId: ${message.userId}`,
-      { amount: message.amount, externalId: message.externalId },
-    );
-
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
 
     if (exists) {
-      this.logger.warn(
-        `${tracePrefix} Reserva duplicada ignorada (externalId: ${message.externalId})`,
-      );
       return;
     }
 
@@ -48,29 +41,15 @@ export class RabbitmqService {
       message.externalId,
       { timestamp: message.timestamp },
     );
-
-    this.logger.log(
-      `${tracePrefix} BET_RESERVE processada com sucesso - Saldo reservado: ${message.amount}`,
-    );
   }
 
   async processCashin(message: CashinMessage, tracingId: string) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(tracingId);
-
-    this.logger.log(
-      `${tracePrefix} Processando BET_PLACED (CASHIN) para userId: ${message.userId}`,
-      { multiplier: message.multiplier, externalId: message.externalId },
-    );
-
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
 
     if (!exists) {
-      this.logger.warn(
-        `${tracePrefix} Aposta sem reserva prévia (externalId: ${message.externalId})`,
-      );
       return;
     }
 
@@ -83,29 +62,15 @@ export class RabbitmqService {
       message.externalId,
       { timestamp: message.timestamp },
     );
-
-    this.logger.log(
-      `${tracePrefix} BET_PLACED processada com sucesso - Ganhos creditados: ${winAmount}`,
-    );
   }
 
   async processCashout(message: CashoutMessage, tracingId: string) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(tracingId);
-
-    this.logger.log(
-      `${tracePrefix} Processando BET_LOST (CASHOUT) para userId: ${message.userId}`,
-      { externalId: message.externalId },
-    );
-
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
 
     if (!exists) {
-      this.logger.warn(
-        `${tracePrefix} Aposta sem reserva prévia (externalId: ${message.externalId})`,
-      );
       return;
     }
 
@@ -116,10 +81,6 @@ export class RabbitmqService {
       TransactionSource.BET_LOST,
       message.externalId,
       { timestamp: message.timestamp },
-    );
-
-    this.logger.log(
-      `${tracePrefix} BET_LOST processada com sucesso - Saldo debitado: ${exists.amountInCents}`,
     );
   }
 }

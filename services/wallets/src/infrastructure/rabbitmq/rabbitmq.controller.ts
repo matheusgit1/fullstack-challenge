@@ -1,13 +1,15 @@
-import { Controller, Logger } from "@nestjs/common";
+import { Controller, Inject, Logger } from "@nestjs/common";
 import {
   Ctx,
   MessagePattern,
   Payload,
   RmqContext,
 } from "@nestjs/microservices";
-import { RabbitmqService } from "./rabbitmq.service";
 import { TransactionSource } from "../database/orm/entites/transaction.entity";
-import { TracingService } from "../tracing/tracing.service";
+import {
+  type IRabbitmqService,
+  RABBITMQ_SERVICE,
+} from "@/domain/rabbitmq/rabbitmq.service";
 
 export interface BaseMessage {
   tracingId: string;
@@ -40,8 +42,8 @@ export class RabbitmqController {
   private readonly logger = new Logger(RabbitmqController.name);
 
   constructor(
-    private readonly rabbitmqService: RabbitmqService,
-    private readonly tracingService: TracingService,
+    @Inject(RABBITMQ_SERVICE)
+    private readonly rabbitmqService: IRabbitmqService,
   ) {}
 
   @MessagePattern("cash")
@@ -49,15 +51,6 @@ export class RabbitmqController {
     @Payload() message: CashReserveMessage | CashinMessage | CashoutMessage,
     @Ctx() context: RmqContext,
   ) {
-    const tracePrefix = this.tracingService.formatTracingPrefix(
-      message.tracingId,
-    );
-
-    this.logger.log(
-      `${tracePrefix} [RabbitMQ] cash message received from userId: ${message.userId}`,
-      { type: message.cashType, externalId: message.externalId },
-    );
-
     const type = message.cashType;
 
     const channel = context.getChannelRef();
@@ -84,20 +77,10 @@ export class RabbitmqController {
           );
           break;
         default:
-          this.logger.warn(
-            `${tracePrefix} Tipo de transação não suportado: ${type}`,
-          );
           break;
       }
       channel.ack(originalMsg);
-      this.logger.log(
-        `${tracePrefix} Mensagem processada e acked com sucesso`,
-      );
     } catch (err) {
-      this.logger.error(
-        `${tracePrefix} Erro ao processar mensagem de cash`,
-        err as Error,
-      );
       channel.nack(originalMsg, false, false);
     }
   }

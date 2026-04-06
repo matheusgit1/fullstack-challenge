@@ -1,20 +1,26 @@
-import { Reflector } from "@nestjs/core";
-import { type Request } from "express";
-import { AuthGuardType, AUTH_GUARD_TYPE } from "./auth.decorator";
 import {
   CanActivate,
   Dependencies,
   ExecutionContext,
+  Inject,
   Injectable,
 } from "@nestjs/common";
-import { KeycloakService } from "../keycloack/keycloack.service";
+import { Reflector } from "@nestjs/core";
+import type { Request } from "express";
+import { KeycloakService } from "../../infrastructure/keycloack/keycloack.service";
+import { AuthGuardType, AUTH_GUARD_TYPE } from "./auth.decorator";
+import {
+  type IKeyCloakService,
+  KEYCLOACK_PROVIDER,
+} from "@/domain/keycloack/keycloack.service";
 
 @Injectable()
 @Dependencies(Reflector, KeycloakService)
 export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private keycloackService: KeycloakService,
+    @Inject(KEYCLOACK_PROVIDER)
+    private keycloackService: IKeyCloakService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -28,14 +34,10 @@ export class AuthGuard implements CanActivate {
 
     switch (authGuardType) {
       case AuthGuardType.GUARD:
-        const res = await this.keycloackService.getUserFromToken(
-          token || "fake token",
-        );
-        request.user = res;
-        if (res) {
-          return true;
-        }
-        return false;
+        const user = await this.keycloackService.getUserFromToken(token);
+        request.user = user;
+        request.token = token;
+        return !!token;
       case AuthGuardType.NONE:
         return true;
       default:

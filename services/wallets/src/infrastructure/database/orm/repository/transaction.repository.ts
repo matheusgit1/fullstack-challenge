@@ -8,9 +8,10 @@ import {
 } from "../entites/transaction.entity";
 import { DataSource, Repository } from "typeorm";
 import { Wallet } from "../entites/wallet.entity";
+import { type ITransactionRepository } from "@/domain/orm/repositories/transaction.repository";
 
 @Injectable()
-export class TransactionRepository {
+export class TransactionRepository implements ITransactionRepository {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
@@ -21,7 +22,7 @@ export class TransactionRepository {
     externalId: string,
     source: TransactionSource,
   ): Promise<Transaction | null> {
-    return this.transactionRepository.findOne({
+    return await this.transactionRepository.findOne({
       where: { externalId, source },
     });
   }
@@ -106,6 +107,4 @@ export class TransactionRepository {
       await queryRunner.release();
     }
   }
-
-
 }

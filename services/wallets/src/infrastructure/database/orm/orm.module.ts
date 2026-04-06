@@ -1,18 +1,10 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { DBClientConfig } from "../orm.client";
-import { Transaction } from "./entites/transaction.entity";
-import { Wallet } from "./entites/wallet.entity";
-import { WalletRepository } from "./repository/wallet.repository";
+import { OrmRepositoryModule } from "./orm-repository.module";
+import { OrmCoreModule } from "./orm-core.module";
+
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({}),
-    TypeOrmModule.forRootAsync(DBClientConfig),
-    TypeOrmModule.forFeature([Transaction, Wallet]),
-  ],
-  providers: [WalletRepository],
-  exports: [TypeOrmModule, WalletRepository],
+  imports: [OrmRepositoryModule, OrmCoreModule],
+  exports: [OrmRepositoryModule, OrmCoreModule],
 })
 export class OrmModule {}

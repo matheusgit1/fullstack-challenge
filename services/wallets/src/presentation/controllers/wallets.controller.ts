@@ -9,8 +9,8 @@ import { WalletResponseDto } from "../dtos/wallet-response.dto";
 import { ErrorResponseDto } from "../dtos/error-response.dto";
 import { WalletsService } from "../services/wallets.service";
 import { HealthCheckResponseDto } from "../dtos/health-check-response.dto";
-import { Auth, AuthGuardType } from "@/infrastructure/auth/auth.decorator";
 import type { Request as ExpressRequest } from "express";
+import { Auth, AuthGuardType } from "@/application/auth/auth.decorator";
 
 @ApiTags("wallets")
 @ApiBearerAuth("access-token")
@@ -21,7 +21,7 @@ export class WalletsController {
   @Get("health")
   @Auth(AuthGuardType.NONE)
   check(): HealthCheckResponseDto {
-    return { status: "ok", service: "wallets" };
+    return new HealthCheckResponseDto({ status: "ok", service: "wallets" });
   }
 
   @Post("")
@@ -34,11 +34,8 @@ export class WalletsController {
     description: "Carteira já existe",
   })
   @ApiResponse({ status: 401, description: "Não autorizado" })
-  async createWallet(
-    @Request() req: ExpressRequest,
-  ): Promise<WalletResponseDto> {
-    const userId = (req.user as any).sub;
-    return this.walletService.createWallet(userId);
+  async createWallet(): Promise<WalletResponseDto> {
+    return this.walletService.createWallet();
   }
 
   @Get("me")
@@ -51,10 +48,7 @@ export class WalletsController {
     type: ErrorResponseDto,
     description: "Carteira não encontrada",
   })
-  async getMyWallet(
-    @Request() req: ExpressRequest,
-  ): Promise<WalletResponseDto> {
-    const userId = (req.user as any).sub;
-    return this.walletService.getWallet(userId);
+  async getMyWallet(): Promise<WalletResponseDto> {
+    return this.walletService.getWallet();
   }
 }

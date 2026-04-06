@@ -17,3 +17,6 @@ bun.lockb
 
 # Logs
 *.log
+
+#coverage 
+coverage

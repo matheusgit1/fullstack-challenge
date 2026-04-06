@@ -1,24 +1,21 @@
-// services/wallets/src/infrastructure/database/repositories/wallet.repository.ts
-
-import {
-  Injectable,
-  ConflictException,
-} from "@nestjs/common";
+import { Injectable, ConflictException, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, DataSource } from "typeorm";
 import { Wallet } from "../entites/wallet.entity";
+import { type IWalletRepository } from "@/domain/orm/repositories/wallet.repository";
+import { Transaction, TransactionSource } from "../entites/transaction.entity";
 import {
-  Transaction,
-  TransactionSource,
-} from "../entites/transaction.entity";
+  ITransactionRepository,
+  TRANSACTION_REPOSITORY,
+} from "@/domain/orm/repositories/transaction.repository";
 
 @Injectable()
-export class WalletRepository {
+export class WalletRepository implements IWalletRepository {
   constructor(
     @InjectRepository(Wallet)
     private readonly repository: Repository<Wallet>,
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
+    @Inject(TRANSACTION_REPOSITORY)
+    private readonly transactionRepository: ITransactionRepository,
   ) {}
 
   async findByUserId(userId: string): Promise<Wallet | null> {
@@ -61,13 +58,13 @@ export class WalletRepository {
     return this.repository.save(wallet);
   }
 
-
   async getTransactionByExternalId(
     externalId: string,
     source: TransactionSource,
   ): Promise<Transaction | null> {
-    return this.transactionRepository.findOne({
-      where: { externalId, source: source },
-    });
+    return await this.transactionRepository.findByExternalIdAndSource(
+      externalId,
+      source,
+    );
   }
 }

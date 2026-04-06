@@ -4,24 +4,22 @@ import { WalletsController } from "@/presentation/controllers/wallets.controller
 import { WalletsService } from "@/presentation/services/wallets.service";
 import { Module } from "@nestjs/common";
 import { OrmModule } from "@/infrastructure/database/orm/orm.module";
-import { PassportModule } from "@nestjs/passport";
-import { AuthModule } from "@/infrastructure/auth/auth.module";
 import { RabbitmqModule } from "@/infrastructure/rabbitmq/rabbitmq.module";
-import { APP_GUARD } from "@nestjs/core";
-import { AuthGuard } from "@/infrastructure/auth/auth.guard";
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { AuthModule } from "@/application/auth/auth.module";
+import { AuthGuard } from "@/application/auth/auth.guard";
+import { LoggingInterceptor } from "@/interceptor/logging.interceptor";
+import { GlobalExceptionFilter } from "@/filters/global-execeptions.filters";
 
 @Module({
-  imports: [
-    AuthModule,
-    OrmModule,
-    PassportModule,
-    RabbitmqModule,
-    ConfigModule.forRoot(),
-  ],
+  imports: [AuthModule, OrmModule, RabbitmqModule, ConfigModule.forRoot()],
   controllers: [WalletsController],
   providers: [
     WalletsService,
     WalletRepository,
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
 })

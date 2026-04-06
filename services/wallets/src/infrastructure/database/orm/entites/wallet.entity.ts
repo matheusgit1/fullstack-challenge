@@ -11,6 +11,9 @@ import {
 @Entity("wallets")
 @Index(["userId"], { unique: true })
 export class Wallet {
+  constructor(partial: Partial<Wallet>) {
+    Object.assign(this, partial);
+  }
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
