@@ -3,6 +3,9 @@ import { IsNumber, Min, Max, IsUUID } from 'class-validator';
 import { BetDto } from '../response/bet.dto';
 
 export class BetRequestDto {
+  constructor(partial: BetRequestDto) {
+    Object.assign(this, partial);
+  }
   @ApiProperty({
     example: 100.0,
     description: 'Valor da aposta (mínimo R$ 1,00, máximo R$ 1.000,00) em centavos',

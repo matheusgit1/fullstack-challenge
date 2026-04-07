@@ -1,3 +1,10 @@
+export interface Sucess<T> {
+  success: boolean;
+  data: T;
+  tracingId: string;
+  timestamp: string;
+}
+
 export interface UserWallet {
   id: string;
   userId: string;
@@ -8,7 +15,7 @@ export interface UserWallet {
 }
 
 export interface IWalletProxy {
-  getUserBalance(token: string): Promise<UserWallet>;
+  getUserBalance(token: string): Promise<Sucess<UserWallet>>;
 }
 
-export const WALLET_PROXY = Symbol("IWalletProxy");
+export const WALLET_PROXY = Symbol('IWalletProxy');

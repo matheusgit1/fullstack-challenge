@@ -1,38 +1,30 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-  Index,
-} from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from 'typeorm';
 
 export enum RoundStatus {
-  BETTING = "betting",
-  RUNNING = "running",
-  CRASHED = "crashed",
+  BETTING = 'betting',
+  RUNNING = 'running',
+  CRASHED = 'crashed',
 }
 
-@Entity("rounds")
-@Index(["status", "createdAt"])
+@Entity('rounds')
+@Index(['status', 'createdAt'])
 export class Round {
-  constructor(partial: Partial<Round>) {
+  constructor(partial?: Partial<Round>) {
     Object.assign(this, partial);
   }
 
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: RoundStatus,
     default: RoundStatus.BETTING,
   })
   status: RoundStatus;
 
   @Column({
-    type: "decimal",
+    type: 'decimal',
     precision: 10,
     scale: 2,
     default: 1.0,
@@ -44,7 +36,7 @@ export class Round {
   multiplier: number;
 
   @Column({
-    type: "decimal",
+    type: 'decimal',
     precision: 10,
     scale: 2,
     nullable: false,
@@ -56,31 +48,31 @@ export class Round {
   })
   crashPoint: number;
 
-  @Column({ type: "timestamp" })
+  @Column({ type: 'timestamp' })
   bettingStartedAt: Date;
 
-  @Column({ type: "timestamp" })
+  @Column({ type: 'timestamp' })
   bettingEndsAt: Date;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   startedAt: Date;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   crashedAt: Date;
 
-  @Column({ type: "varchar", length: 128, nullable: true })
+  @Column({ type: 'varchar', length: 128, nullable: true })
   serverSeed: string | null;
 
-  @Column({ type: "varchar", length: 128 })
+  @Column({ type: 'varchar', length: 128 })
   serverSeedHash: string;
 
-  @Column({ type: "varchar", length: 64 })
+  @Column({ type: 'varchar', length: 64 })
   clientSeed: string;
 
-  @Column({ type: "int", default: 0 })
+  @Column({ type: 'int', default: 0 })
   nonce: number;
 
-  @OneToMany("Bet", "round", { cascade: true })
+  @OneToMany('Bet', 'round', { cascade: true })
   bets: any[];
 
   @CreateDateColumn()

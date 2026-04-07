@@ -1,37 +1,31 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import {
-  CashinMessage,
-  CashoutMessage,
-  CashReserveMessage,
-} from "./rabbitmq.controller";
-import {
-  TransactionSource,
-  TransactionType,
-} from "../database/orm/entites/transaction.entity";
-import { IRabbitmqService } from "@/domain/rabbitmq/rabbitmq.service";
-import {
-  type ITransactionRepository,
-  TRANSACTION_REPOSITORY,
-} from "@/domain/orm/repositories/transaction.repository";
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { CashinMessage, CashoutMessage, CashReserveMessage } from './rabbitmq.controller';
+import { TransactionSource, TransactionType } from '../database/orm/entites/transaction.entity';
+import { IRabbitmqService } from '@/domain/rabbitmq/rabbitmq.service';
+import { type ITransactionRepository, TRANSACTION_REPOSITORY } from '@/domain/orm/repositories/transaction.repository';
 
 @Injectable()
 export class RabbitmqService implements IRabbitmqService {
+  private readonly logger = new Logger(RabbitmqService.name);
   constructor(
     @Inject(TRANSACTION_REPOSITORY)
     private readonly transactionRepository: ITransactionRepository,
   ) {}
 
-  private readonly logger = new Logger(RabbitmqService.name);
-
   async processReserve(message: CashReserveMessage, tracingId: string) {
+    this.logger.debug(`[${tracingId}] processReserve - BET_RESERVE message recebida para userId: ${message.userId}`);
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
 
+    this.logger.debug(`[${tracingId}] exists: ${exists}`);
+
     if (exists) {
       return;
     }
+
+    this.logger.log(`[${tracingId}] BET_RESERVE message enviada para userId: ${message.userId}`);
 
     await this.transactionRepository.processTransaction(
       message.userId,

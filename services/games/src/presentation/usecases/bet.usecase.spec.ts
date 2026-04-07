@@ -10,6 +10,10 @@ import { RABBITMQ_PRODUCER_SERVICE } from '@/domain/rabbitmq/rabbitmq.producer';
 import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
 import { TransactionSource } from '@/domain/rabbitmq/rabbitmq.producer';
 import { GamesManager } from '../manager/games.manager';
+import { genWallet } from '@/util-teste/proxy/gen-wallet';
+import { genRound } from '@/util-teste/entitites/gen-round';
+import { RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
+import { genBets } from '@/util-teste/entitites/gen-bets';
 
 describe('BetUseCase', () => {
   let betUseCase: BetUseCase;
@@ -99,42 +103,34 @@ describe('BetUseCase', () => {
 
   describe('Success Scenarios', () => {
     it('should create a bet successfully when all conditions are met', async () => {
-      // Arrange
-      const dto: BetRequestDto = {
+      const dto = new BetRequestDto({
         amount: 100,
         roundId: 'round-123',
-      };
+      });
 
-      const userBalance = {
-        balanceInCents: 500,
-      };
+      const userBalance = genWallet({ balanceInCents: dto.amount });
 
-      const mockRound = {
-        id: 'round-123',
-        isBettingPhase: jest.fn().mockReturnValue(true),
-      };
+      const mockRound = genRound({
+        id: dto.roundId,
+        status: RoundStatus.BETTING,
+      });
 
-      const mockCreatedBet = {
-        id: 'bet-123',
+      const mockCreatedBet = genBets({
         userId: mockUser.sub,
         roundId: dto.roundId,
         amount: dto.amount,
         status: BetStatus.PENDING,
         createdAt: new Date(),
-      };
+      });
 
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
       mockRabbitmqProducer.publishReserve.mockResolvedValue(undefined);
-
-      // Act
       const result = await betUseCase.handler(dto);
 
-      // Assert
       expect(mockWalletProxy.getUserBalance).toHaveBeenCalledWith(mockToken);
       expect(mockRoundRepository.findByRoundId).toHaveBeenCalledWith(dto.roundId);
-      expect(mockRound.isBettingPhase).toHaveBeenCalled();
       expect(mockBetRepository.createBet).toHaveBeenCalledWith({
         userId: mockUser.sub,
         roundId: dto.roundId,
@@ -153,42 +149,36 @@ describe('BetUseCase', () => {
       expect(result.bet.id).toBe(mockCreatedBet.id);
       expect(result.bet.amount).toBe(dto.amount);
       expect(result.bet.status).toBe(BetStatus.PENDING);
-      expect(result.newBalance).toBe(userBalance.balanceInCents - dto.amount);
+      expect(result.newBalance).toBe(userBalance.data.balanceInCents - dto.amount);
       expect(result.roundId).toBe(mockRound.id);
     });
 
     it('should handle anonymous user when user is not present in request', async () => {
-      // Arrange
       mockRequest.user = undefined;
 
-      const dto: BetRequestDto = {
+      const dto = new BetRequestDto({
         amount: 50,
         roundId: 'round-456',
-      };
+      });
 
-      const userBalance = {
-        balanceInCents: 200,
-      };
+      const userBalance = genWallet({ balanceInCents: dto.amount });
 
-      const mockRound = {
-        id: 'round-456',
-        isBettingPhase: jest.fn().mockReturnValue(true),
-      };
+      const mockRound = genRound({
+        id: dto.roundId,
+        status: RoundStatus.BETTING,
+      });
 
-      const mockCreatedBet = {
-        id: 'bet-456',
-        userId: 'Anonymous',
+      const mockCreatedBet = genBets({
         roundId: dto.roundId,
         amount: dto.amount,
         status: BetStatus.PENDING,
         createdAt: new Date(),
-      };
+      });
 
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
 
-      // Act
       const result = await betUseCase.handler(dto);
 
       // Assert
@@ -202,14 +192,15 @@ describe('BetUseCase', () => {
     });
 
     it('should handle exact balance match (user has exactly the bet amount)', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 500,
         roundId: 'round-789',
       };
 
       const userBalance = {
-        balanceInCents: 500,
+        data: {
+          balanceInCents: 500,
+        },
       };
 
       const mockRound = {
@@ -230,7 +221,6 @@ describe('BetUseCase', () => {
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
 
-      // Act
       const result = await betUseCase.handler(dto);
 
       // Assert
@@ -241,19 +231,19 @@ describe('BetUseCase', () => {
 
   describe('Error Scenarios', () => {
     it('should throw ConflictException when user has insufficient balance', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 1000,
         roundId: 'round-123',
       };
 
       const userBalance = {
-        balanceInCents: 500,
+        data: {
+          balanceInCents: 500,
+        },
       };
 
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow(ConflictException);
       await expect(betUseCase.handler(dto)).rejects.toThrow('Saldo insuficiente');
 
@@ -263,20 +253,20 @@ describe('BetUseCase', () => {
     });
 
     it('should throw NotFoundException when round does not exist', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'non-existent-round',
       };
 
       const userBalance = {
-        balanceInCents: 500,
+        data: {
+          balanceInCents: 500,
+        },
       };
 
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockResolvedValue(null);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow(NotFoundException);
       await expect(betUseCase.handler(dto)).rejects.toThrow('Nenhuma rodada ativa');
 
@@ -285,14 +275,15 @@ describe('BetUseCase', () => {
     });
 
     it('should throw ConflictException when betting phase is closed', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'round-123',
       };
 
       const userBalance = {
-        balanceInCents: 500,
+        data: {
+          balanceInCents: 500,
+        },
       };
 
       const mockRound = {
@@ -303,7 +294,6 @@ describe('BetUseCase', () => {
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow(ConflictException);
       await expect(betUseCase.handler(dto)).rejects.toThrow('Fase de aposta encerrada');
 
@@ -312,8 +302,7 @@ describe('BetUseCase', () => {
     });
 
     it('should propagate error when wallet proxy service fails', async () => {
-      // Arrange
-      const dto: BetRequestDto = {
+      const dto = {
         amount: 100,
         roundId: 'round-123',
       };
@@ -321,7 +310,6 @@ describe('BetUseCase', () => {
       const walletError = new Error('Wallet service unavailable');
       mockWalletProxy.getUserBalance.mockRejectedValue(walletError);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('Wallet service unavailable');
 
       expect(mockRoundRepository.findByRoundId).not.toHaveBeenCalled();
@@ -329,36 +317,29 @@ describe('BetUseCase', () => {
     });
 
     it('should propagate error when round repository fails', async () => {
-      // Arrange
-      const dto: BetRequestDto = {
+      const dto = {
         amount: 100,
         roundId: 'round-123',
       };
 
-      const userBalance = {
-        balanceInCents: 500,
-      };
+      const userBalance = genWallet({ balanceInCents: 500 });
 
       const roundError = new Error('Database connection failed');
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockRejectedValue(roundError);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('Database connection failed');
 
       expect(mockBetRepository.createBet).not.toHaveBeenCalled();
     });
 
     it('should propagate error when bet repository fails', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'round-123',
       };
 
-      const userBalance = {
-        balanceInCents: 500,
-      };
+      const userBalance = genWallet({ balanceInCents: 500 });
 
       const mockRound = {
         id: 'round-123',
@@ -370,22 +351,18 @@ describe('BetUseCase', () => {
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockRejectedValue(betError);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('Failed to create bet');
 
       expect(mockRabbitmqProducer.publishReserve).not.toHaveBeenCalled();
     });
 
     it('should propagate error when rabbitmq producer fails', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'round-123',
       };
 
-      const userBalance = {
-        balanceInCents: 500,
-      };
+      const userBalance = genWallet({ balanceInCents: 500 });
 
       const mockRound = {
         id: 'round-123',
@@ -407,84 +384,71 @@ describe('BetUseCase', () => {
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
       mockRabbitmqProducer.publishReserve.mockRejectedValue(rabbitError);
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('RabbitMQ connection failed');
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle zero amount bet', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 0,
         roundId: 'round-123',
       };
 
-      const userBalance = {
-        balanceInCents: 500,
-      };
+      const userBalance = genWallet({ balanceInCents: 500 });
 
-      const mockRound = {
-        id: 'round-123',
-        isBettingPhase: jest.fn().mockReturnValue(true),
-      };
+      const mockRound = genRound({
+        id: dto.roundId,
+        status: RoundStatus.BETTING,
+      });
 
-      const mockCreatedBet = {
-        id: 'bet-123',
+      const mockCreatedBet = genBets({
         userId: mockUser.sub,
         roundId: dto.roundId,
         amount: 0,
         status: BetStatus.PENDING,
         createdAt: new Date(),
-      };
+      });
 
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
 
-      // Act
       const result = await betUseCase.handler(dto);
 
-      // Assert
       expect(result.bet.amount).toBe(0);
       expect(result.newBalance).toBe(500);
     });
 
     it('should handle missing hash in request', async () => {
-      // Arrange
       mockRequest.hash = undefined;
 
-      const dto: BetRequestDto = {
+      const dto = new BetRequestDto({
         amount: 100,
         roundId: 'round-123',
-      };
+      });
 
-      const userBalance = {
-        balanceInCents: 500,
-      };
+      const userBalance = genWallet({ balanceInCents: 500 });
 
       const mockRound = {
         id: 'round-123',
         isBettingPhase: jest.fn().mockReturnValue(true),
       };
 
-      const mockCreatedBet = {
-        id: 'bet-123',
+      const mockCreatedBet = genBets({
         userId: mockUser.sub,
         roundId: dto.roundId,
         amount: dto.amount,
         status: BetStatus.PENDING,
         createdAt: new Date(),
-      };
+      });
 
       mockWalletProxy.getUserBalance.mockResolvedValue(userBalance);
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
 
-      // Act
       await betUseCase.handler(dto);
 
-      // Assert
       expect(mockRabbitmqProducer.publishReserve).toHaveBeenCalledWith(
         expect.objectContaining({
           tracingId: undefined,
@@ -493,7 +457,6 @@ describe('BetUseCase', () => {
     });
 
     it('should handle missing token in request', async () => {
-      // Arrange
       mockRequest.token = undefined;
 
       const dto: BetRequestDto = {
@@ -503,20 +466,20 @@ describe('BetUseCase', () => {
 
       mockWalletProxy.getUserBalance.mockRejectedValue(new Error('No token provided'));
 
-      // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('No token provided');
       expect(mockWalletProxy.getUserBalance).toHaveBeenCalledWith(undefined);
     });
 
     it('should use correct timestamp format in rabbitmq message', async () => {
-      // Arrange
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'round-123',
       };
 
       const userBalance = {
-        balanceInCents: 500,
+        data: {
+          balanceInCents: 500,
+        },
       };
 
       const mockRound = {
@@ -538,7 +501,6 @@ describe('BetUseCase', () => {
       mockRoundRepository.findByRoundId.mockResolvedValue(mockRound);
       mockBetRepository.createBet.mockResolvedValue(mockCreatedBet);
 
-      // Act
       await betUseCase.handler(dto);
 
       // Assert

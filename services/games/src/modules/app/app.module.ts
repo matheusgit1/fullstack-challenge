@@ -66,10 +66,10 @@ import { EventModule } from '@/application/events/event/event.module';
       provide: WALLET_PROXY,
       useClass: WalletProxy,
     },
-    {
-      provide: RABBITMQ_PRODUCER_SERVICE,
-      useClass: RabbitmqProducerService,
-    },
+    // {
+    //   provide: RABBITMQ_PRODUCER_SERVICE,
+    //   useClass: RabbitmqProducerService,
+    // },
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },

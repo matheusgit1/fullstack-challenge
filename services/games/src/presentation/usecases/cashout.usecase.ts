@@ -33,12 +33,12 @@ export class CashOutUsecase implements HandlerUsecase {
     const externalId = bet.id;
 
     if (round.isCrashed()) {
-      const cashout = await this.gamesManager.processCashout(bet, round, user?.sub || 'anonymous', externalId, hash);
+      const cashout = await this.gamesManager.processBetLost(bet, round, user?.sub || 'anonymous', externalId, hash);
       return cashout;
     }
 
     if (round.isRunning()) {
-      const cashin = await this.gamesManager.processCashin(bet, round, user?.sub || 'anonymous', externalId, hash);
+      const cashin = await this.gamesManager.processBetWin(bet, round, user?.sub || 'anonymous', externalId, hash);
 
       return cashin;
     }

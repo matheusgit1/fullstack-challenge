@@ -1,16 +1,11 @@
-
-
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 'typeorm';
 
 @Entity('provably_fair_seeds')
 @Index(['createdAt'])
 export class ProvablyFairSeed {
+  constructor(partial?: ProvablyFairSeed) {
+    Object.assign(this, partial);
+  }
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

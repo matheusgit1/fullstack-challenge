@@ -89,7 +89,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockRabbitmqProducer.publishCashout).toHaveBeenCalledWith({
@@ -132,7 +132,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.multiplier).toBe(0);
@@ -153,7 +153,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.multiplier).toBe(999999.99);
@@ -174,7 +174,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.winAmount).toBe(0);
@@ -198,7 +198,7 @@ describe('GamesManager', () => {
       const expectedWinAmount = bet.amount * round.multiplier - bet.amount; // 100 * 2.5 - 100 = 150
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockRabbitmqProducer.publishCashin).toHaveBeenCalledWith({
@@ -252,7 +252,7 @@ describe('GamesManager', () => {
           multiplier: testCase.multiplier,
         });
 
-        const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+        const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
         expect(result.winAmount).toBe(testCase.expectedWin);
       }
@@ -273,7 +273,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.winAmount).toBe(expectedWinAmount);
@@ -295,7 +295,7 @@ describe('GamesManager', () => {
       const expectedWinAmount = 75; // 100 * 1.75 - 100 = 75
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.winAmount).toBe(expectedWinAmount);
@@ -319,7 +319,7 @@ describe('GamesManager', () => {
       mockRabbitmqProducer.publishCashout.mockRejectedValue(rabbitError);
 
       // Act & Assert
-      await expect(gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
+      await expect(gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
         'RabbitMQ connection failed',
       );
 
@@ -343,7 +343,7 @@ describe('GamesManager', () => {
       mockBetRepository.save.mockRejectedValue(saveError);
 
       // Act & Assert
-      await expect(gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
+      await expect(gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
         'Database save failed',
       );
 
@@ -369,7 +369,7 @@ describe('GamesManager', () => {
       mockRabbitmqProducer.publishCashin.mockRejectedValue(rabbitError);
 
       // Act & Assert
-      await expect(gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
+      await expect(gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
         'RabbitMQ connection failed',
       );
 
@@ -393,7 +393,7 @@ describe('GamesManager', () => {
       mockBetRepository.save.mockRejectedValue(saveError);
 
       // Act & Assert
-      await expect(gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
+      await expect(gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId)).rejects.toThrow(
         'Database save failed',
       );
 
@@ -418,7 +418,7 @@ describe('GamesManager', () => {
       const beforeCall = new Date();
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       const publishCall = mockRabbitmqProducer.publishCashout.mock.calls[0][0];
@@ -442,7 +442,7 @@ describe('GamesManager', () => {
       const beforeCall = new Date();
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       const publishCall = mockRabbitmqProducer.publishCashin.mock.calls[0][0];
@@ -467,8 +467,8 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const cashoutResult = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
-      const cashinResult = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const cashoutResult = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const cashinResult = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(cashoutResult.bet.createdAt).toBe(createdAt);
@@ -489,7 +489,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockRabbitmqProducer.publishCashout).toHaveBeenCalledWith(
@@ -513,7 +513,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashin(bet, round, mockUserId, '', mockTracingId);
+      await gamesManager.processBetWin(bet, round, mockUserId, '', mockTracingId);
 
       // Assert
       expect(mockRabbitmqProducer.publishCashin).toHaveBeenCalledWith(
@@ -539,7 +539,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result).toBeInstanceOf(CashoutResponseDto);
@@ -563,7 +563,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result).toBeInstanceOf(CashoutResponseDto);
@@ -587,7 +587,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.bet).toHaveProperty('id', bet.id);
@@ -615,7 +615,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockBetRepository.save).toHaveBeenCalledTimes(1);
@@ -636,7 +636,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockBetRepository.save).toHaveBeenCalledTimes(1);
@@ -657,8 +657,8 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
-      await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockBetRepository.setPendingBetsToLost).not.toHaveBeenCalled();
@@ -685,7 +685,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       const publishCall = mockRabbitmqProducer.publishCashout.mock.calls[0][0];
@@ -712,7 +712,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       const publishCall = mockRabbitmqProducer.publishCashin.mock.calls[0][0];
@@ -740,7 +740,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockRabbitmqProducer.publishCashout).toHaveBeenCalledWith(
@@ -764,7 +764,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(mockRabbitmqProducer.publishCashin).toHaveBeenCalledWith(
@@ -790,7 +790,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(bet.lose).toHaveBeenCalledTimes(1);
@@ -811,7 +811,7 @@ describe('GamesManager', () => {
       });
 
       // Act
-      await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(bet.cashout).toHaveBeenCalledTimes(1);
@@ -841,9 +841,9 @@ describe('GamesManager', () => {
 
       // Act
       await Promise.all([
-        gamesManager.processCashout(bet1, round, mockUserId, mockExternalId, mockTracingId),
-        gamesManager.processCashout(bet2, round, mockUserId, mockExternalId, mockTracingId),
-        gamesManager.processCashout(bet3, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetLost(bet1, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetLost(bet2, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetLost(bet3, round, mockUserId, mockExternalId, mockTracingId),
       ]);
 
       // Assert
@@ -873,9 +873,9 @@ describe('GamesManager', () => {
 
       // Act
       await Promise.all([
-        gamesManager.processCashin(bet1, round, mockUserId, mockExternalId, mockTracingId),
-        gamesManager.processCashin(bet2, round, mockUserId, mockExternalId, mockTracingId),
-        gamesManager.processCashin(bet3, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetWin(bet1, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetWin(bet2, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetWin(bet3, round, mockUserId, mockExternalId, mockTracingId),
       ]);
 
       // Assert
@@ -898,8 +898,8 @@ describe('GamesManager', () => {
 
       // Act
       await Promise.all([
-        gamesManager.processCashout(bet1, round, mockUserId, mockExternalId, mockTracingId),
-        gamesManager.processCashin(bet2, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetLost(bet1, round, mockUserId, mockExternalId, mockTracingId),
+        gamesManager.processBetWin(bet2, round, mockUserId, mockExternalId, mockTracingId),
       ]);
 
       // Assert
@@ -918,7 +918,7 @@ describe('GamesManager', () => {
       const round = new Round({ ...mockRound, status: RoundStatus.CRASHED, multiplier: 0 });
 
       // Act
-      const result = await gamesManager.processCashout(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetLost(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.roundStatus).toBe('crashed');
@@ -931,7 +931,7 @@ describe('GamesManager', () => {
       const round = new Round({ ...mockRound, status: RoundStatus.CRASHED, multiplier: 1.5 });
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.roundStatus).toBe(RoundStatus.CRASHED);
@@ -944,7 +944,7 @@ describe('GamesManager', () => {
       const round = new Round({ ...mockRound, status: RoundStatus.BETTING, multiplier: -1 });
 
       // Act
-      const result = await gamesManager.processCashin(bet, round, mockUserId, mockExternalId, mockTracingId);
+      const result = await gamesManager.processBetWin(bet, round, mockUserId, mockExternalId, mockTracingId);
 
       // Assert
       expect(result.multiplier).toBe(-1);

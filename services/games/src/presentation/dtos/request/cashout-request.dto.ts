@@ -4,6 +4,9 @@ import { RoundStatus } from '@/infrastructure/database/orm/entites/round.entity'
 import { IsUUID } from 'class-validator';
 
 export class CashoutRequestDto {
+  constructor(partial: CashoutRequestDto) {
+    Object.assign(this, partial);
+  }
   @ApiProperty({
     required: true,
     description: 'ID da aposta cashout',

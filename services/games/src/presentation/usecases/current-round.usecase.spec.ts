@@ -3,7 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CurrentRoundUseCase } from './current-round.usecase';
 import { CurrentRoundResponseDto } from '../dtos/response/current-round-response.dto';
 import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
-import { RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
+import { Round, RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
+import { genRound } from '@/util-teste/entitites/gen-round';
 
 describe('CurrentRoundUseCase', () => {
   const mockRoundRepository = {
@@ -16,15 +17,15 @@ describe('CurrentRoundUseCase', () => {
     createRound: jest.fn(),
   };
 
-  const mockCurrentRound = {
+  const mockCurrentRound = genRound({
     id: 'round-123',
-    status: 'betting',
+    status: RoundStatus.BETTING,
     multiplier: 1.0,
     bets: [],
     serverSeedHash: '0x7d4e7f8a9b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e',
     bettingEndsAt: new Date('2024-01-15T10:30:00Z'),
     startedAt: new Date('2024-01-15T10:00:00Z'),
-  };
+  });
 
   const currentRoundUseCase = new CurrentRoundUseCase(mockRoundRepository);
 
@@ -42,13 +43,10 @@ describe('CurrentRoundUseCase', () => {
 
   describe('Success Scenarios', () => {
     it('should return current round successfully when a betting round exists', async () => {
-      // Arrange
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(mockCurrentRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(mockRoundRepository.findCurrentBettingRound).toHaveBeenCalledTimes(1);
       expect(result).toBeInstanceOf(CurrentRoundResponseDto);
       expect(result).toEqual({
@@ -63,38 +61,26 @@ describe('CurrentRoundUseCase', () => {
     });
 
     it('should handle round with bets array', async () => {
-      // Arrange
-      const roundWithBets = {
+      const roundWithBets = new Round({
         ...mockCurrentRound,
-        bets: [
-          {
-            id: 'bet-1',
-            userId: 'user-1',
-            amount: 100,
-            status: 'PENDING',
-          },
-          {
-            id: 'bet-2',
-            userId: 'user-2',
-            amount: 250,
-            status: 'PENDING',
-          },
-        ],
-      };
+        bets: Array.from({ length: 2 }, (_, i) => ({
+          id: `bet-${i}`,
+          userId: `user-${i}`,
+          amount: i * 100,
+          status: 'PENDING',
+        })),
+      });
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(roundWithBets);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.bets).toHaveLength(2);
-      expect(result.bets[0].id).toBe('bet-1');
-      expect(result.bets[1].amount).toBe(250);
+      expect(result.bets[0].id).toBe('bet-0');
+      expect(result.bets[1].amount).toBe(100);
     });
 
     it('should handle round with different status values', async () => {
-      // Arrange
       const runningRound = {
         ...mockCurrentRound,
         status: 'running',
@@ -103,16 +89,13 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(runningRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.status).toBe('running');
       expect(result.multiplier).toBe(2.5);
     });
 
     it('should handle round with null values for optional fields', async () => {
-      // Arrange
       const roundWithNulls = {
         id: 'round-123',
         status: 'betting',
@@ -125,10 +108,8 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(roundWithNulls);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.multiplier).toBeNull();
       expect(result.bets).toBeNull();
       expect(result.serverSeedHash).toBeNull();
@@ -137,7 +118,6 @@ describe('CurrentRoundUseCase', () => {
     });
 
     it('should handle round with empty bets array', async () => {
-      // Arrange
       const roundWithEmptyBets = {
         ...mockCurrentRound,
         bets: [],
@@ -145,10 +125,8 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(roundWithEmptyBets);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.bets).toEqual([]);
       expect(result.bets).toHaveLength(0);
     });
@@ -156,10 +134,7 @@ describe('CurrentRoundUseCase', () => {
 
   describe('Error Scenarios', () => {
     it('should throw NotFoundException when no current betting round exists', async () => {
-      // Arrange
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(null);
-
-      // Act & Assert
       await expect(currentRoundUseCase.handler()).rejects.toThrow(NotFoundException);
       await expect(currentRoundUseCase.handler()).rejects.toThrow(NotFoundException);
 
@@ -167,37 +142,27 @@ describe('CurrentRoundUseCase', () => {
     });
 
     it('should propagate error when repository throws database error', async () => {
-      // Arrange
       const dbError = new Error('Database connection failed');
       mockRoundRepository.findCurrentBettingRound.mockRejectedValue(dbError);
-
-      // Act & Assert
       await expect(currentRoundUseCase.handler()).rejects.toThrow('Database connection failed');
       expect(mockRoundRepository.findCurrentBettingRound).toHaveBeenCalledTimes(1);
     });
 
     it('should propagate error when repository throws timeout error', async () => {
-      // Arrange
       const timeoutError = new Error('Query timeout');
       mockRoundRepository.findCurrentBettingRound.mockRejectedValue(timeoutError);
-
-      // Act & Assert
       await expect(currentRoundUseCase.handler()).rejects.toThrow('Query timeout');
     });
 
     it('should propagate error when repository throws permission error', async () => {
-      // Arrange
       const permissionError = new Error('Access denied to round repository');
       mockRoundRepository.findCurrentBettingRound.mockRejectedValue(permissionError);
-
-      // Act & Assert
       await expect(currentRoundUseCase.handler()).rejects.toThrow('Access denied to round repository');
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle round with very large multiplier', async () => {
-      // Arrange
       const highMultiplierRound = {
         ...mockCurrentRound,
         multiplier: 999999.99,
@@ -205,15 +170,12 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(highMultiplierRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.multiplier).toBe(999999.99);
     });
 
     it('should handle round with very old dates', async () => {
-      // Arrange
       const oldDatesRound = {
         ...mockCurrentRound,
         bettingEndsAt: new Date('2020-01-01T00:00:00Z'),
@@ -222,16 +184,13 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(oldDatesRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.bettingEndsAt).toEqual(oldDatesRound.bettingEndsAt);
       expect(result.startedAt).toEqual(oldDatesRound.startedAt);
     });
 
     it('should handle round with future dates', async () => {
-      // Arrange
       const futureDatesRound = {
         ...mockCurrentRound,
         bettingEndsAt: new Date('2030-12-31T23:59:59Z'),
@@ -240,16 +199,13 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(futureDatesRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.bettingEndsAt).toEqual(futureDatesRound.bettingEndsAt);
       expect(result.startedAt).toEqual(futureDatesRound.startedAt);
     });
 
     it('should handle round with long server seed hash', async () => {
-      // Arrange
       const longHashRound = {
         ...mockCurrentRound,
         serverSeedHash: '0x' + 'a'.repeat(128),
@@ -257,16 +213,13 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(longHashRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.serverSeedHash).toBe(longHashRound.serverSeedHash);
       expect(result.serverSeedHash?.length).toBe(130); // '0x' + 128 chars
     });
 
     it('should handle round with special characters in server seed hash', async () => {
-      // Arrange
       const specialHashRound = {
         ...mockCurrentRound,
         serverSeedHash: '0x!@#$%^&*()_+{}[]|\\:;"\'<>,.?/~`',
@@ -274,17 +227,14 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(specialHashRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.serverSeedHash).toBe(specialHashRound.serverSeedHash);
     });
   });
 
   describe('Data Transformation', () => {
     it('should correctly transform round entity to response DTO', async () => {
-      // Arrange
       const complexRound = {
         id: 'round-complex-123',
         status: 'betting',
@@ -300,10 +250,8 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(complexRound);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result).toMatchObject({
         id: complexRound.id,
         status: complexRound.status,
@@ -316,7 +264,6 @@ describe('CurrentRoundUseCase', () => {
     });
 
     it('should preserve date object references', async () => {
-      // Arrange
       const bettingEndsAt = new Date('2024-01-15T10:30:00Z');
       const startedAt = new Date('2024-01-15T10:00:00Z');
 
@@ -328,10 +275,8 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(roundWithDates);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.bettingEndsAt).toBe(bettingEndsAt);
       expect(result.startedAt).toBe(startedAt);
       expect(result.bettingEndsAt).toBeInstanceOf(Date);
@@ -341,25 +286,19 @@ describe('CurrentRoundUseCase', () => {
 
   describe('Repository Method Verification', () => {
     it('should call findCurrentBettingRound exactly once', async () => {
-      // Arrange
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(mockCurrentRound);
 
-      // Act
       await currentRoundUseCase.handler();
 
-      // Assert
       expect(mockRoundRepository.findCurrentBettingRound).toHaveBeenCalledTimes(1);
       expect(mockRoundRepository.findCurrentBettingRound).toHaveBeenCalledWith();
     });
 
     it('should not call any other repository methods', async () => {
-      // Arrange
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(mockCurrentRound);
 
-      // Act
       await currentRoundUseCase.handler();
 
-      // Assert
       expect(mockRoundRepository.findByRoundId).not.toHaveBeenCalled();
       expect(mockRoundRepository.findCurrentRunningRound).not.toHaveBeenCalled();
       expect(mockRoundRepository.findRoundWithBets).not.toHaveBeenCalled();
@@ -369,7 +308,7 @@ describe('CurrentRoundUseCase', () => {
     });
 
     // it('should handle concurrent calls correctly', async () => {
-    //   // Arrange
+
     //   mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce({
     //     id: 'currentRound.id',
     //     status: RoundStatus.BETTING,
@@ -380,10 +319,8 @@ describe('CurrentRoundUseCase', () => {
     //     startedAt: '2024-01-15T10:30:00Z',
     //   });
 
-    //   // Act
     //   const [result1, result2] = await Promise.all([currentRoundUseCase.handler(), currentRoundUseCase.handler()]);
 
-    //   // Assert
     //   expect(result1).toBeInstanceOf(CurrentRoundResponseDto);
     //   expect(result2).toBeInstanceOf(CurrentRoundResponseDto);
     //   expect(mockRoundRepository.findCurrentBettingRound).toHaveBeenCalledTimes(2);
@@ -392,7 +329,6 @@ describe('CurrentRoundUseCase', () => {
 
   describe('Performance Considerations', () => {
     it('should handle large bets array efficiently', async () => {
-      // Arrange
       const largeBetsArray = Array.from({ length: 1000 }, (_, i) => ({
         id: `bet-${i}`,
         userId: `user-${i % 10}`,
@@ -407,24 +343,19 @@ describe('CurrentRoundUseCase', () => {
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(roundWithManyBets);
 
-      // Act
       const result = await currentRoundUseCase.handler();
 
-      // Assert
       expect(result.bets).toHaveLength(1000);
       expect(result.bets).toEqual(largeBetsArray);
     });
 
     it('should return response quickly when repository resolves fast', async () => {
-      // Arrange
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(mockCurrentRound);
 
-      // Act
       const startTime = Date.now();
       await currentRoundUseCase.handler();
       const endTime = Date.now();
 
-      // Assert
       expect(endTime - startTime).toBeLessThan(100); // Should complete in less than 100ms
     });
   });

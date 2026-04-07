@@ -22,14 +22,17 @@ export class BetUseCase implements HandlerUsecase {
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
     @Inject(WALLET_PROXY) private readonly proxyService: IWalletProxy,
-    private readonly gamesManager: GamesManager,
+    // private readonly gamesManager: GamesManager,
+    @Inject(RABBITMQ_PRODUCER_SERVICE)
+    private readonly rabbitmqProducer: IRabbitmqProducerService,
   ) {}
 
   async handler(dto: BetRequestDto): Promise<BetResponseDto> {
     const { user, hash, token } = this.request;
 
     const userBalance = await this.proxyService.getUserBalance(token!);
-    const isAvailableBet = userBalance.balanceInCents >= dto.amount;
+    const isAvailableBet = userBalance.data.balanceInCents >= dto.amount;
+
     if (!isAvailableBet) {
       throw new ConflictException('Saldo insuficiente');
     }
@@ -48,15 +51,15 @@ export class BetUseCase implements HandlerUsecase {
       status: BetStatus.PENDING,
     });
 
-    await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
-    // await this.rabbitmqProducer.publishReserve({
-    //   cashType: TransactionSource.BET_RESERVE,
-    //   userId: user?.sub || 'Anonymous',
-    //   amount: dto.amount,
-    //   timestamp: new Date().toISOString(),
-    //   externalId: bet.id,
-    //   tracingId: hash,
-    // });
+    // await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
+    await this.rabbitmqProducer.publishReserve({
+      cashType: TransactionSource.BET_RESERVE,
+      userId: user?.sub || 'Anonymous',
+      amount: dto.amount,
+      timestamp: new Date().toISOString(),
+      externalId: bet.id,
+      tracingId: hash,
+    });
 
     return new BetResponseDto({
       bet: {
@@ -68,7 +71,7 @@ export class BetUseCase implements HandlerUsecase {
         cashedOutAt: null,
         createdAt: new Date(),
       },
-      newBalance: userBalance.balanceInCents - dto.amount,
+      newBalance: userBalance.data.balanceInCents - dto.amount,
       roundId: round.id,
     });
   }

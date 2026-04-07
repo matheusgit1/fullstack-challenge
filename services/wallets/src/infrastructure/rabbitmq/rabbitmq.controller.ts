@@ -1,15 +1,7 @@
-import { Controller, Inject, Logger } from "@nestjs/common";
-import {
-  Ctx,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from "@nestjs/microservices";
-import { TransactionSource } from "../database/orm/entites/transaction.entity";
-import {
-  type IRabbitmqService,
-  RABBITMQ_SERVICE,
-} from "@/domain/rabbitmq/rabbitmq.service";
+import { Controller, Inject, Logger } from '@nestjs/common';
+import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import { TransactionSource } from '../database/orm/entites/transaction.entity';
+import { type IRabbitmqService, RABBITMQ_SERVICE } from '@/domain/rabbitmq/rabbitmq.service';
 
 export interface BaseMessage {
   tracingId: string;
@@ -46,41 +38,33 @@ export class RabbitmqController {
     private readonly rabbitmqService: IRabbitmqService,
   ) {}
 
-  @MessagePattern("cash")
-  async onCash(
-    @Payload() message: CashReserveMessage | CashinMessage | CashoutMessage,
-    @Ctx() context: RmqContext,
-  ) {
+  @MessagePattern('cash')
+  async onCash(@Payload() message: CashReserveMessage | CashinMessage | CashoutMessage, @Ctx() context: RmqContext) {
     const type = message.cashType;
 
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
+    this.logger.log(`Received ${type} message.`);
+    this.logger.log(`Received ${type} externalId: ${JSON.stringify(message)}.`);
     try {
       switch (type) {
         case TransactionSource.BET_PLACED:
-          await this.rabbitmqService.processCashin(
-            message as CashinMessage,
-            message.tracingId,
-          );
+          await this.rabbitmqService.processCashin(message as CashinMessage, message.tracingId);
           break;
         case TransactionSource.BET_LOST:
-          await this.rabbitmqService.processCashout(
-            message as CashoutMessage,
-            message.tracingId,
-          );
+          await this.rabbitmqService.processCashout(message as CashoutMessage, message.tracingId);
           break;
         case TransactionSource.BET_RESERVE:
-          await this.rabbitmqService.processReserve(
-            message as CashReserveMessage,
-            message.tracingId,
-          );
+          this.logger.log(`[${message.tracingId}] BET_RESERVE recebida para userId: ${message.userId}`);
+          await this.rabbitmqService.processReserve(message as CashReserveMessage, message.tracingId);
           break;
         default:
           break;
       }
       channel.ack(originalMsg);
     } catch (err) {
+      this.logger.error(`[${message.tracingId}] Erro ao processar ${type} message`, err as Error);
       channel.nack(originalMsg, false, false);
     }
   }

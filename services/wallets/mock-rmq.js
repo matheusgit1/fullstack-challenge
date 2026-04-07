@@ -23,7 +23,8 @@ const msg_reserve_win = {
     userId: userId,
     amount: 1000 * 100, // 1000 reais em centavos
     externalId: reserveIdForBetLost,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    tracingId: crypto.randomUUID()
   }
 }
 

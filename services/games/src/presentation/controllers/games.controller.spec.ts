@@ -71,8 +71,7 @@ describe('GamesController', () => {
     mockBetRepository,
     mockRoundRepository,
     mockWalletProxy,
-    // mockRabbitmqProducer,
-    gameManager,
+    mockRabbitmqProducer,
   );
   const cashoutUsecase = new CashOutUsecase(mockBetRepository, mockWalletProxy, request, gameManager);
 
@@ -140,12 +139,17 @@ describe('GamesController', () => {
         isBettingPhase: () => true,
       } as any);
       mockWalletProxy.getUserBalance.mockResolvedValue({
-        id: 'string',
-        userId: 'string',
-        balance: 10,
-        balanceInCents: 1000,
-        createdAt: 'string',
-        updatedAt: 'string',
+        success: true,
+        data: {
+          id: 'string',
+          userId: 'string',
+          balance: 10,
+          balanceInCents: 1000,
+          createdAt: 'string',
+          updatedAt: 'string',
+        },
+        timestamp: 'string',
+        tracingId: 'string',
       });
       mockBetRepository.createBet.mockResolvedValue({} as any);
       mockRabbitmqProducer.publishReserve.mockResolvedValue({} as any);
@@ -163,12 +167,17 @@ describe('GamesController', () => {
       } as any);
       mockBetRepository.setPendingBetsToLost.mockResolvedValue({} as any);
       mockWalletProxy.getUserBalance.mockResolvedValue({
-        id: 'string',
-        userId: 'string',
-        balance: 10,
-        balanceInCents: 1000,
-        createdAt: 'string',
-        updatedAt: 'string',
+        success: true,
+        data: {
+          id: 'string',
+          userId: 'string',
+          balance: 10,
+          balanceInCents: 1000,
+          createdAt: 'string',
+          updatedAt: 'string',
+        },
+        timestamp: 'string',
+        tracingId: 'string',
       });
       mockRabbitmqProducer.publishCashout.mockResolvedValue({} as any);
       const response = await controller.cashout({ betId: 'string' });

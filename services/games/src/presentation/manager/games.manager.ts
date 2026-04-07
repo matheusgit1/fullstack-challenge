@@ -28,7 +28,7 @@ export class GamesManager {
     });
   }
 
-  public async processCashout(bet: Bet, round: Round, userId: string, externalId: string, tracingId: string) {
+  public async processBetLost(bet: Bet, round: Round, userId: string, externalId: string, tracingId: string) {
     await this.rabbitmqProducer.publishCashout({
       cashType: TransactionSource.BET_LOST,
       userId: userId,
@@ -56,7 +56,7 @@ export class GamesManager {
     });
   }
 
-  public async processCashin(bet: Bet, round: Round, userId: string, externalId: string, tracingId: string) {
+  public async processBetWin(bet: Bet, round: Round, userId: string, externalId: string, tracingId: string) {
     await this.rabbitmqProducer.publishCashin({
       cashType: TransactionSource.BET_PLACED,
       userId: userId,

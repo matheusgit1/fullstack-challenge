@@ -2,13 +2,13 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 import { appConfig } from '@/configs/app.config';
-import { IWalletProxy, UserWallet } from '@/domain/proxy/wallet.proxy';
+import { IWalletProxy, Sucess, UserWallet } from '@/domain/proxy/wallet.proxy';
 
 @Injectable()
 export class WalletProxy implements IWalletProxy {
   constructor(private readonly httpService: HttpService) {}
 
-  async getUserBalance(token: string): Promise<UserWallet> {
+  async getUserBalance(token: string): Promise<Sucess<UserWallet>> {
     try {
       const response = await lastValueFrom(
         this.httpService.get(appConfig.apiWalletsUrl + `/wallets/me`, {
