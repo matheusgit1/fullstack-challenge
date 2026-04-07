@@ -9,6 +9,7 @@ import { WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
 import { RABBITMQ_PRODUCER_SERVICE } from '@/domain/rabbitmq/rabbitmq.producer';
 import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
 import { TransactionSource } from '@/domain/rabbitmq/rabbitmq.producer';
+import { GamesManager } from '../manager/games.manager';
 
 describe('BetUseCase', () => {
   let betUseCase: BetUseCase;
@@ -64,6 +65,7 @@ describe('BetUseCase', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        GamesManager,
         BetUseCase,
         {
           provide: REQUEST,
@@ -158,7 +160,7 @@ describe('BetUseCase', () => {
     it('should handle anonymous user when user is not present in request', async () => {
       // Arrange
       mockRequest.user = undefined;
-      
+
       const dto: BetRequestDto = {
         amount: 50,
         roundId: 'round-456',
@@ -254,7 +256,7 @@ describe('BetUseCase', () => {
       // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow(ConflictException);
       await expect(betUseCase.handler(dto)).rejects.toThrow('Saldo insuficiente');
-      
+
       expect(mockRoundRepository.findByRoundId).not.toHaveBeenCalled();
       expect(mockBetRepository.createBet).not.toHaveBeenCalled();
       expect(mockRabbitmqProducer.publishReserve).not.toHaveBeenCalled();
@@ -277,7 +279,7 @@ describe('BetUseCase', () => {
       // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow(NotFoundException);
       await expect(betUseCase.handler(dto)).rejects.toThrow('Nenhuma rodada ativa');
-      
+
       expect(mockBetRepository.createBet).not.toHaveBeenCalled();
       expect(mockRabbitmqProducer.publishReserve).not.toHaveBeenCalled();
     });
@@ -304,7 +306,7 @@ describe('BetUseCase', () => {
       // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow(ConflictException);
       await expect(betUseCase.handler(dto)).rejects.toThrow('Fase de aposta encerrada');
-      
+
       expect(mockBetRepository.createBet).not.toHaveBeenCalled();
       expect(mockRabbitmqProducer.publishReserve).not.toHaveBeenCalled();
     });
@@ -321,7 +323,7 @@ describe('BetUseCase', () => {
 
       // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('Wallet service unavailable');
-      
+
       expect(mockRoundRepository.findByRoundId).not.toHaveBeenCalled();
       expect(mockBetRepository.createBet).not.toHaveBeenCalled();
     });
@@ -343,7 +345,7 @@ describe('BetUseCase', () => {
 
       // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('Database connection failed');
-      
+
       expect(mockBetRepository.createBet).not.toHaveBeenCalled();
     });
 
@@ -370,7 +372,7 @@ describe('BetUseCase', () => {
 
       // Act & Assert
       await expect(betUseCase.handler(dto)).rejects.toThrow('Failed to create bet');
-      
+
       expect(mockRabbitmqProducer.publishReserve).not.toHaveBeenCalled();
     });
 
@@ -451,7 +453,7 @@ describe('BetUseCase', () => {
     it('should handle missing hash in request', async () => {
       // Arrange
       mockRequest.hash = undefined;
-      
+
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'round-123',
@@ -486,14 +488,14 @@ describe('BetUseCase', () => {
       expect(mockRabbitmqProducer.publishReserve).toHaveBeenCalledWith(
         expect.objectContaining({
           tracingId: undefined,
-        })
+        }),
       );
     });
 
     it('should handle missing token in request', async () => {
       // Arrange
       mockRequest.token = undefined;
-      
+
       const dto: BetRequestDto = {
         amount: 100,
         roundId: 'round-123',

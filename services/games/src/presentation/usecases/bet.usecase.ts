@@ -49,6 +49,14 @@ export class BetUseCase implements HandlerUsecase {
     });
 
     await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
+    // await this.rabbitmqProducer.publishReserve({
+    //   cashType: TransactionSource.BET_RESERVE,
+    //   userId: user?.sub || 'Anonymous',
+    //   amount: dto.amount,
+    //   timestamp: new Date().toISOString(),
+    //   externalId: bet.id,
+    //   tracingId: hash,
+    // });
 
     return new BetResponseDto({
       bet: {

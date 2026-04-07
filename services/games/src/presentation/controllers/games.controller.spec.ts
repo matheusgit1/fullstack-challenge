@@ -71,7 +71,8 @@ describe('GamesController', () => {
     mockBetRepository,
     mockRoundRepository,
     mockWalletProxy,
-    mockRabbitmqProducer,
+    // mockRabbitmqProducer,
+    gameManager,
   );
   const cashoutUsecase = new CashOutUsecase(mockBetRepository, mockWalletProxy, request, gameManager);
 
