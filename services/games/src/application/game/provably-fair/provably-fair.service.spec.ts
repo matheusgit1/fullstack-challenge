@@ -115,7 +115,7 @@ describe('ProvablyFairService', () => {
     it('should set seed as used', async () => {
       await service.setSeedAsUsed('seed-id');
       expect(mockSeedRepository.update).toHaveBeenCalledWith(
-        { id: 'seed-id' },
+        { clientSeed: 'seed-id' },
         { isUsed: true, usedAt: expect.any(Date) },
       );
     });

@@ -114,7 +114,7 @@ export class ProvablyFairService implements IProvablyFairService {
 
   async setSeedAsUsed(clientSeedId: string): Promise<void> {
     await this.seedRepository.update(
-      { id: clientSeedId },
+      { clientSeed: clientSeedId },
       {
         isUsed: true,
         usedAt: new Date(),
