@@ -2,7 +2,6 @@
   "name": "@crash/wallets",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
   "lint-staged": {
     "*.ts": [
       "eslint --fix",
@@ -15,7 +14,7 @@
     "dev": "bun run --watch src/main.ts",
     "start:debug": "nest start --debug --watch",
     "start": "bun run src/main.ts",
-    "test": "bun test tests/unit",
+    "test": "bun jest",
     "test:e2e": "bun test tests/e2e"
   },
   "dependencies": {

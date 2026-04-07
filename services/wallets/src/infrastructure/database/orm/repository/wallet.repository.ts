@@ -5,7 +5,7 @@ import { Wallet } from "../entites/wallet.entity";
 import { type IWalletRepository } from "@/domain/orm/repositories/wallet.repository";
 import { Transaction, TransactionSource } from "../entites/transaction.entity";
 import {
-  ITransactionRepository,
+  type ITransactionRepository,
   TRANSACTION_REPOSITORY,
 } from "@/domain/orm/repositories/transaction.repository";
 
