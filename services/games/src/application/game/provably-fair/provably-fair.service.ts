@@ -126,7 +126,7 @@ export class ProvablyFairService implements IProvablyFairService {
     // Marcar seed atual como usado
     const currentSeed = await this.getActiveSeed();
     if (currentSeed) {
-      await this.setSeedAsUsed(currentSeed.id);
+      await this.setSeedAsUsed(currentSeed.clientSeed);
     }
 
     return this.generateNewSeed(newClientSeed);

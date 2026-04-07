@@ -49,7 +49,6 @@ export class GetMyBetsUseCase implements HandlerUsecase {
         totalPages: Math.ceil(total / limit),
       });
     } catch (e) {
-      console.log(e);
       return new PaginatedResponseDto<BetHistoryItemDto>({
         data: [],
         page: Number(page),

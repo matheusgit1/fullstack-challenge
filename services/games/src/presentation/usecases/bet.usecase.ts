@@ -27,7 +27,7 @@ export class BetUseCase implements HandlerUsecase {
 
   async handler(dto: BetRequestDto): Promise<BetResponseDto> {
     const { user, hash, token } = this.request;
-    console.log('user', user);
+
     const userBalance = await this.proxyService.getUserBalance(token!);
     const isAvailableBet = userBalance.balanceInCents >= dto.amount;
     if (!isAvailableBet) {
@@ -40,7 +40,7 @@ export class BetUseCase implements HandlerUsecase {
     if (!round.isBettingPhase()) {
       throw new ConflictException('Fase de aposta encerrada');
     }
-    console.log('round found', round);
+
     const bet = await this.betRepository.createBet({
       userId: user?.sub || 'Anonymous',
       roundId: dto.roundId,
@@ -48,11 +48,7 @@ export class BetUseCase implements HandlerUsecase {
       status: BetStatus.PENDING,
     });
 
-    console.log('bet created', bet);
-
     await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
-
-    console.log(' bet processed');
 
     return new BetResponseDto({
       bet: {
