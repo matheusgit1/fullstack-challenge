@@ -12,6 +12,7 @@ import {
   TransactionSource,
 } from '@/domain/rabbitmq/rabbitmq.producer';
 import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
+import { GamesManager } from '../manager/games.manager';
 
 @Injectable()
 export class BetUseCase implements HandlerUsecase {
@@ -21,12 +22,12 @@ export class BetUseCase implements HandlerUsecase {
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
     @Inject(WALLET_PROXY) private readonly proxyService: IWalletProxy,
-    @Inject(RABBITMQ_PRODUCER_SERVICE)
-    private readonly rabbitmqProducer: IRabbitmqProducerService,
+    private readonly gamesManager: GamesManager,
   ) {}
 
   async handler(dto: BetRequestDto): Promise<BetResponseDto> {
     const { user, hash, token } = this.request;
+    console.log('user', user);
     const userBalance = await this.proxyService.getUserBalance(token!);
     const isAvailableBet = userBalance.balanceInCents >= dto.amount;
     if (!isAvailableBet) {
@@ -39,20 +40,20 @@ export class BetUseCase implements HandlerUsecase {
     if (!round.isBettingPhase()) {
       throw new ConflictException('Fase de aposta encerrada');
     }
+    console.log('round found', round);
     const bet = await this.betRepository.createBet({
       userId: user?.sub || 'Anonymous',
       roundId: dto.roundId,
       amount: dto.amount,
       status: BetStatus.PENDING,
     });
-    await this.rabbitmqProducer.publishReserve({
-      cashType: TransactionSource.BET_RESERVE,
-      userId: user?.sub || 'Anonymous',
-      amount: dto.amount,
-      timestamp: new Date().toISOString(),
-      externalId: bet.id,
-      tracingId: hash,
-    });
+
+    console.log('bet created', bet);
+
+    await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
+
+    console.log(' bet processed');
+
     return new BetResponseDto({
       bet: {
         id: bet.id,

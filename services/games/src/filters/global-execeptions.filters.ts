@@ -8,8 +8,8 @@ import {
   NotFoundException,
   ConflictException,
   GoneException,
-} from "@nestjs/common";
-import type { Request, Response } from "express";
+} from '@nestjs/common';
+import type { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -20,30 +20,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const { hash } = request;
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = "Internal server error";
-    let errorType = "InternalError";
+    let message = 'Internal server error';
+    let errorType = 'InternalError';
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus() || HttpStatus.CONTINUE;
+      status = exception.getStatus();
 
       const res = exception.getResponse();
 
-      if (typeof res === "string") {
+      if (typeof res === 'string') {
         message = res;
-      } else if (typeof res === "object") {
+      } else if (typeof res === 'object') {
         message = (res as any).message || message;
       }
 
       if (exception instanceof BadRequestException) {
-        errorType = "BadRequest";
+        errorType = 'BadRequest';
       } else if (exception instanceof NotFoundException) {
-        errorType = "NotFound";
+        errorType = 'NotFound';
       } else if (exception instanceof ConflictException) {
-        errorType = "Conflict";
+        errorType = 'Conflict';
       } else if (exception instanceof GoneException) {
-        errorType = "Gone";
+        errorType = 'Gone';
       } else {
-        errorType = "UnknownError";
+        errorType = 'UnknownError';
       }
     }
 

@@ -1,16 +1,13 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { CashoutResponseDto } from "../dtos/request/cashout-request.dto";
-import {
-  BET_REPOSITORY,
-  type IBetRepository,
-} from "@/domain/orm/repositories/bet.repository";
+import { Inject, Injectable } from '@nestjs/common';
+import { CashoutResponseDto } from '../dtos/request/cashout-request.dto';
+import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import {
   type IRabbitmqProducerService,
   RABBITMQ_PRODUCER_SERVICE,
   TransactionSource,
-} from "@/domain/rabbitmq/rabbitmq.producer";
-import { Bet } from "@/infrastructure/database/orm/entites/bet.entity";
-import { Round } from "@/infrastructure/database/orm/entites/round.entity";
+} from '@/domain/rabbitmq/rabbitmq.producer';
+import { Bet } from '@/infrastructure/database/orm/entites/bet.entity';
+import { Round } from '@/infrastructure/database/orm/entites/round.entity';
 
 @Injectable()
 export class GamesManager {
@@ -20,13 +17,18 @@ export class GamesManager {
     private readonly rabbitmqProducer: IRabbitmqProducerService,
   ) {}
 
-  public async processCashout(
-    bet: Bet,
-    round: Round,
-    userId: string,
-    externalId: string,
-    tracingId: string,
-  ) {
+  public async processBet(bet: Bet, userId: string, amount: number, tracingId: string) {
+    await this.rabbitmqProducer.publishReserve({
+      cashType: TransactionSource.BET_RESERVE,
+      userId: userId,
+      amount: amount,
+      timestamp: new Date().toISOString(),
+      externalId: bet.id,
+      tracingId: tracingId,
+    });
+  }
+
+  public async processCashout(bet: Bet, round: Round, userId: string, externalId: string, tracingId: string) {
     await this.rabbitmqProducer.publishCashout({
       cashType: TransactionSource.BET_LOST,
       userId: userId,
@@ -54,13 +56,7 @@ export class GamesManager {
     });
   }
 
-  public async processCashin(
-    bet: Bet,
-    round: Round,
-    userId: string,
-    externalId: string,
-    tracingId: string,
-  ) {
+  public async processCashin(bet: Bet, round: Round, userId: string, externalId: string, tracingId: string) {
     await this.rabbitmqProducer.publishCashin({
       cashType: TransactionSource.BET_PLACED,
       userId: userId,

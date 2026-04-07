@@ -22,30 +22,41 @@ export class GetMyBetsUseCase implements HandlerUsecase {
 
     const [bets, total] = await this.betRepository.findUserBetsHistory(
       user?.sub || 'anonymous',
-      page,
-      limit,
+      Number(page),
+      Number(limit),
       query.status,
     );
 
-    return new PaginatedResponseDto<BetHistoryItemDto>({
-      data: bets.map(
-        (bet) =>
-          new BetHistoryItemDto({
-            roundCrashPoint: bet.round.crashPoint || 0,
-            roundId: bet.round.id,
-            id: bet.id,
-            userId: user?.sub || 'anonymous',
-            amount: bet.amount,
-            multiplier: bet.multiplier,
-            status: bet.status,
-            cashedOutAt: bet.cashedOutAt,
-            createdAt: bet.createdAt,
-          }),
-      ),
-      page: page,
-      limit: limit,
-      total: total,
-      totalPages: Math.ceil(total / limit),
-    });
+    try {
+      return new PaginatedResponseDto<BetHistoryItemDto>({
+        data: bets.map(
+          (bet) =>
+            new BetHistoryItemDto({
+              roundCrashPoint: bet.round?.crashPoint || 0,
+              roundId: bet.round?.id,
+              id: bet.id,
+              userId: user?.sub || 'anonymous',
+              amount: bet.amount,
+              multiplier: bet.multiplier,
+              status: bet.status,
+              cashedOutAt: bet.cashedOutAt,
+              createdAt: bet.createdAt,
+            }),
+        ),
+        page: Number(page),
+        limit: Number(limit),
+        total: total,
+        totalPages: Math.ceil(total / limit),
+      });
+    } catch (e) {
+      console.log(e);
+      return new PaginatedResponseDto<BetHistoryItemDto>({
+        data: [],
+        page: Number(page),
+        limit: Number(limit),
+        total: total,
+        totalPages: Math.ceil(total / limit),
+      });
+    }
   }
 }

@@ -12,10 +12,10 @@ export class HistoryRoundUsecase implements HandlerUsecase {
     private readonly roundRepository: IRoundRepository,
   ) {}
   async handler(query: RoundHistoryQueryDto): Promise<PaginatedResponseDto<RoundHistoryItemDto>> {
-    const page = query.page <= 0 ? 1 : query.page;
-    const limit = query.limit <= 0 ? 20 : query.limit;
+    const page = query.page && query.page <= 0 ? 1 : query.page || 1;
+    const limit = query.limit && query.limit <= 0 ? 20 : query.limit || 20;
 
-    const [rounds, total] = await this.roundRepository.findRoundsHistory(page, limit);
+    const [rounds, total] = await this.roundRepository.findRoundsHistory(Number(page), Number(limit));
 
     return new PaginatedResponseDto<RoundHistoryItemDto>({
       data: rounds.map(
@@ -28,8 +28,8 @@ export class HistoryRoundUsecase implements HandlerUsecase {
             status: round.status,
           }),
       ),
-      page,
-      limit,
+      page: Number(page),
+      limit: Number(limit),
       total: total,
       totalPages: Math.ceil(total / limit),
     });
