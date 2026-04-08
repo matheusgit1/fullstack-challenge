@@ -2,13 +2,15 @@
 import { useGameStore } from "@/stores/game-store";
 import { Button } from "@/components/ui/button";
 import { Coins, User, LogOut } from "lucide-react";
-import { getSession, signOut, useSession } from "next-auth/react";
-import { memo, useState } from "react";
+import { useSession } from "next-auth/react";
+import React, { memo, useState } from "react";
 import { useLogout } from "@/functions/logout";
+import { useGameContext } from "@/context/game-context";
 
 export function Header() {
   const { user } = useGameStore();
   const { data } = useSession();
+  const { wallet } = useGameContext();
   const logout = useLogout();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,13 +44,13 @@ export function Header() {
               <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full">
                 <Coins className="h-4 w-4 text-yellow-500" />
                 <span className="font-bold text-green-500">
-                  R$ {user.balance.toFixed(2)}
+                  R$ {user?.balance.toFixed(2)}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 text-slate-300">
                 <User className="h-4 w-4" />
-                <span>{data?.user?.name}</span>
+                <span>{user?.username}</span>
               </div>
 
               <Button

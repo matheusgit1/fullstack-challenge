@@ -1,9 +1,9 @@
-// frontend/src/stores/gameStore.ts
 import { create } from "zustand";
-import { GameState, Round, Bet, User, RoundHistory } from "@/types/games";
+import { Bet, GameState, Round, User } from "@/types/games";
+import { apiFetch } from "@/app/lib/api";
 
 interface GameActions {
-  placeBet: (amount: number) => Promise<void>;
+  placeBet: (amount: number, accessToken: string) => Promise<void>;
   cashOut: () => Promise<void>;
   setCurrentRound: (round: Round) => void;
   updateMultiplier: (multiplier: number) => void;
@@ -12,10 +12,10 @@ interface GameActions {
   clearBets: () => void;
   setUser: (user: User | null) => void; // Permite null
   updateBalance: (newBalance: number) => void;
+  debitBalance: (amount: number) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
-  syncWithSession: (session: any) => void; // Nova ação
 }
 
 const initialState: GameState = {
@@ -23,11 +23,7 @@ const initialState: GameState = {
   myBet: null,
   currentBets: [],
   roundHistory: [],
-  user: {
-    id: "mocked",
-    username: "User mocked da silva",
-    balance: 50000,
-  }, // Começa como null
+  user: null,
   isLoading: false,
   error: null,
 };
@@ -37,11 +33,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
   setUser: (user) => set({ user }),
 
-  updateBalance: (newBalance) =>
+  updateBalance: (newBalance) => {
+    // get().cashOut();
+
     set((state) => ({
       user: state.user ? { ...state.user, balance: newBalance } : null,
-    })),
-
+    }));
+  },
   setCurrentRound: (round) => set({ currentRound: round }),
 
   updateMultiplier: (multiplier) =>
@@ -70,7 +68,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
   clearBets: () => set({ currentBets: [], myBet: null }),
 
-  placeBet: async (amount) => {
+  placeBet: async (amount, accessToken) => {
     const { user, currentRound } = get();
 
     if (!user || user.balance < amount) {
@@ -83,17 +81,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       return;
     }
 
-    set({ isLoading: true });
-
-    // Buscar token da sessão para enviar ao backend
-    const { data: session } = await import("next-auth/react").then((mod) =>
-      mod.useSession(),
-    );
-
     try {
-      // Simular chamada à API com autenticação
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
+      //enviar parar api aposta
       const newBet: Bet = {
         id: Math.random().toString(36).substr(2, 9),
         userId: user.id,
@@ -104,13 +93,25 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
         cashedOutAt: null,
       };
 
+      // const {} = await apiFetch("games", `/games/bet`, {
+
+      // })
+
       get().addBet(newBet);
-      get().updateBalance(user.balance - amount);
-    } catch (error) {
+      get().debitBalance(amount);
+      set({ isLoading: true });
+    } catch {
       set({ error: "Erro ao fazer aposta" });
     } finally {
       set({ isLoading: false });
     }
+  },
+  debitBalance: (amount) => {
+    set((state) => ({
+      user: state.user
+        ? { ...state.user, balance: state.user.balance - amount }
+        : null,
+    }));
   },
 
   cashOut: async () => {
@@ -129,11 +130,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     set({ isLoading: true });
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
       const multiplier = currentRound.multiplier || 1;
       const winAmount = myBet.amount * multiplier;
-      const newBalance = (user?.balance || 0) + winAmount;
 
       get().updateBet(myBet.id, {
         status: "cashed_out",
@@ -141,26 +139,11 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
         cashedOutAt: new Date(),
       });
 
-      get().updateBalance(newBalance);
-    } catch (error) {
+      get().updateBalance((user?.balance || 0) + winAmount);
+    } catch {
       set({ error: "Erro ao sacar" });
     } finally {
       set({ isLoading: false });
-    }
-  },
-
-  // Nova ação para sincronizar com a sessão do NextAuth
-  syncWithSession: (session) => {
-    if (session?.user) {
-      const user: User = {
-        id: session.user.id || session.user.sub || session.user.email,
-        username:
-          session.user.name || session.user.email?.split("@")[0] || "Player",
-        balance: 5000, // Buscar do backend depois
-      };
-      set({ user });
-    } else {
-      set({ user: null });
     }
   },
 

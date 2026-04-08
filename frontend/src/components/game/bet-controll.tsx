@@ -1,16 +1,24 @@
-// frontend/src/components/game/BetControls.tsx
-
-import { useState } from "react";
+import { use, useState } from "react";
 import { useGameStore } from "@/stores/game-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export function BetControls() {
   const [betAmount, setBetAmount] = useState(10);
-  const { currentRound, myBet, user, isLoading, placeBet, cashOut } =
-    useGameStore();
+  const {
+    currentRound,
+    myBet,
+    user,
+    isLoading,
+    placeBet,
+    cashOut,
+    debitBalance,
+  } = useGameStore();
+
+  const { data: session } = useSession();
 
   const canBet = currentRound?.status === "betting" && !myBet && !isLoading;
   const canCashOut =
@@ -36,11 +44,12 @@ export function BetControls() {
       return;
     }
 
-    await placeBet(betAmount);
+    await placeBet(betAmount, session?.accessToken ?? "");
+    // await debitBalance(betAmount);
   };
 
   const handleCashOut = async () => {
-    await cashOut();
+    cashOut();
   };
 
   const presetAmounts = [10, 50, 100, 500];

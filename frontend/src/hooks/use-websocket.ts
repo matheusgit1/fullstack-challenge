@@ -63,7 +63,7 @@ export function useWebSocket() {
       });
     }
 
-    // Simular multiplicador subindo
+
     let multiplier = 1.0;
     const crashPoint = Math.random() * 10 + 1; // Entre 1x e 11x
 
@@ -71,7 +71,6 @@ export function useWebSocket() {
       multiplier += 0.05;
       updateMultiplier(multiplier);
 
-      // Simular crash
       if (multiplier >= crashPoint) {
         clearInterval(intervalRef.current);
         crashRound(crashPoint);
@@ -104,7 +103,7 @@ export function useWebSocket() {
     }, 3000);
   };
 
-  // Função para adicionar bet de outros jogadores (mock)
+
   const addMockBet = (username: string, amount: number) => {
     const mockBet: Bet = {
       id: Math.random().toString(36).substr(2, 9),
@@ -118,7 +117,7 @@ export function useWebSocket() {
     addBet(mockBet);
   };
 
-  // Simular outros jogadores apostando
+
   useEffect(() => {
     const interval = setInterval(() => {
       const { currentRound } = useGameStore.getState();
