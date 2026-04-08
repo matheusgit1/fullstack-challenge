@@ -12,6 +12,7 @@ import { LoggingInterceptor } from '@/interceptor/logging.interceptor';
 import { GlobalExceptionFilter } from '@/filters/global-execeptions.filters';
 import { WALLET_REPOSITORY } from '@/domain/orm/repositories/wallet.repository';
 import { TracingMiddleware } from '@/middleware/middleware/tracing.middleware';
+import { ResponseInterceptor } from '@/interceptor/response.interceptor';
 
 @Module({
   imports: [AuthModule, OrmModule, RabbitmqModule, ConfigModule.forRoot()],
@@ -24,6 +25,7 @@ import { TracingMiddleware } from '@/middleware/middleware/tracing.middleware';
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
   ],
 })
 export class AppModule implements NestModule {

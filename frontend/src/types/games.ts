@@ -8,7 +8,7 @@ export interface Round {
   bettingEndsAt: Date | null;
   startedAt: Date | null;
   crashedAt: Date | null;
-  serverSeedHash: string; // Hash do seed para provably fair
+  serverSeedHash: string;
 }
 
 export interface Bet {
@@ -16,7 +16,7 @@ export interface Bet {
   userId: string;
   username: string;
   amount: number;
-  multiplier: number | null; // multiplicador no cashout, null se perdeu
+  multiplier: number | null;
   status: "pending" | "cashed_out" | "lost";
   cashedOutAt: Date | null;
 }

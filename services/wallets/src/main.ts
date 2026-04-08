@@ -7,6 +7,7 @@ import { appConfig } from './configs/app.config';
 import { GlobalExceptionFilter } from './filters/global-execeptions.filters';
 import { ResponseInterceptor } from './interceptor/response.interceptor';
 import { ValidationPipe } from '@nestjs/common';
+import cors from 'cors';
 
 async function bootstrap() {
   const { port } = appConfig;
@@ -27,8 +28,11 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new GlobalExceptionFilter());
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+    }),
+  );
 
   await app.startAllMicroservices();
   await app.listen(port, '0.0.0.0', () => {

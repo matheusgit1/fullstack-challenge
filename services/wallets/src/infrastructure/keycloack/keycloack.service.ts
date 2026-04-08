@@ -27,7 +27,7 @@ export class KeycloakService implements IKeyCloakService {
 
       return response.data satisfies User;
     } catch (error) {
-      // console.error('Erro ao validar token', error);
+      console.error('Erro ao validar token', error);
       throw new UnauthorizedException("Erro ao validar token");
     }
   }
@@ -61,7 +61,7 @@ export class KeycloakService implements IKeyCloakService {
       );
       return response.data satisfies KeycloakTokenResponse;
     } catch (error) {
-      // console.error('Erro ao obter token', error);
+      console.error('Erro ao obter token', error);
       throw new UnauthorizedException("Erro ao obter token");
     }
   }
