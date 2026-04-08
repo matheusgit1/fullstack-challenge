@@ -1,10 +1,8 @@
 // frontend/src/stores/gameStore.ts
-
 import { create } from "zustand";
 import { GameState, Round, Bet, User, RoundHistory } from "@/types/games";
 
 interface GameActions {
-  // Ações
   placeBet: (amount: number) => Promise<void>;
   cashOut: () => Promise<void>;
   setCurrentRound: (round: Round) => void;
@@ -12,26 +10,24 @@ interface GameActions {
   addBet: (bet: Bet) => void;
   updateBet: (betId: string, updates: Partial<Bet>) => void;
   clearBets: () => void;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void; // Permite null
   updateBalance: (newBalance: number) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
+  syncWithSession: (session: any) => void; // Nova ação
 }
-
-// Dados mockados para desenvolvimento
-const mockUser: User = {
-  id: "1",
-  username: "PlayerTest",
-  balance: 5000.0,
-};
 
 const initialState: GameState = {
   currentRound: null,
   myBet: null,
   currentBets: [],
   roundHistory: [],
-  user: mockUser,
+  user: {
+    id: "mocked",
+    username: "User mocked da silva",
+    balance: 50000,
+  }, // Começa como null
   isLoading: false,
   error: null,
 };
@@ -43,9 +39,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
   updateBalance: (newBalance) =>
     set((state) => ({
-      user: state.user
-        ? { ...state.user, balance: newBalance }
-        : { id: "1", username: "PlayerTest", balance: newBalance },
+      user: state.user ? { ...state.user, balance: newBalance } : null,
     })),
 
   setCurrentRound: (round) => set({ currentRound: round }),
@@ -91,22 +85,32 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     set({ isLoading: true });
 
-    // Mock - simular delay da API
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Buscar token da sessão para enviar ao backend
+    const { data: session } = await import("next-auth/react").then((mod) =>
+      mod.useSession(),
+    );
 
-    const newBet: Bet = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: user.id,
-      username: user.username,
-      amount,
-      multiplier: null,
-      status: "pending",
-      cashedOutAt: null,
-    };
+    try {
+      // Simular chamada à API com autenticação
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-    get().addBet(newBet);
-    get().updateBalance(user.balance - amount);
-    set({ isLoading: false });
+      const newBet: Bet = {
+        id: Math.random().toString(36).substr(2, 9),
+        userId: user.id,
+        username: user.username,
+        amount,
+        multiplier: null,
+        status: "pending",
+        cashedOutAt: null,
+      };
+
+      get().addBet(newBet);
+      get().updateBalance(user.balance - amount);
+    } catch (error) {
+      set({ error: "Erro ao fazer aposta" });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   cashOut: async () => {
@@ -124,20 +128,40 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     set({ isLoading: true });
 
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const multiplier = currentRound.multiplier || 1;
-    const winAmount = myBet.amount * multiplier;
-    const newBalance = (user?.balance || 0) + winAmount;
+      const multiplier = currentRound.multiplier || 1;
+      const winAmount = myBet.amount * multiplier;
+      const newBalance = (user?.balance || 0) + winAmount;
 
-    get().updateBet(myBet.id, {
-      status: "cashed_out",
-      multiplier,
-      cashedOutAt: new Date(),
-    });
+      get().updateBet(myBet.id, {
+        status: "cashed_out",
+        multiplier,
+        cashedOutAt: new Date(),
+      });
 
-    get().updateBalance(newBalance);
-    set({ isLoading: false });
+      get().updateBalance(newBalance);
+    } catch (error) {
+      set({ error: "Erro ao sacar" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // Nova ação para sincronizar com a sessão do NextAuth
+  syncWithSession: (session) => {
+    if (session?.user) {
+      const user: User = {
+        id: session.user.id || session.user.sub || session.user.email,
+        username:
+          session.user.name || session.user.email?.split("@")[0] || "Player",
+        balance: 5000, // Buscar do backend depois
+      };
+      set({ user });
+    } else {
+      set({ user: null });
+    }
   },
 
   setLoading: (isLoading) => set({ isLoading }),

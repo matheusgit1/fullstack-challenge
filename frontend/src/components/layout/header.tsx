@@ -1,12 +1,29 @@
-// frontend/src/components/layout/Header.tsx
-
-import { useGameStore } from '@/stores/game-store';
-import { Button } from '@/components/ui/button';
-import { Coins, User, LogOut } from 'lucide-react';
+"use client";
+import { useGameStore } from "@/stores/game-store";
+import { Button } from "@/components/ui/button";
+import { Coins, User, LogOut } from "lucide-react";
+import { getSession, signOut, useSession } from "next-auth/react";
+import { memo, useState } from "react";
+import { useLogout } from "@/functions/logout";
 
 export function Header() {
   const { user } = useGameStore();
-  
+  const { data } = useSession();
+  const logout = useLogout();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await logout();
+      console.log("Logout successful");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -18,7 +35,7 @@ export function Header() {
               Crash Game
             </span>
           </div>
-          
+
           {/* User info */}
           {user && (
             <div className="flex items-center gap-4">
@@ -28,13 +45,18 @@ export function Header() {
                   R$ {user.balance.toFixed(2)}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-2 text-slate-300">
                 <User className="h-4 w-4" />
-                <span>{user.username}</span>
+                <span>{data?.user?.name}</span>
               </div>
-              
-              <Button variant="ghost" size="sm" className="text-slate-400">
+
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="text-slate-400"
+              >
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -44,3 +66,5 @@ export function Header() {
     </header>
   );
 }
+
+// export const Header = memo(GameHeader);

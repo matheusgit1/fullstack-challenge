@@ -1,43 +1,23 @@
-// app/lib/auth-options.ts
+import KeycloakProvider from "next-auth/providers/keycloak";
 import { AuthOptions } from "next-auth";
 
 export const authOptions: AuthOptions = {
   providers: [
-    {
-      id: "keycloak",
-      name: "Keycloak",
-      type: "oauth",
-      wellKnown: `${process.env.WELL_KNOW_BASE_URL}/realms/${process.env.KEYCLOAK_REALM}/.well-known/openid-configuration`,
+    KeycloakProvider({
       clientId: process.env.KEYCLOAK_CLIENT_ID!,
-      checks: ["pkce", "state"],
-      authorization: {
-        params: {
-          scope: "openid profile email",
-        },
-      },
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET, 
-      token: {
-        params: {
-          grant_type: "authorization_code",
-        },
-      },
-
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-        };
-      },
-    },
+      clientSecret: "dummy",
+      issuer: `${process.env.WELL_KNOW_BASE_URL}/realms/${process.env.KEYCLOAK_REALM}`,
+    }),
   ],
 
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, profile }) {
       if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
+        token.idToken = account.id_token;
         token.expiresAt = (account.expires_at ?? 0) * 1000;
+        token.user = profile;
         return token;
       }
 
@@ -55,9 +35,6 @@ export const authOptions: AuthOptions = {
             },
             body: new URLSearchParams({
               client_id: process.env.KEYCLOAK_CLIENT_ID!,
-              ...(process.env.KEYCLOAK_CLIENT_SECRET && {
-                client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-              }),
               grant_type: "refresh_token",
               refresh_token: token.refreshToken as string,
             }),
@@ -66,26 +43,24 @@ export const authOptions: AuthOptions = {
 
         const refreshed = await response.json();
 
-        if (!response.ok) {
-          throw new Error(
-            refreshed.error_description || "Failed to refresh token",
-          );
-        }
+        if (!response.ok) throw new Error();
 
         return {
           ...token,
           accessToken: refreshed.access_token,
+          idToken: refreshed.id_token ?? token.idToken,
           refreshToken: refreshed.refresh_token ?? token.refreshToken,
           expiresAt: Date.now() + refreshed.expires_in * 1000,
         };
-      } catch (error) {
-        console.error("Token refresh error:", error);
+      } catch {
         return { ...token, error: "RefreshAccessTokenError" };
       }
     },
 
     async session({ session, token }: any) {
       session.accessToken = token.accessToken;
+      session.idToken = token.idToken;
+      session.user = token.user;
       session.error = token.error;
       return session;
     },
@@ -94,6 +69,4 @@ export const authOptions: AuthOptions = {
   session: {
     strategy: "jwt",
   },
-
-  debug: process.env.NODE_ENV === "development",
 };

@@ -1,37 +1,38 @@
-// frontend/src/components/game/CurrentBets.tsx
-
-import { useGameStore } from '@/stores/game-store';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Trophy, Clock, Coins } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useGameStore } from "@/stores/game-store";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Trophy, Clock, Coins } from "lucide-react";
+import { cn } from "@/app/lib/utils";
+// iimport { cn } from "@/app/lib/utils";;
 
 export function CurrentBets() {
   const { currentBets, currentRound, user } = useGameStore();
-  
+
   // Separar cashouts das apostas pendentes
-  const pendingBets = currentBets.filter(bet => bet.status === 'pending');
-  const cashedOutBets = currentBets.filter(bet => bet.status === 'cashed_out');
-  const lostBets = currentBets.filter(bet => bet.status === 'lost');
-  
-  const isRoundActive = currentRound?.status === 'running';
-  const isBettingPhase = currentRound?.status === 'betting';
+  const pendingBets = currentBets.filter((bet) => bet.status === "pending");
+  const cashedOutBets = currentBets.filter(
+    (bet) => bet.status === "cashed_out",
+  );
+  const lostBets = currentBets.filter((bet) => bet.status === "lost");
+
+  const isRoundActive = currentRound?.status === "running";
+  const isBettingPhase = currentRound?.status === "betting";
   const currentMultiplier = currentRound?.multiplier || 1;
-  
+
   if (currentBets.length === 0) {
     return (
       <Card className="bg-slate-900/50 border-slate-800">
         <CardContent className="py-12 text-center">
           <Users className="h-12 w-12 mx-auto text-slate-600 mb-3" />
           <p className="text-slate-400">
-            {isBettingPhase 
-              ? 'Nenhuma aposta ainda. Seja o primeiro!' 
-              : 'Aguardando apostas para a próxima rodada...'}
+            {isBettingPhase
+              ? "Nenhuma aposta ainda. Seja o primeiro!"
+              : "Aguardando apostas para a próxima rodada..."}
           </p>
         </CardContent>
       </Card>
     );
   }
-  
+
   return (
     <Card className="bg-slate-900/50 border-slate-800">
       <CardHeader className="pb-3">
@@ -43,7 +44,7 @@ export function CurrentBets() {
           </span>
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Apostas Pendentes */}
         {pendingBets.length > 0 && (
@@ -65,7 +66,7 @@ export function CurrentBets() {
             </div>
           </div>
         )}
-        
+
         {/* Cashouts Realizados */}
         {cashedOutBets.length > 0 && (
           <div>
@@ -85,7 +86,7 @@ export function CurrentBets() {
             </div>
           </div>
         )}
-        
+
         {/* Apostas Perdidas */}
         {lostBets.length > 0 && (
           <div>
@@ -105,7 +106,7 @@ export function CurrentBets() {
             </div>
           </div>
         )}
-        
+
         {/* Legenda */}
         {isRoundActive && (
           <div className="pt-2 text-xs text-slate-500 border-t border-slate-800">
@@ -133,16 +134,16 @@ interface BetRowProps {
   currentMultiplier?: number;
 }
 
-function BetRow({ 
-  bet, 
-  isCurrentUser, 
-  isCashedOut, 
+function BetRow({
+  bet,
+  isCurrentUser,
+  isCashedOut,
   isLost,
   showPotentialWin,
-  currentMultiplier = 1 
+  currentMultiplier = 1,
 }: BetRowProps) {
   const potentialWin = bet.amount * currentMultiplier;
-  
+
   return (
     <div
       className={cn(
@@ -150,22 +151,25 @@ function BetRow({
         isCurrentUser && "ring-1 ring-yellow-500/50 bg-yellow-500/5",
         !isCurrentUser && "bg-slate-800/50",
         isCashedOut && "bg-green-500/10",
-        isLost && "bg-red-500/10"
+        isLost && "bg-red-500/10",
       )}
     >
       <div className="flex items-center gap-3">
-        <div className={cn(
-          "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-          isCurrentUser ? "bg-yellow-500/20 text-yellow-500" : "bg-slate-700 text-slate-300"
-        )}>
+        <div
+          className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+            isCurrentUser
+              ? "bg-yellow-500/20 text-yellow-500"
+              : "bg-slate-700 text-slate-300",
+          )}
+        >
           {bet.username.charAt(0).toUpperCase()}
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className={cn(
-              "font-medium",
-              isCurrentUser && "text-yellow-500"
-            )}>
+            <span
+              className={cn("font-medium", isCurrentUser && "text-yellow-500")}
+            >
               {bet.username}
               {isCurrentUser && " (você)"}
             </span>
@@ -182,13 +186,11 @@ function BetRow({
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Coins className="h-3 w-3 text-slate-500" />
-            <span className="text-slate-400">
-              R$ {bet.amount.toFixed(2)}
-            </span>
+            <span className="text-slate-400">R$ {bet.amount.toFixed(2)}</span>
           </div>
         </div>
       </div>
-      
+
       <div className="text-right">
         {showPotentialWin && !isCashedOut && !isLost && (
           <div className="text-sm">
@@ -198,7 +200,7 @@ function BetRow({
             </span>
           </div>
         )}
-        
+
         {isCashedOut && bet.multiplier && (
           <div className="text-sm">
             <span className="text-green-400 font-bold">
@@ -209,7 +211,7 @@ function BetRow({
             </span>
           </div>
         )}
-        
+
         {isLost && (
           <div className="text-sm text-red-400">
             - R$ {bet.amount.toFixed(2)}
