@@ -7,12 +7,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const BASE_URL_WALLET =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4002";
 const BASE_URL_GAME =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4002";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4001";
 
 const apiFactory = (service?: Service): AxiosInstance => {
   const baseUrl: Record<Service, string> = {
-    game: `${BASE_URL_WALLET}`,
-    wallet: `${BASE_URL_GAME}`,
+    game: `${BASE_URL_GAME}`,
+    wallet: `${BASE_URL_WALLET}`,
     kong_proxy: `${BASE_URL}`,
   };
 

@@ -44,7 +44,7 @@ export function useWebSocket() {
     clearBets();
 
     // Fase de apostas
-    setCurrentRound({ ...mockRound, status: "betting", multiplier: 1.0 });
+    // setCurrentRound({ ...mockRound, status: "betting", multiplier: 1.0 });
 
     // Timer para terminar apostas
     setTimeout(() => {
@@ -56,11 +56,11 @@ export function useWebSocket() {
     // Iniciar rodada
     const { currentRound } = useGameStore.getState();
     if (currentRound) {
-      setCurrentRound({
-        ...currentRound,
-        status: "running",
-        startedAt: new Date(),
-      });
+      // setCurrentRound({
+      //   ...currentRound,
+      //   status: "running",
+      //   startedAt: new Date(),
+      // });
     }
 
 
@@ -81,12 +81,12 @@ export function useWebSocket() {
   const crashRound = (crashPoint: number) => {
     const { currentRound } = useGameStore.getState();
     if (currentRound) {
-      setCurrentRound({
-        ...currentRound,
-        status: "crashed",
-        crashPoint,
-        crashedAt: new Date(),
-      });
+      // setCurrentRound({
+      //   ...currentRound,
+      //   status: "crashed",
+      //   crashPoint,
+      //   crashedAt: new Date(),
+      // });
     }
 
     // Apostas pendentes viram perdas
@@ -117,7 +117,7 @@ export function useWebSocket() {
     addBet(mockBet);
   };
 
-
+  // Simular outros jogadores apostando
   useEffect(() => {
     const interval = setInterval(() => {
       const { currentRound } = useGameStore.getState();

@@ -58,7 +58,7 @@ export function useGameWebSocket() {
 
           // Multiplicador atualizado em tempo real
           case "multiplier.updated":
-            // updateMultiplier(data.multiplier ?? data.value);
+            updateMultiplier(data.multiplier ?? data.value);
             console.log("Multiplicador atualizado em tempo real", message);
             break;
 

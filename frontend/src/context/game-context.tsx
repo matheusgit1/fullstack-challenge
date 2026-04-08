@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { apiFetch } from "@/app/lib/api";
 import { useGameStore } from "@/stores/game-store";
 import { Wallet } from "@/types/wallet";
+import { CurrentRound } from "@/types/games";
 
 interface GameContextProps {
   wallet: Wallet | null;
@@ -17,6 +18,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const setUser = useGameStore((state) => state.setUser);
   const updateBalance = useGameStore((state) => state.updateBalance);
+  const updateCurrentRound = useGameStore((state) => state.setCurrentRound);
 
   const [wallet, setWalletState] = useState<Wallet | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -38,11 +40,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const initialize = async () => {
       try {
         const { response } = await apiFetch<Wallet>("wallet", "/wallets/me");
+        const { response: currentRound } = await apiFetch<CurrentRound>(
+          "game",
+          "/games/rounds/current",
+        );
 
         if (!response.success) throw new Error(response.error.message);
+        if (!currentRound.success) throw new Error(currentRound.error.message);
 
         setWalletState(response.data);
         updateBalance(response.data.balance);
+        updateCurrentRound(currentRound.data);
       } catch (err) {
         console.error("Erro ao carregar wallet:", err);
       } finally {

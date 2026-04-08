@@ -21,6 +21,16 @@ export interface Bet {
   cashedOutAt: Date | null;
 }
 
+export interface CurrentRound {
+  id: string;
+  status: RoundStatus;
+  multiplier: number;
+  bets: Bet[];
+  serverSeedHash: string;
+  bettingEndsAt: string;
+  startedAt: string;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -28,7 +38,7 @@ export interface User {
 }
 
 export interface GameState {
-  currentRound: Round | null;
+  currentRound: CurrentRound | null;
   myBet: Bet | null;
   currentBets: Bet[];
   roundHistory: RoundHistory[];

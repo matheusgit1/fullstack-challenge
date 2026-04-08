@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { Bet, GameState, Round, User } from "@/types/games";
+import { Bet, CurrentRound, GameState, Round, User } from "@/types/games";
 import { apiFetch } from "@/app/lib/api";
 
 interface GameActions {
   placeBet: (amount: number, accessToken: string) => Promise<void>;
   cashOut: () => Promise<void>;
-  setCurrentRound: (round: Round) => void;
+  setCurrentRound: (round: CurrentRound) => void;
   updateMultiplier: (multiplier: number) => void;
   addBet: (bet: Bet) => void;
   updateBet: (betId: string, updates: Partial<Bet>) => void;

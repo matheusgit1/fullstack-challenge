@@ -14,7 +14,7 @@ import { useGameWebSocket } from "@/hooks/use-games-websocket";
 export default function GamePage() {
   const { currentRound } = useGameStore();
 
-  useWebSocket();
+  // useWebSocket();
   useGameWebSocket(); 
 
   return (
