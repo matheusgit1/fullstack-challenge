@@ -18,12 +18,10 @@ export interface Bet {
   roundId: string;
   userId: string;
   amount: number;
-  // username: string;
   multiplier: number | null;
   status: BetStatus;
   cashedOutAt: string | null;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface CurrentRound {
@@ -32,8 +30,10 @@ export interface CurrentRound {
   multiplier: number;
   bets: Bet[];
   serverSeedHash: string;
+  bettingStartedAt: string;
   bettingEndsAt: string;
   startedAt: string;
+  crashPoint: number | "secret";
 }
 
 export interface User {

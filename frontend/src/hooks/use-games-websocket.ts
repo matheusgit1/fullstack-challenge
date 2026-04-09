@@ -1,7 +1,8 @@
 // hooks/useWebSocket.ts
 import { useEffect, useRef, useCallback } from "react";
 import { useGameStore } from "@/stores/game-store";
-import { Round, Bet } from "@/types/games";
+import { Round, Bet, CurrentRound } from "@/types/games";
+import { apiFetch } from "@/app/lib/api";
 
 const WS_URL = "ws://localhost:4001/ws";
 
@@ -22,37 +23,31 @@ export function useGameWebSocket() {
 
   // Mapeia cada evento do backend para ações da store
   const handleMessage = useCallback(
-    (event: MessageEvent) => {
+    async (event: MessageEvent) => {
       try {
         const message: WebSocketMessage = JSON.parse(event.data);
         const { type, data } = message;
 
         switch (type) {
           // Fase de apostas iniciou
-          case "round.betting.started":
-            // clearBets();
-            // setCurrentRound({
-            //   id: data.roundId ?? data.id,
-            //   status: "betting",
-            //   multiplier: 1.0,
-            //   crashPoint: null,
-            //   bettingEndsAt: data.bettingEndsAt
-            //     ? new Date(data.bettingEndsAt)
-            //     : null,
-            //   startedAt: null,
-            //   crashedAt: null,
-            //   serverSeedHash: data.serverSeedHash ?? null,
-            // });
-            console.log("Fase de apostas iniciou", message);
+          case "betting.phase":
+            clearBets();
+            const { response } = await apiFetch<CurrentRound>(
+              "game",
+              `/games/rounds/current`,
+            );
+            if (!response.success) throw new Error(response.error.message);
+            setCurrentRound(response.data);
+
             break;
 
           // Rodada começou a correr
           case "betting.running":
-            // setCurrentRound({
-            //   ...useGameStore.getState().currentRound!,
-            //   status: "running",
-            //   startedAt: new Date(),
-            // });
+            setCurrentRound({
+              ...useGameStore.getState().currentRound!,
+              status: "running",
+              startedAt: new Date().toISOString(),
+            });
             console.log("Rodada começou a correr", message);
             break;
 
@@ -62,9 +57,11 @@ export function useGameWebSocket() {
             break;
 
           case "betting.crashed":
+            clearBets();
             setCurrentRound({
               ...useGameStore.getState().currentRound!,
               status: "crashed",
+              crashPoint: data.round?.crashPoint ?? data.round.multiplier,
             });
             console.log("Rodada crashou", message);
             break;
@@ -80,6 +77,7 @@ export function useGameWebSocket() {
                 });
               }
             });
+            //TODO - enviar bets para ser marcadas como loose no backend
             console.log("Apostas perdedoras processadas", message);
             break;
 

@@ -45,7 +45,6 @@ export function BetControls() {
     }
 
     await placeBet(betAmount, session?.accessToken ?? "");
-    // await debitBalance(betAmount);
   };
 
   const handleCashOut = async () => {

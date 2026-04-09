@@ -3,12 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Trophy, Clock, Coins } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { faker } from "@faker-js/faker";
-// iimport { cn } from "@/app/lib/utils";;
 
 export function CurrentBets() {
   const { currentBets, currentRound, user } = useGameStore();
 
-  // Separar cashouts das apostas pendentes
   const pendingBets = currentBets.filter((bet) => bet.status === "pending");
   const cashedOutBets = currentBets.filter(
     (bet) => bet.status === "cashed_out",

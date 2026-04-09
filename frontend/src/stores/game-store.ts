@@ -94,26 +94,42 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     }
 
     try {
+      set({ isLoading: true });
+      const { response } = await apiFetch<{
+        bet: Bet;
+        newBalance: number;
+        roundId: string;
+      }>("game", `/games/bet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        data: {
+          amount: amount,
+          roundId: currentRound.id,
+        },
+      });
+
+      if (!response.success) throw new Error(response.error.message);
+
+      const { data } = response;
+
       const newBet: Bet & { username: string } = {
-        id: Math.random().toString(36).substr(2, 9),
-        roundId: currentRound.id,
+        id: data.bet.id,
+        roundId: data.roundId,
         userId: user.id,
         username: user.username,
-        amount,
-        multiplier: null,
-        status: "pending",
-        cashedOutAt: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        amount: data.bet.amount * 100,
+        multiplier: data.bet.multiplier,
+        status: data.bet.status,
+        cashedOutAt: data.bet.cashedOutAt,
+        createdAt: data.bet.createdAt,
       };
-
-      // const {} = await apiFetch("games", `/games/bet`, {
-
-      // })
 
       get().addBet(newBet, user.id);
       get().debitBalance(amount);
-      set({ isLoading: true });
+      set({ isLoading: false });
     } catch {
       set({ error: "Erro ao fazer aposta" });
     } finally {
@@ -167,7 +183,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       get().updateBet(myBet.id, {
         status: "cashed_out",
         multiplier,
-        cashedOutAt: new Date(),
+        cashedOutAt: new Date().toISOString(),
       });
 
       get().updateBalance((user?.balance || 0) + winAmount);
