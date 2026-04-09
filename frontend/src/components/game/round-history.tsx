@@ -56,13 +56,14 @@ const mockHistory = [
 ];
 
 export function RoundHistory() {
-  // TODO: Substituir por dados reais da API
-  const history = mockHistory;
+  const { roundHistory } = useGameStore();
 
-  const getCrashColor = (crashPoint: number) => {
-    if (crashPoint < 1.5) return "text-red-500 bg-red-500/10";
-    if (crashPoint < 3) return "text-orange-500 bg-orange-500/10";
-    if (crashPoint < 5) return "text-yellow-500 bg-yellow-500/10";
+  const getCrashColor = (crashPoint: string | number) => {
+    if (crashPoint.toString() === "1.5") return "text-red-500 bg-red-500/10";
+    if (crashPoint.toString() === "3")
+      return "text-orange-500 bg-orange-500/10";
+    if (crashPoint.toString() === "5")
+      return "text-yellow-500 bg-yellow-500/10";
     return "text-green-500 bg-green-500/10";
   };
 
@@ -77,7 +78,6 @@ export function RoundHistory() {
 
       <CardContent>
         <div className="space-y-2">
-          {/* Header */}
           <div className="grid grid-cols-4 gap-2 text-xs text-slate-500 pb-2 border-b border-slate-800">
             <span>Rodada</span>
             <span className="text-center">Crash</span>
@@ -85,9 +85,8 @@ export function RoundHistory() {
             <span className="text-right"></span>
           </div>
 
-          {/* Lista de rodadas */}
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {history.map((round, index) => (
+            {roundHistory.map((round, index) => (
               <div
                 key={round.roundId}
                 className="grid grid-cols-4 gap-2 items-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
@@ -103,12 +102,15 @@ export function RoundHistory() {
                       getCrashColor(round.crashPoint),
                     )}
                   >
-                    {round.crashPoint.toFixed(2)}x
+                    {round.crashPoint == "secret"
+                      ? "--"
+                      : round.crashPoint.toFixed(1)}{" "}
+                    x
                   </span>
                 </div>
 
                 <div className="flex justify-center">
-                  {round.verified ? (
+                  {round.status === "crashed" ? (
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   ) : (
                     <AlertCircle className="h-4 w-4 text-yellow-500" />

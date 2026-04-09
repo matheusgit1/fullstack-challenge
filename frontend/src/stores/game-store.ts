@@ -1,11 +1,19 @@
 import { create } from "zustand";
-import { Bet, CurrentRound, GameState, Round, User } from "@/types/games";
+import {
+  Bet,
+  CurrentRound,
+  GameState,
+  Round,
+  RoundHistory,
+  User,
+} from "@/types/games";
 import { apiFetch } from "@/app/lib/api";
 
 interface GameActions {
   placeBet: (amount: number, accessToken: string) => Promise<void>;
   cashOut: (accessToken: string) => Promise<void>;
   setCurrentRound: (round: CurrentRound) => void;
+  replaceRoundHistory: (round: RoundHistory[]) => void;
   updateMultiplier: (multiplier: number) => void;
   addBet: (bet: Bet, userId: string) => void;
   updateBet: (betId: string, updates: Partial<Bet>) => void;
@@ -30,12 +38,15 @@ const initialState: GameState = {
 
 export const useGameStore = create<GameState & GameActions>((set, get) => ({
   ...initialState,
+  replaceRoundHistory: (roundHistory: RoundHistory[]) =>
+    set((state) => ({
+      ...state,
+      roundHistory: roundHistory,
+    })),
 
   setUser: (user) => set({ user }),
 
   updateBalance: (newBalance) => {
-    // get().cashOut();
-
     set((state) => ({
       user: state.user ? { ...state.user, balance: newBalance } : null,
     }));

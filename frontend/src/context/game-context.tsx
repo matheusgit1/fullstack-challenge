@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { apiFetch } from "@/app/lib/api";
 import { useGameStore } from "@/stores/game-store";
 import { Wallet } from "@/types/wallet";
-import { CurrentRound } from "@/types/games";
+import { CurrentRound, RoundHistory } from "@/types/games";
 
 interface GameContextProps {
   wallet: Wallet | null;
@@ -20,7 +20,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const updateBalance = useGameStore((state) => state.updateBalance);
   const updateCurrentRound = useGameStore((state) => state.setCurrentRound);
   const addBet = useGameStore((state) => state.addBet);
-  const addMyBet = useGameStore((state) => state.myBet);
+  const replaceRoundHistory = useGameStore(
+    (state) => state.replaceRoundHistory,
+  );
 
   const [wallet, setWalletState] = useState<Wallet | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -53,13 +55,19 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         //   "game",
         //   "/games/rounds/current",
         // );
+        //historico de rodadas
+        const { response: roundHistory } = await apiFetch<{
+          data: RoundHistory[];
+        }>("game", "/games/rounds/history");
 
         if (!response.success) throw new Error(response.error.message);
         if (!currentRound.success) throw new Error(currentRound.error.message);
+        if (!roundHistory.success) throw new Error(roundHistory.error.message);
 
         setWalletState(response.data);
         updateBalance(response.data.balance);
         updateCurrentRound(currentRound.data);
+        replaceRoundHistory(roundHistory.data.data);
         currentRound.data.bets.forEach((bet) => addBet(bet, bet.userId));
       } catch (err) {
         console.error("Erro ao carregar wallet:", err);
