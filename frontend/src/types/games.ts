@@ -21,7 +21,7 @@ export interface Bet {
   // username: string;
   multiplier: number | null;
   status: BetStatus;
-  cashedOutAt: Date | null;
+  cashedOutAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,4 +68,5 @@ export interface RoundHistory {
   nonce: number;
   createdAt: string;
   updatedAt: string;
+  bets: Bet[];
 }

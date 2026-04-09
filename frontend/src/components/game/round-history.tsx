@@ -1,62 +1,14 @@
+"use client";
+
 import { useGameStore } from "@/stores/game-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, CheckCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/app/lib/utils";
-
-// Dados mockados para histórico
-const mockHistory = [
-  {
-    roundId: "1",
-    crashPoint: 1.23,
-    serverSeedHash: "abc123...",
-    verified: true,
-  },
-  {
-    roundId: "2",
-    crashPoint: 2.45,
-    serverSeedHash: "def456...",
-    verified: true,
-  },
-  {
-    roundId: "3",
-    crashPoint: 5.67,
-    serverSeedHash: "ghi789...",
-    verified: false,
-  },
-  {
-    roundId: "4",
-    crashPoint: 1.02,
-    serverSeedHash: "jkl012...",
-    verified: true,
-  },
-  {
-    roundId: "5",
-    crashPoint: 3.33,
-    serverSeedHash: "mno345...",
-    verified: true,
-  },
-  {
-    roundId: "6",
-    crashPoint: 8.88,
-    serverSeedHash: "pqr678...",
-    verified: true,
-  },
-  {
-    roundId: "7",
-    crashPoint: 1.55,
-    serverSeedHash: "stu901...",
-    verified: false,
-  },
-  {
-    roundId: "8",
-    crashPoint: 4.2,
-    serverSeedHash: "vwx234...",
-    verified: true,
-  },
-];
+import { useRouter } from "next/navigation";
 
 export function RoundHistory() {
   const { roundHistory } = useGameStore();
+  const router = useRouter();
 
   const getCrashColor = (crashPoint: string | number) => {
     if (crashPoint.toString() === "1.5") return "text-red-500 bg-red-500/10";
@@ -91,9 +43,11 @@ export function RoundHistory() {
                 key={round.roundId}
                 className="grid grid-cols-4 gap-2 items-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
               >
-                <span className="text-sm font-mono text-slate-400">
-                  #{history.length - index}
+                {/* <div className="max-w-[200px]"> */}
+                <span className="text-sm font-mono text-slate-400 text-ellipsis overflow-hidden">
+                  #{round.roundId.substring(0, 6) + "...."}
                 </span>
+                {/* </div> */}
 
                 <div className="flex justify-center">
                   <span
@@ -121,7 +75,6 @@ export function RoundHistory() {
                   <button
                     className="text-xs text-slate-500 hover:text-yellow-500 transition-colors"
                     onClick={() => {
-                      // TODO: Abrir modal com verificação provably fair
                       console.log("Verificar rodada", round.roundId);
                     }}
                   >
@@ -134,7 +87,10 @@ export function RoundHistory() {
 
           {/* Link para mais histórico */}
           <div className="pt-3 text-center">
-            <button className="text-sm text-yellow-500 hover:text-yellow-400 transition-colors">
+            <button
+              onClick={() => router.push("/rounds")}
+              className="text-sm text-yellow-500 hover:text-yellow-400 transition-colors"
+            >
               Ver todas as rodadas →
             </button>
           </div>
