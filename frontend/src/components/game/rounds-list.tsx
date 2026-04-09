@@ -6,41 +6,7 @@ import { History, ChevronLeft, ChevronRight, Eye, Shield } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { RoundDetailsModal } from "./round-details-modal";
 import { RoundHistory } from "@/types/games";
-
-interface Bet {
-  id: string;
-  roundId: string;
-  userId: string;
-  amount: number;
-  multiplier: number | null;
-  status: string;
-  cashedOutAt: Date | null;
-  createdAt: string;
-  updatedAt: string;
-  username?: string;
-}
-
-interface Round {
-  roundId: string;
-  crashPoint: number | "secret";
-  serverSeedHash: string;
-  endedAt: string;
-  status: string;
-  multiplier: number;
-  bettingStartedAt: string;
-  bettingEndsAt: string;
-  roundStartedAt: string;
-  roundCrashedAt: string;
-  serverSeed?: string;
-  clientSeed?: string;
-  nonce?: number;
-  createdAt: string;
-  updatedAt: string;
-  bets: Bet[];
-  _count?: {
-    bets: number;
-  };
-}
+import { apiFetch } from "@/app/lib/api";
 
 interface RoundsListProps {
   initialRounds?: RoundHistory[];
@@ -65,11 +31,26 @@ export function RoundsList({ initialRounds = [] }: RoundsListProps) {
   const fetchRounds = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/rounds?page=${currentPage}&limit=${roundsPerPage}`,
+      // const response = await fetch(
+      //   ``,
+      // );
+      const { response } = await apiFetch<{
+        data: RoundHistory[];
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      }>(
+        "game",
+        `/games/rounds/history?page=${currentPage}&limit=${roundsPerPage}`,
       );
-      const data = await response.json();
-      setRounds(data.rounds);
+
+      if (!response.success) throw new Error(response.error.message);
+
+      console.log("repsonse pagination: ", response);
+      const { data } = response;
+      // const data = await response.json();
+      setRounds(data.data);
       setTotalPages(data.totalPages);
     } catch (error) {
       console.error("Error fetching rounds:", error);

@@ -80,7 +80,7 @@ export interface DeterministicCheck {
   resultIsRepeatable: boolean;
   verificationHash: string;
 }
-// Helper functions para lidar com valores secret
+
 const isSecret = (value: any): boolean => value === "secret";
 const isPending = (value: any): boolean => value === "pending";
 
