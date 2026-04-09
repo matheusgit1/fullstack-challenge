@@ -19,6 +19,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const setUser = useGameStore((state) => state.setUser);
   const updateBalance = useGameStore((state) => state.updateBalance);
   const updateCurrentRound = useGameStore((state) => state.setCurrentRound);
+  const addBet = useGameStore((state) => state.addBet);
+  const addMyBet = useGameStore((state) => state.myBet);
 
   const [wallet, setWalletState] = useState<Wallet | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -39,11 +41,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
     const initialize = async () => {
       try {
+        //carteira do cliente
         const { response } = await apiFetch<Wallet>("wallet", "/wallets/me");
+        //rodada atual
         const { response: currentRound } = await apiFetch<CurrentRound>(
           "game",
           "/games/rounds/current",
         );
+        //apostas atuais
+        // const { response: currentBets } = await apiFetch<CurrentRound>(
+        //   "game",
+        //   "/games/rounds/current",
+        // );
 
         if (!response.success) throw new Error(response.error.message);
         if (!currentRound.success) throw new Error(currentRound.error.message);
@@ -51,6 +60,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setWalletState(response.data);
         updateBalance(response.data.balance);
         updateCurrentRound(currentRound.data);
+        currentRound.data.bets.forEach((bet) => addBet(bet, bet.userId));
       } catch (err) {
         console.error("Erro ao carregar wallet:", err);
       } finally {

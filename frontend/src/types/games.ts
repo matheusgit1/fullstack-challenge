@@ -1,5 +1,7 @@
 export type RoundStatus = "betting" | "running" | "crashed";
 
+export type BetStatus = "pending" | "cashed_out" | "lost";
+
 export interface Round {
   id: string;
   status: RoundStatus;
@@ -13,12 +15,15 @@ export interface Round {
 
 export interface Bet {
   id: string;
+  roundId: string;
   userId: string;
-  username: string;
   amount: number;
+  // username: string;
   multiplier: number | null;
-  status: "pending" | "cashed_out" | "lost";
+  status: BetStatus;
   cashedOutAt: Date | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CurrentRound {

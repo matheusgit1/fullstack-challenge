@@ -49,7 +49,7 @@ export function BetControls() {
   };
 
   const handleCashOut = async () => {
-    cashOut();
+    cashOut(session?.accessToken ?? "");
   };
 
   const presetAmounts = [10, 50, 100, 500];
@@ -115,12 +115,12 @@ export function BetControls() {
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Aposta</span>
-                <span>R$ {myBet.amount.toFixed(2)}</span>
+                <span>R$ {(myBet.amount / 100).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Ganho potencial</span>
                 <span className="text-green-500 font-bold">
-                  R$ {potentialWin.toFixed(2)}
+                  R$ {(potentialWin / 100).toFixed(2)}
                 </span>
               </div>
               <Button
@@ -147,7 +147,10 @@ export function BetControls() {
                     ✓ Sacou em {(myBet.multiplier ?? 0).toFixed(2)}x
                   </p>
                   <p className="text-xl font-bold text-green-500">
-                    + R$ {(myBet.amount * (myBet.multiplier || 0)).toFixed(2)}
+                    + R${" "}
+                    {((myBet.amount / 100) * (myBet.multiplier || 0)).toFixed(
+                      2,
+                    )}
                   </p>
                 </div>
               )}
@@ -155,7 +158,7 @@ export function BetControls() {
                 <div>
                   <p className="text-red-500 font-bold">✗ Perdeu a aposta</p>
                   <p className="text-slate-400">
-                    - R$ {myBet.amount.toFixed(2)}
+                    - R$ {(myBet.amount / 100).toFixed(2)}
                   </p>
                 </div>
               )}

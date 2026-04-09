@@ -2,6 +2,7 @@ import { useGameStore } from "@/stores/game-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Trophy, Clock, Coins } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import { faker } from "@faker-js/faker";
 // iimport { cn } from "@/app/lib/utils";;
 
 export function CurrentBets() {
@@ -57,7 +58,11 @@ export function CurrentBets() {
               {pendingBets.map((bet) => (
                 <BetRow
                   key={bet.id}
-                  bet={bet}
+                  bet={{
+                    ...bet,
+                    username:
+                      user?.username || `Anonymous ${faker.person.firstName()}`,
+                  }}
                   isCurrentUser={bet.userId === user?.id}
                   showPotentialWin={isRoundActive}
                   currentMultiplier={currentMultiplier}
@@ -78,7 +83,11 @@ export function CurrentBets() {
               {cashedOutBets.map((bet) => (
                 <BetRow
                   key={bet.id}
-                  bet={bet}
+                  bet={{
+                    ...bet,
+                    username:
+                      user?.username || `Anonymous ${faker.person.firstName()}`,
+                  }}
                   isCurrentUser={bet.userId === user?.id}
                   isCashedOut
                 />
@@ -98,7 +107,11 @@ export function CurrentBets() {
               {lostBets.map((bet) => (
                 <BetRow
                   key={bet.id}
-                  bet={bet}
+                  bet={{
+                    ...bet,
+                    username:
+                      user?.username || `Anonymous ${faker.person.firstName()}`,
+                  }}
                   isCurrentUser={bet.userId === user?.id}
                   isLost
                 />
@@ -186,7 +199,9 @@ function BetRow({
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Coins className="h-3 w-3 text-slate-500" />
-            <span className="text-slate-400">R$ {bet.amount.toFixed(2)}</span>
+            <span className="text-slate-400">
+              R$ {(bet.amount / 100).toFixed(2)}
+            </span>
           </div>
         </div>
       </div>
@@ -196,7 +211,9 @@ function BetRow({
           <div className="text-sm">
             <span className="text-slate-400">potencial: </span>
             <span className="text-green-400 font-mono">
-              R$ {potentialWin.toFixed(2)}
+              R${" "}
+              {(potentialWin / 100) /**converter para reais */
+                .toFixed(2)}
             </span>
           </div>
         )}
@@ -204,7 +221,7 @@ function BetRow({
         {isCashedOut && bet.multiplier && (
           <div className="text-sm">
             <span className="text-green-400 font-bold">
-              + R$ {(bet.amount * bet.multiplier).toFixed(2)}
+              + R$ {((bet.amount * bet.multiplier) / 100).toFixed(2)}
             </span>
             <span className="text-slate-500 text-xs ml-1">
               ({bet.multiplier.toFixed(2)}x)
@@ -214,7 +231,7 @@ function BetRow({
 
         {isLost && (
           <div className="text-sm text-red-400">
-            - R$ {bet.amount.toFixed(2)}
+            - R$ {(bet.amount / 100).toFixed(2)}
           </div>
         )}
       </div>

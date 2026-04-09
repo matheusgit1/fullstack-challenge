@@ -4,10 +4,10 @@ import { apiFetch } from "@/app/lib/api";
 
 interface GameActions {
   placeBet: (amount: number, accessToken: string) => Promise<void>;
-  cashOut: () => Promise<void>;
+  cashOut: (accessToken: string) => Promise<void>;
   setCurrentRound: (round: CurrentRound) => void;
   updateMultiplier: (multiplier: number) => void;
-  addBet: (bet: Bet) => void;
+  addBet: (bet: Bet, userId: string) => void;
   updateBet: (betId: string, updates: Partial<Bet>) => void;
   clearBets: () => void;
   setUser: (user: User | null) => void; // Permite null
@@ -49,11 +49,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
         : null,
     })),
 
-  addBet: (bet) =>
+  addBet: (bet, userId) => {
     set((state) => ({
       currentBets: [...state.currentBets, bet],
-      ...(bet.userId === state.user?.id && { myBet: bet }),
-    })),
+      ...(bet.userId === userId && { myBet: bet }),
+    }));
+  },
 
   updateBet: (betId, updates) =>
     set((state) => ({
@@ -82,22 +83,24 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     }
 
     try {
-      //enviar parar api aposta
-      const newBet: Bet = {
+      const newBet: Bet & { username: string } = {
         id: Math.random().toString(36).substr(2, 9),
+        roundId: currentRound.id,
         userId: user.id,
         username: user.username,
         amount,
         multiplier: null,
         status: "pending",
         cashedOutAt: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       // const {} = await apiFetch("games", `/games/bet`, {
 
       // })
 
-      get().addBet(newBet);
+      get().addBet(newBet, user.id);
       get().debitBalance(amount);
       set({ isLoading: true });
     } catch {
@@ -114,7 +117,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     }));
   },
 
-  cashOut: async () => {
+  cashOut: async (accessToken: string) => {
     const { myBet, currentRound, user } = get();
 
     if (!myBet || myBet.status !== "pending") {
@@ -131,7 +134,24 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     try {
       const multiplier = currentRound.multiplier || 1;
-      const winAmount = myBet.amount * multiplier;
+      const winAmount = (myBet.amount / 100) * multiplier;
+
+      //enviar para api
+      const { response } = await apiFetch("game", `/games/bet/cashout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        data: {
+          betId: myBet.id,
+        },
+      });
+
+      if (!response.success) {
+        set({ error: response.error.message });
+        return;
+      }
 
       get().updateBet(myBet.id, {
         status: "cashed_out",

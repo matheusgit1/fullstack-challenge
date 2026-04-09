@@ -56,34 +56,30 @@ export function useGameWebSocket() {
             console.log("Rodada começou a correr", message);
             break;
 
-          // Multiplicador atualizado em tempo real
           case "multiplier.updated":
             updateMultiplier(data.multiplier ?? data.value);
             console.log("Multiplicador atualizado em tempo real", message);
             break;
 
-          // Rodada crashou
           case "betting.crashed":
-            // setCurrentRound({
-            //   ...useGameStore.getState().currentRound!,
-            //   status: "crashed",
-            //   crashPoint: data.crashPoint ?? data.multiplier,
-            //   crashedAt: new Date(),
-            // });
+            setCurrentRound({
+              ...useGameStore.getState().currentRound!,
+              status: "crashed",
+            });
             console.log("Rodada crashou", message);
             break;
 
           // Apostas perdedoras processadas
           case "betting.loose":
-            // const { currentBets } = useGameStore.getState();
-            // currentBets.forEach((bet) => {
-            //   if (bet.status === "pending") {
-            //     updateBet(bet.id, {
-            //       status: "lost",
-            //       multiplier: data.crashPoint ?? data.multiplier,
-            //     });
-            //   }
-            // });
+            const { currentBets } = useGameStore.getState();
+            currentBets.forEach((bet) => {
+              if (bet.status === "pending") {
+                updateBet(bet.id, {
+                  status: "lost",
+                  multiplier: data.crashPoint ?? data.multiplier,
+                });
+              }
+            });
             console.log("Apostas perdedoras processadas", message);
             break;
 
