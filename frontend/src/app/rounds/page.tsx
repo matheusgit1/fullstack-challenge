@@ -1,6 +1,6 @@
 import { RoundsList } from "@/components/game/rounds-list";
 import { Header } from "@/components/layout/header";
-import { RoundHistory } from "@/types/games";
+
 
 export default async function RoundsPage() {
   return (

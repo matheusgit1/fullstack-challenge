@@ -2,10 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { apiFetch } from "@/app/_lib/api";
 import { useGameStore } from "@/stores/game-store";
 import { Wallet } from "@/types/wallet";
-import { CurrentRound, RoundHistory } from "@/types/games";
 import { useGamesApi } from "@/hooks/use-games-api";
 import { useWalletApi } from "@/hooks/use-wallet-api";
 
