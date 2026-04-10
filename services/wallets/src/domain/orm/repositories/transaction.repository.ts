@@ -1,14 +1,11 @@
-import { TransactionSource } from "@/domain/rabbitmq/rabbitmq.service";
 import {
   Transaction,
+  TransactionSource,
   TransactionType,
-} from "@/infrastructure/database/orm/entites/transaction.entity";
+} from '@/infrastructure/database/orm/entites/transaction.entity';
 
 export interface ITransactionRepository {
-  findByExternalIdAndSource(
-    externalId: string,
-    source: TransactionSource,
-  ): Promise<Transaction | null>;
+  findByExternalIdAndSource(externalId: string, source: TransactionSource): Promise<Transaction | null>;
 
   processTransaction(
     userId: string,
@@ -20,4 +17,4 @@ export interface ITransactionRepository {
   ): Promise<void>;
 }
 
-export const TRANSACTION_REPOSITORY = Symbol("ITransactionRepository");
+export const TRANSACTION_REPOSITORY = Symbol('ITransactionRepository');

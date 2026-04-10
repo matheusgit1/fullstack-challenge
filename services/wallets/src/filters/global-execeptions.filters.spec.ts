@@ -28,7 +28,7 @@ describe('GlobalExceptionFilter', () => {
       url: '/test/endpoint',
       hash: 'test-tracing-hash-123',
       header: (key: string) => {
-        return;
+        return undefined;
       },
     };
 

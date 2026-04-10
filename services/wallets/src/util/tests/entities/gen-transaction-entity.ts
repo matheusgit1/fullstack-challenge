@@ -1,6 +1,7 @@
-import { TransactionSource } from '@/domain/rabbitmq/rabbitmq.service';
+
 import {
   Transaction,
+  TransactionSource,
   TransactionStatus,
   TransactionType,
 } from '@/infrastructure/database/orm/entites/transaction.entity';
