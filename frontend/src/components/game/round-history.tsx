@@ -19,6 +19,7 @@ export function RoundHistory() {
     return "text-green-500 bg-green-500/10";
   };
 
+
   return (
     <Card className="bg-slate-900/50 border-slate-800">
       <CardHeader className="pb-3">
@@ -83,7 +84,6 @@ export function RoundHistory() {
             ))}
           </div>
 
-          {/* Link para mais histórico */}
           <div className="pt-3 text-center">
             <button
               onClick={() => router.push("/rounds")}

@@ -58,7 +58,6 @@ export function RoundDetailsModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Informações da Rodada */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-4">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

@@ -5,7 +5,7 @@ export const authOptions: AuthOptions = {
   providers: [
     KeycloakProvider({
       clientId: process.env.KEYCLOAK_CLIENT_ID!,
-      clientSecret: "dummy",
+      clientSecret: "",
       issuer: `${process.env.WELL_KNOW_BASE_URL}/realms/${process.env.KEYCLOAK_REALM}`,
     }),
   ],

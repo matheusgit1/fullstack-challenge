@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 import { useGameStore } from "@/stores/game-store";
 import { Progress } from "@/components/ui/progress";

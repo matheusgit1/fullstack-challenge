@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { History, ChevronLeft, ChevronRight, Eye, Shield } from "lucide-react";
+import { History, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { cn } from "@/app/_lib/utils";
 import { RoundDetailsModal } from "./round-details-modal";
 import { apiFetch } from "@/app/_lib/api";
@@ -50,7 +50,7 @@ export function RoundsList({ initialRounds = [] }: RoundsListProps) {
       setRounds(data.data);
       setTotalPages(data.totalPages);
     } catch (error) {
-      console.error("Error fetching rounds:", error);
+      console.warn("Error fetching rounds:", error);
     } finally {
       setLoading(false);
     }

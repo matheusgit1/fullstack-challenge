@@ -15,7 +15,7 @@ export function Header() {
       await logout();
       console.log("Logout successful");
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.warn("Logout failed:", error);
     } finally {
     }
   };

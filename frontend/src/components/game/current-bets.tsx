@@ -8,17 +8,17 @@ import { useCurrencyFormat } from "@/hooks/use-currency-format";
 export function CurrentBets() {
   const { currentBets, currentRound, user } = useGameStore();
 
-  const pendingBets = currentBets.filter((bet) => bet.status === "pending");
-  const cashedOutBets = currentBets.filter(
-    (bet) => bet.status === "cashed_out",
-  );
-  const lostBets = currentBets.filter((bet) => bet.status === "lost");
+  const pendingBets =
+    currentBets?.filter((bet) => bet.status === "pending") || [];
+  const cashedOutBets =
+    currentBets?.filter((bet) => bet.status === "cashed_out") || [];
+  const lostBets = currentBets?.filter((bet) => bet.status === "lost") || [];
 
   const isRoundActive = currentRound?.status === "running";
   const isBettingPhase = currentRound?.status === "betting";
   const currentMultiplier = currentRound?.multiplier || 1;
 
-  if (currentBets.length === 0) {
+  if (currentBets && currentBets.length === 0) {
     return (
       <Card className="bg-slate-900/50 border-slate-800">
         <CardContent className="py-12 text-center">

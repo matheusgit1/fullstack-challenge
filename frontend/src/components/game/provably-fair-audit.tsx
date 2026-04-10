@@ -79,7 +79,7 @@ export function ProvablyFairAudit({
       setAuditData(() => data);
       setTracingId(() => response.tracingId);
     } catch (err) {
-      console.error("Error fetching audit data:", err);
+      console.warn("Error fetching audit data:", err);
       setError("Falha ao carregar dados de auditoria");
     } finally {
       setLoading(false);

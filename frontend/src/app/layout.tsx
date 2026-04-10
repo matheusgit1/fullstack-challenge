@@ -4,7 +4,7 @@ import "./globals.css";
 import { cn } from "./_lib/utils";
 import { AuthGuard } from "@/guards/auth-guard";
 import { SessionProvider } from "next-auth/react";
-import { Providers } from "./providers";
+import { Providers } from "../components/providers";
 // import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });

@@ -1,5 +1,5 @@
 // hooks/useWebSocket.ts
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useGameStore } from "@/stores/game-store";
 import { Round, Bet, CurrentRound } from "@/types/games";
 import { apiFetch } from "@/app/_lib/api";
@@ -17,14 +17,17 @@ export function useGameWebSocket() {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const reconnectAttempts = useRef(0);
-  const MAX_RECONNECT = 5;
+  const MAX_RECONNECT = 3;
+
+  const [error, setError] = useState<Error | null>(null);
+
+  if (error) throw error;
 
   const { setCurrentRound, updateMultiplier, addBet, updateBet, clearBets } =
     useGameStore();
 
   const { fetchCurrentRound } = useGamesApi();
 
-  // Mapeia cada evento do backend para ações da store
   const handleMessage = useCallback(
     async (event: MessageEvent) => {
       try {
@@ -86,21 +89,6 @@ export function useGameWebSocket() {
             break;
 
           case "betting.new":
-            // {"type":"betting.new","data":{"bet":{"roundId":"3c270a3a-a718-4433-a175-3ba9da6b9b19","roundCrashPoint":0,"id":"8b0a17b0-4d9f-43dc-8687-c35fc584300f","userId":"328b5bea-d4f9-4a58-a504-5a12c2be5220","amount":100000,"multiplier":null,"status":"pending","cashedOutAt":null,"createdAt":"2026-04-10T02:56:13.697Z"},"userId":"328b5bea-d4f9-4a58-a504-5a12c2be5220","amount":100000,"tracingId":"7746b87606b769053f"},"timestamp":"2026-04-10T02:56:13.806Z"}
-            // addBet(
-            //   {
-            //     id: data.bet.id,
-            //     roundId: data.bet.roundId,
-            //     userId: data.bet.userId,
-            //     amount: data.bet.amount,
-            //     multiplier: data.bet.multiplier,
-            //     status: data.bet.status,
-            //     cashedOutAt: data.bet.cashedOutAt,
-            //     createdAt: data.bet.createdAt,
-            //   },
-            //   data.userId,
-            // );
-            //fetchCurrentRound();
             await fetchCurrentRound();
             console.log("Nova aposta", message);
             break;
@@ -120,7 +108,7 @@ export function useGameWebSocket() {
             console.warn("Evento WS desconhecido:", type, data);
         }
       } catch (err) {
-        console.error("Erro ao processar mensagem WS:", err);
+        console.warn("Erro ao processar mensagem WS:", err);
       }
     },
     [setCurrentRound, updateMultiplier, addBet, updateBet, clearBets],
@@ -149,11 +137,18 @@ export function useGameWebSocket() {
           `Reconectando em ${delay}ms... (tentativa ${reconnectAttempts.current})`,
         );
         reconnectTimerRef.current = setTimeout(connect, delay);
+        if (reconnectAttempts.current >= MAX_RECONNECT) {
+          // setError(
+          //   new Error(
+          //     `WebSocket indisponível após ${MAX_RECONNECT} tentativas`,
+          //   ),
+          // );
+        }
       }
     };
 
     ws.onerror = (err) => {
-      console.error("Erro WS:", err);
+      console.warn("Erro WS:", err);
       ws.close();
     };
   }, [handleMessage]);

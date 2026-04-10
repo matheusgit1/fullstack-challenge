@@ -36,7 +36,7 @@ export function useWalletApi(): UseWalletReturn {
       setWallet(() => response.data);
       updateBalance(response.data.balance);
     } catch (err) {
-      console.error("Erro ao carregar wallet:", err);
+      console.warn("Erro ao carregar wallet:", err);
       setError(err instanceof Error ? err.message : "Erro ao carregar wallet");
     } finally {
       setIsLoading(false);

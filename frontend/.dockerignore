@@ -1,0 +1,46 @@
+# Dependências
+node_modules
+.bun
+bun.lockb
+
+# Build outputs
+.next
+out
+dist
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+
+# Ambiente
+.env
+.env.local
+.env.development
+.env.production
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# IDE / editor
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testes
+coverage
+*.test.*
+*.spec.*
+
+# Docs
+README.md
+*.md

@@ -69,10 +69,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
   },
   setCurrentRound: (round) => {
     const { user } = get();
+    console.log("round: ", round);
+    console.log("my bets: ", round.bets);
     set({
       currentRound: round,
       currentBets: round.bets,
-      myBet: round.bets.find((bet) => bet.userId === user?.id),
+      myBet: round.bets?.find((bet) => bet.userId === user?.id) || null,
     });
   },
 

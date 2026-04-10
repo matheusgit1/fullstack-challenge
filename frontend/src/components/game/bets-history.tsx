@@ -35,9 +35,7 @@ export function BetsHistory({
   const [total, setTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const { fetchMyBetHistory } = useGamesApi();
-  const { toBRL, toCENTS } = useCurrencyFormat();
-
-  const betsPerPage = 20;
+  const { toBRL } = useCurrencyFormat();
 
   useEffect(() => {
     if (!myBetHistory.data.bets.length) {
@@ -61,7 +59,7 @@ export function BetsHistory({
         throw new Error("Falha ao carregar apostas");
       }
     } catch (err) {
-      console.error("Error fetching bets:", err);
+      console.warn("Error fetching bets:", err);
       setError("Falha ao carregar histórico de apostas");
     } finally {
       setLoading(false);
@@ -158,7 +156,6 @@ export function BetsHistory({
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
           <CardContent className="p-4">

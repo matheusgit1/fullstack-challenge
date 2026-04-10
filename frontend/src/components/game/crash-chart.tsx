@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "@/stores/game-store";
+import { useGamesApi } from "@/hooks/use-games-api";
 
 interface CrashChartProps {
   width?: number;
@@ -9,14 +10,20 @@ interface CrashChartProps {
 export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { currentRound } = useGameStore();
+  const { fetchCurrentRound } = useGamesApi();
 
   const historyRef = useRef<number[]>([]);
   const prevRoundIdRef = useRef<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
   const animationRef = useRef<number | null>(null);
 
+  console.log("currentRound: ", currentRound);
+
   useEffect(() => {
-    if (!currentRound) return;
+    if (!currentRound) {
+      fetchCurrentRound();
+      return;
+    }
 
     if (currentRound.id !== prevRoundIdRef.current) {
       historyRef.current = [];

@@ -30,7 +30,7 @@ export interface CurrentRound {
   id: string;
   status: RoundStatus;
   multiplier: number;
-  bets: Bet[];
+  bets?: Bet[];
   serverSeedHash: string;
   bettingStartedAt: string;
   bettingEndsAt: string;

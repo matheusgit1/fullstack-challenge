@@ -39,14 +39,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (status !== "authenticated") return;
 
     const initialize = async () => {
-      try {
-        await fetchCurrentRound();
-        await fetchRoundHistory();
-      } catch (err) {
-        console.error("Erro ao carregar wallet:", err);
-      } finally {
-        setIsInitializing(false);
-      }
+      await fetchCurrentRound();
+      await fetchRoundHistory();
     };
 
     initialize();
