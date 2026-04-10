@@ -6,7 +6,7 @@ export class PaginatedResponseDto<T> {
   }
 
   @ApiProperty()
-  data: T[];
+  data: T;
 
   @ApiProperty({ example: 1 })
   page: number;

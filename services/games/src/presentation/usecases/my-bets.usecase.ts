@@ -6,6 +6,7 @@ import { PaginatedResponseDto } from '../dtos/response/paginated-reponse.dto';
 import { HandlerUsecase } from '../interfaces/usecase.interface';
 import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import { BetsHistoryQueryDto } from '../dtos/request/bet-history-query.dto';
+import { DetailedBetHistoryItemDto } from '../dtos/response/detailed-bet-history-item.dto';
 
 @Injectable()
 export class GetMyBetsUseCase implements HandlerUsecase {
@@ -14,25 +15,25 @@ export class GetMyBetsUseCase implements HandlerUsecase {
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,
   ) {}
 
-  async handler(query: BetsHistoryQueryDto): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
+  async handler(query: BetsHistoryQueryDto): Promise<PaginatedResponseDto<DetailedBetHistoryItemDto>> {
     const { user, hash, token } = this.request;
 
     const page = query.page && query.page <= 0 ? 1 : query.page || 1;
     const limit = query.limit && query.limit <= 0 ? 20 : query.limit || 20;
 
-    const [bets, total] = await this.betRepository.findUserBetsHistory(
-      user?.sub || 'anonymous',
-      Number(page),
-      Number(limit),
-      query.status,
-    );
+    const {
+      results: [bets, total],
+      totalBetsAmount,
+      totalProfit,
+      successRate,
+    } = await this.betRepository.findUserBetsHistory(user?.sub || 'anonymous', Number(page), Number(limit));
 
-    try {
-      return new PaginatedResponseDto<BetHistoryItemDto>({
-        data: bets.map(
+    return new PaginatedResponseDto<DetailedBetHistoryItemDto>({
+      data: new DetailedBetHistoryItemDto({
+        bets: bets.map(
           (bet) =>
             new BetHistoryItemDto({
-              roundCrashPoint: bet.round?.crashPoint || 0,
+              roundCrashPoint: bet.round?.isRunning() ? 'secret' : bet.round?.crashPoint || 0,
               roundId: bet.round?.id,
               id: bet.id,
               userId: user?.sub || 'anonymous',
@@ -43,19 +44,14 @@ export class GetMyBetsUseCase implements HandlerUsecase {
               createdAt: bet.createdAt,
             }),
         ),
-        page: Number(page),
-        limit: Number(limit),
-        total: total,
-        totalPages: Math.ceil(total / limit),
-      });
-    } catch (e) {
-      return new PaginatedResponseDto<BetHistoryItemDto>({
-        data: [],
-        page: Number(page),
-        limit: Number(limit),
-        total: total,
-        totalPages: Math.ceil(total / limit),
-      });
-    }
+        totalBetsAmount,
+        totalProfit,
+        successRate,
+      }),
+      page: Number(page),
+      limit: Number(limit),
+      total: total,
+      totalPages: Math.ceil(total / limit),
+    });
   }
 }

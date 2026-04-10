@@ -1,4 +1,4 @@
-import { ProvablyFairSeed } from "@/infrastructure/database/orm/entites/provably-fair.entity";
+import { ProvablyFairSeed } from '@/infrastructure/database/orm/entites/provably-fair.entity';
 
 export interface IProvablyFairData {
   serverSeed: string;
@@ -14,7 +14,6 @@ export interface IVerificationResult {
   serverSeedHash: string;
   expectedHash: string;
 }
-
 
 export interface IProvablyFairService {
   generateNewSeed(clientSeed?: string): Promise<ProvablyFairSeed>;
@@ -36,11 +35,8 @@ export interface IProvablyFairService {
   ): Promise<IVerificationResult>;
   setSeedAsUsed(clientSeed: string): Promise<void>;
   rotateSeed(newClientSeed?: string): Promise<ProvablyFairSeed>;
-  getUserSeedsHistory(
-    page?: number,
-    limit?: number,
-  ): Promise<[ProvablyFairSeed[], number]>;
-  getProvablyFairDataForRound(roundId: string): Promise<ProvablyFairSeed | null>;
+  getUserSeedsHistory(page?: number, limit?: number): Promise<[ProvablyFairSeed[], number]>;
+  getProvablyFairRound(roundId: string): Promise<ProvablyFairSeed | null>;
 }
 
-export const PROVABY_SERVICE = Symbol("IProvablyFairService");
+export const PROVABY_SERVICE = Symbol('IProvablyFairService');

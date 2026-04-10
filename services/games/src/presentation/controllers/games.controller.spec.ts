@@ -46,7 +46,7 @@ describe('GamesController', () => {
     setSeedAsUsed: jest.fn(),
     rotateSeed: jest.fn(),
     getUserSeedsHistory: jest.fn(),
-    getProvablyFairDataForRound: jest.fn(),
+    getProvablyFairRound: jest.fn(),
   } as jest.Mocked<IProvablyFairService>;
 
   const mockRabbitmqProducer = {
@@ -112,7 +112,7 @@ describe('GamesController', () => {
 
     it('shoukd verify round', async () => {
       mockProvablyFairService.verifyRound.mockResolvedValue({} as any);
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue({
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue({
         serverSeed: 'string',
         serverSeedHash: 'string',
         clientSeed: 'string',

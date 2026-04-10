@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from 'typeorm';
+import { Bet } from './bet.entity';
 
 export enum RoundStatus {
   BETTING = 'betting',
@@ -73,13 +74,16 @@ export class Round {
   nonce: number;
 
   @OneToMany('Bet', 'round', { cascade: true })
-  bets: any[];
+  bets: Bet[];
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  endedAt?: Date;
 
   isBettingPhase(): boolean {
     return this.status === RoundStatus.BETTING;

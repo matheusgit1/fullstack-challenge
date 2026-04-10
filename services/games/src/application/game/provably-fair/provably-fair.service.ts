@@ -142,7 +142,7 @@ export class ProvablyFairService implements IProvablyFairService {
     });
   }
 
-  async getProvablyFairDataForRound(roundId: string): Promise<ProvablyFairSeed | null> {
+  async getProvablyFairRound(roundId: string): Promise<ProvablyFairSeed | null> {
     const round = await this.roundRepository.findByRoundId(roundId);
 
     if (!round) {

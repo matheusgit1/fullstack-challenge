@@ -22,7 +22,7 @@ export class BetUseCase implements HandlerUsecase {
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
     @Inject(WALLET_PROXY) private readonly proxyService: IWalletProxy,
-    // private readonly gamesManager: GamesManager,
+    private readonly gamesManager: GamesManager,
     @Inject(RABBITMQ_PRODUCER_SERVICE)
     private readonly rabbitmqProducer: IRabbitmqProducerService,
   ) {}
@@ -37,6 +37,7 @@ export class BetUseCase implements HandlerUsecase {
       throw new ConflictException('Saldo insuficiente');
     }
     const round = await this.roundRepository.findByRoundId(dto.roundId);
+    console.log('round bet usecase: ', round);
     if (!round) {
       throw new NotFoundException('Nenhuma rodada ativa');
     }
@@ -51,15 +52,18 @@ export class BetUseCase implements HandlerUsecase {
       status: BetStatus.PENDING,
     });
 
-    // await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
-    await this.rabbitmqProducer.publishReserve({
-      cashType: TransactionSource.BET_RESERVE,
-      userId: user?.sub || 'Anonymous',
-      amount: dto.amount,
-      timestamp: new Date().toISOString(),
-      externalId: bet.id,
-      tracingId: hash,
-    });
+    await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
+
+    // await this.rabbitmqProducer.publishReserve({
+    //   cashType: TransactionSource.BET_RESERVE,
+    //   userId: user?.sub || 'Anonymous',
+    //   amount: dto.amount,
+    //   timestamp: new Date().toISOString(),
+    //   externalId: bet.id,
+    //   tracingId: hash,
+    // });
+
+    //enviar evento de nova aposta
 
     return new BetResponseDto({
       bet: {

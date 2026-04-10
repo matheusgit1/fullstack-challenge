@@ -34,10 +34,10 @@ export class GameEngineService implements IGameEngineService {
     );
 
     const bettingEndsAt = new Date(Date.now() + bettingDurationSeconds * 1000);
-    const startedAt = new Date(bettingEndsAt.getTime() + 500);
+    const startedAt = new Date(bettingEndsAt.getTime());
     const timeToCrashMs = this.calculateTimeToCrash(crashPoint, 0.001) * 1000;
 
-    const crashedAt = new Date(startedAt.getTime() + timeToCrashMs);
+    const crashedAt = new Date(startedAt.getTime() + timeToCrashMs + appConfig.bettingDurationSeconds);
 
     const round = new Round({
       status: RoundStatus.BETTING,
@@ -55,18 +55,13 @@ export class GameEngineService implements IGameEngineService {
     });
 
     const currentRound = await this.roundRepository.createRound(round);
-
-    this.eventEmitter.emit('round.betting.started', {
-      roundId: currentRound.id,
-      bettingEndsAt: currentRound.bettingEndsAt,
-      serverSeedHash: currentRound.serverSeedHash,
-    });
   }
 
   public async endRound(round?: Round): Promise<void> {
     const currentRound = round ?? (await this.roundRepository.findCurrentRunningRound());
     if (!currentRound) return;
     currentRound.setStatus(RoundStatus.CRASHED);
+    currentRound.endedAt = new Date();
     await Promise.all([
       this.roundRepository.saveRound(currentRound),
       this.provablyFairService.setSeedAsUsed(currentRound.clientSeed),
@@ -78,6 +73,7 @@ export class GameEngineService implements IGameEngineService {
     const currentRound = round ?? (await this.roundRepository.findCurrentRunningRound());
     if (!currentRound) return;
     currentRound.setStatus(RoundStatus.RUNNING);
+    currentRound.startedAt = new Date();
     await this.roundRepository.saveRound(currentRound);
   }
 

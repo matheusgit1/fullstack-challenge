@@ -1,8 +1,5 @@
-import { type FindOneOptions } from "typeorm";
-import {
-  Bet,
-  type BetStatus,
-} from "@/infrastructure/database/orm/entites/bet.entity";
+import { type FindOneOptions } from 'typeorm';
+import { Bet, type BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
 
 export interface IBetRepository {
   setPendingBetsToLost(roundId: string): Promise<void>;
@@ -16,7 +13,12 @@ export interface IBetRepository {
     page: number,
     limit: number,
     status?: BetStatus,
-  ): Promise<[Bet[], number]>;
+  ): Promise<{
+    results: [Bet[], number];
+    totalBetsAmount: number;
+    totalProfit: number;
+    successRate: number;
+  }>;
 }
 
-export const BET_REPOSITORY = Symbol("IBetRepository");
+export const BET_REPOSITORY = Symbol('IBetRepository');

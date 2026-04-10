@@ -18,6 +18,8 @@ import { CurrentRoundUseCase } from './../usecases/current-round.usecase';
 import { Auth, AuthGuardType } from '@/application/auth/auth.decorator';
 import { RoundHistoryQueryDto } from '../dtos/request/round-history-query.dto';
 import { BetsHistoryQueryDto } from '../dtos/request/bet-history-query.dto';
+import { AuditRoundUsecase } from '../usecases/audit-round.usecase';
+import { RoundAuditResponseDto } from '../dtos/response/round-audit-response.dto';
 
 @ApiTags('games')
 @ApiBearerAuth('access-token')
@@ -30,6 +32,7 @@ export class GamesController {
     private readonly getMyBetsUseCase: GetMyBetsUseCase,
     private readonly betUseCase: BetUseCase,
     private readonly cashoutUseCase: CashOutUsecase,
+    private readonly auditRoundUsecase: AuditRoundUsecase,
   ) {}
 
   @Get('health')
@@ -62,14 +65,22 @@ export class GamesController {
 
   @Get('rounds/:roundId/verify')
   @Auth(AuthGuardType.NONE)
-  @ApiOperation({ summary: 'Dados de verificação provably fair' })
-  @ApiResponse({
-    status: 200,
-    type: BaseSuccessResponseDto(RoundVerifyResponseDto),
-  })
-  async verifyRound(@Param('roundId') roundId: string): Promise<RoundVerifyResponseDto> {
-    return await this.verifyRoundUseCase.handler(roundId);
+  @ApiOperation({ summary: 'Auditoria completa provably fair de uma rodada' })
+  @ApiResponse({ status: 200, type: BaseSuccessResponseDto(RoundAuditResponseDto) })
+  async auditRound(@Param('roundId') roundId: string): Promise<RoundAuditResponseDto> {
+    return await this.auditRoundUsecase.handler(roundId);
   }
+
+  // @Get('rounds/:roundId/verify')
+  // @Auth(AuthGuardType.NONE)
+  // @ApiOperation({ summary: 'Dados de verificação provably fair' })
+  // @ApiResponse({
+  //   status: 200,
+  //   type: BaseSuccessResponseDto(RoundVerifyResponseDto),
+  // })
+  // async verifyRound(@Param('roundId') roundId: string): Promise<RoundVerifyResponseDto> {
+  //   return await this.verifyRoundUseCase.handler(roundId);
+  // }
 
   @Get('bets/me')
   @Auth(AuthGuardType.GUARD)
@@ -78,7 +89,7 @@ export class GamesController {
     status: 200,
     type: BaseSuccessResponseDto(PaginatedResponseDto<BetHistoryItemDto>),
   })
-  async getMyBets(@Query() query: BetsHistoryQueryDto): Promise<PaginatedResponseDto<BetHistoryItemDto>> {
+  async getMyBets(@Query() query: BetsHistoryQueryDto) {
     return this.getMyBetsUseCase.handler(query);
   }
 

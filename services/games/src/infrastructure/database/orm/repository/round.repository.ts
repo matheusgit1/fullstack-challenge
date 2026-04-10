@@ -48,6 +48,7 @@ export class RoundRepository implements IRoundRepository {
       order: { crashedAt: 'DESC' },
       skip,
       take: limit,
+      relations: ['bets'],
     });
   }
 

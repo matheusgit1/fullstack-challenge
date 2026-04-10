@@ -96,7 +96,7 @@ describe('ProvablyFairService', () => {
     it('should return null if round not found', async () => {
       mockRoundRepository.findByRoundId.mockResolvedValue(null);
 
-      const result = await service.getProvablyFairDataForRound('1');
+      const result = await service.getProvablyFairRound('1');
 
       expect(result).toBeNull();
     });
@@ -141,21 +141,21 @@ describe('ProvablyFairService', () => {
     it('should get fair data for round', async () => {
       mockRoundRepository.findByRoundId.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
       mockSeedRepository.findOne.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
-      const response = await service.getProvablyFairDataForRound('1');
+      const response = await service.getProvablyFairRound('1');
       expect(response).not.toBeNull();
     });
 
     it('should return null if round not found when get fair data for round', async () => {
       mockRoundRepository.findByRoundId.mockResolvedValue(null);
       mockSeedRepository.findOne.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
-      const response = await service.getProvablyFairDataForRound('1');
+      const response = await service.getProvablyFairRound('1');
       expect(response).toBeNull();
     });
 
     it('should return null if fair data for round is null', async () => {
       mockRoundRepository.findByRoundId.mockResolvedValue({ id: '1', clientSeed: 'clientSeed' });
       mockSeedRepository.findOne.mockResolvedValue(null);
-      const response = await service.getProvablyFairDataForRound('1');
+      const response = await service.getProvablyFairRound('1');
       expect(response).toBeNull();
     });
   });

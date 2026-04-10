@@ -14,7 +14,7 @@ describe('VerifyRoundUsecase', () => {
     setSeedAsUsed: jest.fn(),
     rotateSeed: jest.fn(),
     getUserSeedsHistory: jest.fn(),
-    getProvablyFairDataForRound: jest.fn(),
+    getProvablyFairRound: jest.fn(),
   };
 
   const verifyRoundUsecase = new VerifyRoundUsecase(mockProvablyFairService);
@@ -43,13 +43,13 @@ describe('VerifyRoundUsecase', () => {
     it('should return provably fair data for a valid round', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith(roundId);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith(roundId);
       expect(result).toBeInstanceOf(RoundVerifyResponseDto);
       expect(result).toEqual({
         fairId: mockProvablyFairData.id,
@@ -70,7 +70,7 @@ describe('VerifyRoundUsecase', () => {
         nonce: 1,
         serverSeedHash: 'hash123',
       } as any;
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(minimalData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(minimalData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -91,7 +91,7 @@ describe('VerifyRoundUsecase', () => {
         ...mockProvablyFairData,
         nonce: 0,
       };
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(dataWithZeroNonce);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(dataWithZeroNonce);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -107,7 +107,7 @@ describe('VerifyRoundUsecase', () => {
         ...mockProvablyFairData,
         nonce: 999999999,
       };
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(dataWithLargeNonce);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(dataWithLargeNonce);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -125,7 +125,7 @@ describe('VerifyRoundUsecase', () => {
         clientSeed: 'b'.repeat(1000),
         serverSeedHash: 'c'.repeat(200),
       };
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(longSeedData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(longSeedData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -145,7 +145,7 @@ describe('VerifyRoundUsecase', () => {
         clientSeed: 'áéíóúñÑçÇ€£¥©®™',
         serverSeedHash: '0x!@#$%^&*()',
       };
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(specialCharsData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(specialCharsData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -161,20 +161,20 @@ describe('VerifyRoundUsecase', () => {
     it('should throw error when round is not found', async () => {
       // Arrange
       const roundId = 'non-existent-round';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow(
         "Round não encontrado ou 'provably fair' corrompido",
       );
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith(roundId);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith(roundId);
     });
 
     it('should propagate error when service throws database error', async () => {
       // Arrange
       const roundId = 'round-123';
       const dbError = new Error('Database connection failed');
-      mockProvablyFairService.getProvablyFairDataForRound.mockRejectedValue(dbError);
+      mockProvablyFairService.getProvablyFairRound.mockRejectedValue(dbError);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow('Database connection failed');
@@ -184,7 +184,7 @@ describe('VerifyRoundUsecase', () => {
       // Arrange
       const roundId = 'round-123';
       const timeoutError = new Error('Service timeout');
-      mockProvablyFairService.getProvablyFairDataForRound.mockRejectedValue(timeoutError);
+      mockProvablyFairService.getProvablyFairRound.mockRejectedValue(timeoutError);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow('Service timeout');
@@ -194,7 +194,7 @@ describe('VerifyRoundUsecase', () => {
       // Arrange
       const roundId = 'round-123';
       const permissionError = new Error('Access denied');
-      mockProvablyFairService.getProvablyFairDataForRound.mockRejectedValue(permissionError);
+      mockProvablyFairService.getProvablyFairRound.mockRejectedValue(permissionError);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow('Access denied');
@@ -203,7 +203,7 @@ describe('VerifyRoundUsecase', () => {
     it('should throw error when roundId is empty string', async () => {
       // Arrange
       const roundId = '';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow(
@@ -213,7 +213,7 @@ describe('VerifyRoundUsecase', () => {
 
     it('should throw error when roundId is null or undefined', async () => {
       // Arrange
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(null as any)).rejects.toThrow(
@@ -236,7 +236,7 @@ describe('VerifyRoundUsecase', () => {
         nonce: null,
         serverSeedHash: null,
       } as any;
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow(
@@ -247,39 +247,39 @@ describe('VerifyRoundUsecase', () => {
     it('should handle round with numeric string roundId', async () => {
       // Arrange
       const roundId = '12345';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith('12345');
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith('12345');
       expect(result).toBeInstanceOf(RoundVerifyResponseDto);
     });
 
     it('should handle round with UUID format', async () => {
       // Arrange
       const roundId = '123e4567-e89b-12d3-a456-426614174000';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith(roundId);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith(roundId);
       expect(result).toBeInstanceOf(RoundVerifyResponseDto);
     });
 
     it('should handle round with very long roundId', async () => {
       // Arrange
       const roundId = 'a'.repeat(1000);
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith(roundId);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith(roundId);
       expect(result).toBeInstanceOf(RoundVerifyResponseDto);
     });
   });
@@ -288,7 +288,7 @@ describe('VerifyRoundUsecase', () => {
     it('should return instance of RoundVerifyResponseDto', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -300,7 +300,7 @@ describe('VerifyRoundUsecase', () => {
     it('should return object with correct structure', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -321,7 +321,7 @@ describe('VerifyRoundUsecase', () => {
         extraField: 'should not be included',
         anotherField: 123,
       };
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(extraData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(extraData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -336,31 +336,31 @@ describe('VerifyRoundUsecase', () => {
     it('should call getProvablyFairDataForRound exactly once', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledTimes(1);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledTimes(1);
     });
 
     it('should call getProvablyFairDataForRound with correct roundId', async () => {
       // Arrange
       const roundId = 'round-456';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith('round-456');
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith('round-456');
     });
 
     it('should not call any other service methods', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       await verifyRoundUsecase.handler(roundId);
@@ -385,7 +385,7 @@ describe('VerifyRoundUsecase', () => {
       const roundId2 = 'round-2';
       const roundId3 = 'round-3';
 
-      mockProvablyFairService.getProvablyFairDataForRound
+      mockProvablyFairService.getProvablyFairRound
         .mockResolvedValueOnce(mockProvablyFairData)
         .mockResolvedValueOnce({ ...mockProvablyFairData, id: 'fair-2' })
         .mockResolvedValueOnce({ ...mockProvablyFairData, id: 'fair-3' });
@@ -401,13 +401,13 @@ describe('VerifyRoundUsecase', () => {
       expect(result1).toBeInstanceOf(RoundVerifyResponseDto);
       expect(result2).toBeInstanceOf(RoundVerifyResponseDto);
       expect(result3).toBeInstanceOf(RoundVerifyResponseDto);
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledTimes(3);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledTimes(3);
     });
 
     it('should handle concurrent requests for same round', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const [result1, result2, result3] = await Promise.all([
@@ -420,13 +420,13 @@ describe('VerifyRoundUsecase', () => {
       expect(result1).toBeInstanceOf(RoundVerifyResponseDto);
       expect(result2).toBeInstanceOf(RoundVerifyResponseDto);
       expect(result3).toBeInstanceOf(RoundVerifyResponseDto);
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledTimes(3);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledTimes(3);
     });
 
     it('should handle rapid sequential calls efficiently', async () => {
       // Arrange
       const roundId = 'round-123';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const startTime = Date.now();
@@ -437,7 +437,7 @@ describe('VerifyRoundUsecase', () => {
 
       // Assert
       expect(endTime - startTime).toBeLessThan(1000); // Should complete within 1 second
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledTimes(10);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledTimes(10);
     });
   });
 
@@ -452,7 +452,7 @@ describe('VerifyRoundUsecase', () => {
         nonce: 123456,
         serverSeedHash: 'exact-hash-value',
       } as any;
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(exactData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(exactData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
@@ -469,7 +469,7 @@ describe('VerifyRoundUsecase', () => {
       // Arrange
       const roundId = 'round-123';
       const originalData = { ...mockProvablyFairData };
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       await verifyRoundUsecase.handler(roundId);
@@ -483,7 +483,7 @@ describe('VerifyRoundUsecase', () => {
     it('should return Portuguese error message for not found round', async () => {
       // Arrange
       const roundId = 'non-existent';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow(
@@ -494,7 +494,7 @@ describe('VerifyRoundUsecase', () => {
     it('should return Portuguese error message for corrupted data', async () => {
       // Arrange
       const roundId = 'corrupted-round';
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow(
@@ -507,20 +507,20 @@ describe('VerifyRoundUsecase', () => {
     it('should handle number type roundId (if passed as number)', async () => {
       // Arrange
       const roundId = 123 as any;
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(mockProvablyFairData);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(mockProvablyFairData);
 
       // Act
       const result = await verifyRoundUsecase.handler(roundId);
 
       // Assert
-      expect(mockProvablyFairService.getProvablyFairDataForRound).toHaveBeenCalledWith(123);
+      expect(mockProvablyFairService.getProvablyFairRound).toHaveBeenCalledWith(123);
       expect(result).toBeInstanceOf(RoundVerifyResponseDto);
     });
 
     it('should handle boolean roundId (should fail gracefully)', async () => {
       // Arrange
       const roundId = true as any;
-      mockProvablyFairService.getProvablyFairDataForRound.mockResolvedValue(null);
+      mockProvablyFairService.getProvablyFairRound.mockResolvedValue(null);
 
       // Act & Assert
       await expect(verifyRoundUsecase.handler(roundId)).rejects.toThrow(

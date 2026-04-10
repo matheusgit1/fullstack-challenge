@@ -1,24 +1,21 @@
-import { ConfigService, ConfigModule } from "@nestjs/config";
-import {
-  TypeOrmModuleOptions,
-  TypeOrmModuleAsyncOptions,
-} from "@nestjs/typeorm";
+import { ConfigService, ConfigModule } from '@nestjs/config';
+import { TypeOrmModuleOptions, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
 export default class TypeORMConfig {
   static getORMConfig(): TypeOrmModuleOptions {
     return {
-      type: "postgres",
-      host: process.env.DB_HOST || "localhost",
-      port: parseInt(process.env.DB_PORT || "5432") || 5432,
-      username: process.env.DB_USER || "admin",
-      password: process.env.DB_PASSWORD || "admin",
-      database: process.env.DB_NAME_GAMES || "games",
-      synchronize: process.env.NODE_ENV !== "production",
-      entities: [__dirname + "/../**/*.entity.{js,ts}"],
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432') || 5432,
+      username: process.env.DB_USER || 'admin',
+      password: process.env.DB_PASSWORD || 'admin',
+      database: process.env.DB_NAME_GAMES || 'games',
+      synchronize: true,
+      entities: [__dirname + '/../**/*.entity.{js,ts}'],
       extra: {
         max: 20,
       },
-      logging: process.env.DB_LOGGING === "true",
+      logging: process.env.DB_LOGGING === 'true',
       autoLoadEntities: true,
     };
   }
@@ -26,7 +23,6 @@ export default class TypeORMConfig {
 
 export const DBClientConfig: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],
-  useFactory: async (): Promise<TypeOrmModuleOptions> =>
-    TypeORMConfig.getORMConfig(),
+  useFactory: async (): Promise<TypeOrmModuleOptions> => TypeORMConfig.getORMConfig(),
   inject: [ConfigService],
 };

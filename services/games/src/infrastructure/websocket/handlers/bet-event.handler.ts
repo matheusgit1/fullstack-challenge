@@ -71,6 +71,18 @@ export class BetEventHandler {
     this.webSocketService.broadcast('betting.crashed', payload);
   }
 
+  @OnEvent('betting.phase')
+  async handleGamePhase(payload: GameEventPayload): Promise<void> {
+    this.logger.log(`[Trace:${payload.tracingId}] betting.phase received`);
+    this.webSocketService.broadcast('betting.phase', payload);
+  }
+
+  @OnEvent('betting.new')
+  async handleGameNew(payload: GameEventPayload): Promise<void> {
+    this.logger.log(`[Trace:${payload.tracingId}] betting.new received`);
+    this.webSocketService.broadcast('betting.new', payload);
+  }
+
   private async processLostBets(payload: GameEventPayload, eventType: string): Promise<void> {
     const { roundId, tracingId } = payload;
 

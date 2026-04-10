@@ -39,16 +39,28 @@ export class TimerService {
       return;
     }
     await this.gameEngineService.startNewRound();
+    const round = await this.roundRepository.findCurrentBettingRound();
+    if (round) {
+      this.logger.log(`[Trace:${round.id}] Fase de betting iniciada.`);
+      this.eventEmitter.emit('betting.phase', {
+        roundId: round.id,
+        round: round,
+      });
+    }
   }
 
   @Interval('multiple.updated', 5 * 1000)
   async handleNewCrashed() {
     const activeRound = await this.roundRepository.findCurrentRunningRound();
-    this.logger.log(`[Trace:NO-TRACING] Fase de running iniciada.`);
+    this.logger.log(`[Trace:NO-TRACING] atualizando multiplicador.`);
     if (activeRound && activeRound.isRunning()) {
+      console.log(
+        'condição Date.now() < new Date(activeRound.crashedAt).getTime(): ',
+        Date.now() < new Date(activeRound.crashedAt).getTime(),
+      );
       if (Date.now() < new Date(activeRound.crashedAt).getTime()) {
         const newMultiplier = this.calculateMultiplierInterpolation(
-          activeRound.startedAt,
+          activeRound.bettingEndsAt,
           activeRound.crashedAt,
           activeRound.crashPoint,
         );
@@ -77,7 +89,19 @@ export class TimerService {
         this.logger.log(`[Trace:NO-TRACING] Fase de running sendo encerrada.`);
         const tracingId = activeRound.id;
         this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
-        this.gameEngineService.endRound(activeRound);
+        await this.gameEngineService.endRound(activeRound);
+
+        const newMultiplier = this.calculateMultiplierInterpolation(
+          activeRound.startedAt,
+          activeRound.crashedAt,
+          activeRound.crashPoint,
+        );
+
+        this.eventEmitter.emit('multiplier.updated', {
+          roundId: activeRound.id,
+          multiplier: newMultiplier,
+          crashPoint: activeRound.crashPoint,
+        });
 
         this.eventEmitter.emit('betting.loose', {
           roundId: activeRound.id,

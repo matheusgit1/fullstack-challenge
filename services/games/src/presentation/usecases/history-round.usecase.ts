@@ -4,6 +4,7 @@ import { PaginatedResponseDto } from '../dtos/response/paginated-reponse.dto';
 import { HandlerUsecase } from '../interfaces/usecase.interface';
 import { ROUND_REPOSITORY, type IRoundRepository } from '@/domain/orm/repositories/round.repository';
 import { RoundHistoryQueryDto } from '../dtos/request/round-history-query.dto';
+import { BetDto } from '../dtos/response/bet.dto';
 
 @Injectable()
 export class HistoryRoundUsecase implements HandlerUsecase {
@@ -26,6 +27,17 @@ export class HistoryRoundUsecase implements HandlerUsecase {
             serverSeedHash: round.serverSeedHash,
             endedAt: round.bettingEndsAt,
             status: round.status,
+            multiplier: round.multiplier,
+            bettingStartedAt: round.bettingStartedAt,
+            bettingEndsAt: round.bettingEndsAt,
+            roundStartedAt: round.startedAt,
+            roundCrashedAt: round.crashedAt,
+            serverSeed: round.serverSeed,
+            clientSeed: round.clientSeed,
+            nonce: round.nonce,
+            createdAt: round.createdAt,
+            updatedAt: round.updatedAt,
+            bets: round.bets.map((bet) => new BetDto({ ...bet, amount: bet.amount })),
           }),
       ),
       page: Number(page),

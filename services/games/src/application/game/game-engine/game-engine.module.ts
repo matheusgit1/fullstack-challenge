@@ -5,9 +5,10 @@ import { ProvablyFairModule } from '../provably-fair/provably-fair.module';
 import { GameEngineService } from './game-engine.service';
 import { GAME_ENGINE_SERVICE } from '@/domain/game/game.engine';
 import { OrmModule } from '@/infrastructure/database/orm/orm.module';
+import { EventModule } from '@/application/events/event/event.module';
 
 @Module({
-  imports: [ProvablyFairModule, OrmModule, ConfigModule],
+  imports: [ProvablyFairModule, OrmModule, ConfigModule, EventModule],
   providers: [
     {
       provide: GAME_ENGINE_SERVICE,

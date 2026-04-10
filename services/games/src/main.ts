@@ -7,6 +7,7 @@ import { setupSwagger } from './configs/swagger.config';
 import { GlobalExceptionFilter } from './filters/global-execeptions.filters';
 import { ResponseInterceptor } from './interceptor/response.interceptor';
 import { AppModule } from './modules/app/app.module';
+import cors from 'cors';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +22,12 @@ async function bootstrap(): Promise<void> {
       transformOptions: {
         enableImplicitConversion: true,
       },
+    }),
+  );
+
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
     }),
   );
 

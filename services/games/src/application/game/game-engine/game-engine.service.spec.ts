@@ -35,7 +35,7 @@ describe('GameEngineService', () => {
     setSeedAsUsed: jest.fn(),
     rotateSeed: jest.fn(),
     getUserSeedsHistory: jest.fn(),
-    getProvablyFairDataForRound: jest.fn(),
+    getProvablyFairRound: jest.fn(),
   };
 
   const mockBetRepository: jest.Mocked<IBetRepository> = {
@@ -154,12 +154,12 @@ describe('GameEngineService', () => {
       const findCurrentRunningRound = jest.spyOn(mockRoundRepository, 'findCurrentRunningRound');
       await gameEngineService.runningRound();
       expect(findCurrentRunningRound).toHaveBeenCalledTimes(1);
-    })
+    });
 
     it("should return when current round doesn't provided and not found", async () => {
       const findCurrentRunningRound = jest.spyOn(mockRoundRepository, 'findCurrentRunningRound');
       await gameEngineService.runningRound();
       expect(findCurrentRunningRound).toHaveBeenCalledTimes(1);
-    })
+    });
   });
 });

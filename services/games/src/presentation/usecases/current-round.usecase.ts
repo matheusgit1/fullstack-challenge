@@ -1,10 +1,8 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { CurrentRoundResponseDto } from "../dtos/response/current-round-response.dto";
-import { HandlerUsecase } from "../interfaces/usecase.interface";
-import {
-  ROUND_REPOSITORY,
-  type IRoundRepository,
-} from "@/domain/orm/repositories/round.repository";
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { CurrentRoundResponseDto } from '../dtos/response/current-round-response.dto';
+import { HandlerUsecase } from '../interfaces/usecase.interface';
+import { ROUND_REPOSITORY, type IRoundRepository } from '@/domain/orm/repositories/round.repository';
+import { RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
 
 @Injectable()
 export class CurrentRoundUseCase implements HandlerUsecase {
@@ -16,7 +14,7 @@ export class CurrentRoundUseCase implements HandlerUsecase {
   async handler(): Promise<CurrentRoundResponseDto> {
     const currentRound = await this.roundRepository.findCurrentBettingRound();
     if (!currentRound) {
-      throw new NotFoundException("Nenhuma rodada ativa");
+      throw new NotFoundException('Nenhuma rodada ativa');
     }
 
     return new CurrentRoundResponseDto({
@@ -25,8 +23,10 @@ export class CurrentRoundUseCase implements HandlerUsecase {
       multiplier: currentRound.multiplier,
       bets: currentRound.bets,
       serverSeedHash: currentRound.serverSeedHash,
+      bettingStartedAt: currentRound.bettingStartedAt,
       bettingEndsAt: currentRound.bettingEndsAt,
       startedAt: currentRound.startedAt,
+      crashPoint: currentRound.status === RoundStatus.RUNNING ? 'secret' : currentRound.crashPoint,
     });
   }
 }

@@ -31,6 +31,7 @@ import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase
 import { AuthModule } from '@/application/auth/auth.module';
 import { AuthController } from '@/application/auth/auth.controller';
 import { EventModule } from '@/application/events/event/event.module';
+import { AuditRoundUsecase } from '@/presentation/usecases/audit-round.usecase';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { EventModule } from '@/application/events/event/event.module';
     GetMyBetsUseCase,
     BetUseCase,
     CashOutUsecase,
+    AuditRoundUsecase,
     {
       provide: ROUND_REPOSITORY,
       useClass: RoundRepository,
@@ -66,10 +68,6 @@ import { EventModule } from '@/application/events/event/event.module';
       provide: WALLET_PROXY,
       useClass: WalletProxy,
     },
-    // {
-    //   provide: RABBITMQ_PRODUCER_SERVICE,
-    //   useClass: RabbitmqProducerService,
-    // },
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
