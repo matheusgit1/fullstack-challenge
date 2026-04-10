@@ -19,7 +19,7 @@ describe('TracingMiddleware', () => {
 
   describe('success scenarios', () => {
     it('should add hash to request and call next', () => {
-      const mockRequest = {} as Request;
+      const mockRequest = { header: (_: string) => {} } as Request;
 
       jest.spyOn(HashGeneratorUtil, 'generate').mockReturnValue('hash-123');
 
@@ -31,7 +31,7 @@ describe('TracingMiddleware', () => {
     });
 
     it('should override existing hash if present', () => {
-      const mockRequest = { hash: 'old-hash' } as Request;
+      const mockRequest = { hash: 'old-hash', header: (_: string) => {} } as Request;
 
       jest.spyOn(HashGeneratorUtil, 'generate').mockReturnValue('new-hash');
 
@@ -44,7 +44,7 @@ describe('TracingMiddleware', () => {
 
   describe('failure scenarios', () => {
     it('should throw if hash generator fails', () => {
-      const mockRequest = {} as Request;
+      const mockRequest = { header: (_: string) => {} } as Request;
 
       jest.spyOn(HashGeneratorUtil, 'generate').mockImplementation(() => {
         throw new Error('Hash error');
@@ -54,7 +54,7 @@ describe('TracingMiddleware', () => {
     });
 
     it('should not call next if error occurs', () => {
-      const mockRequest = {} as Request;
+      const mockRequest = { header: (_: string) => {} } as Request;
 
       jest.spyOn(HashGeneratorUtil, 'generate').mockImplementation(() => {
         throw new Error('Hash error');

@@ -27,7 +27,6 @@ export class KeycloakService implements IKeyCloakService {
 
       return response.data satisfies User;
     } catch (error) {
-      console.error('Erro ao validar token', error);
       throw new UnauthorizedException("Erro ao validar token");
     }
   }
