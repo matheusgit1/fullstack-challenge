@@ -17,7 +17,7 @@ export interface CashReserveMessage extends BaseMessage {
 export type CashinMessage = {
   cashType: TransactionSource;
   userId: string;
-  multiplier: number; // multiplicador da aposta
+  multiplier: number;
   timestamp: string;
   externalId: string;
 } & BaseMessage;

@@ -59,6 +59,7 @@ export class TransactionRepository implements ITransactionRepository {
           balanceAfterInCents: wallet.balanceInCents < 0 ? 0 : wallet.balanceInCents,
           status: TransactionStatus.PENDING,
           metadata,
+          errorMessage: null,
         });
         await queryRunner.manager.save(transaction);
       }

@@ -61,7 +61,6 @@ export class KeycloakService implements IKeyCloakService {
       );
       return response.data satisfies KeycloakTokenResponse;
     } catch (error) {
-      console.error('Erro ao obter token', error);
       throw new UnauthorizedException("Erro ao obter token");
     }
   }

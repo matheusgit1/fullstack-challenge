@@ -1,4 +1,3 @@
-import { WalletRepository } from '@/infrastructure/database/orm/repository/wallet.repository';
 import { WalletsService } from './../../src/presentation/services/wallets.service';
 import { WalletsController } from '@/presentation/controllers/wallets.controller';
 import { HttpStatus, Module, ValidationPipe } from '@nestjs/common';
@@ -44,7 +43,6 @@ describe('App e2e', () => {
       { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
       { provide: APP_FILTER, useClass: GlobalExceptionFilter },
       { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
-      { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     ],
   })
   class TestAppModule {}
@@ -70,9 +68,6 @@ describe('App e2e', () => {
     );
 
     await app.init();
-
-    app.useGlobalFilters(new GlobalExceptionFilter());
-    app.useGlobalInterceptors(new ResponseInterceptor());
 
     jest.clearAllMocks();
   });

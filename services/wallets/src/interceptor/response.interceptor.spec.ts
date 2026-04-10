@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { ResponseInterceptor } from './response.interceptor';
 import { Observable, of } from 'rxjs';
 import { Request } from 'express';
@@ -22,7 +22,6 @@ describe('ResponseInterceptor', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.clearAllTimers();
     jest.setTimeout(20 * 1000);
 
     mockRequest = {

@@ -14,7 +14,7 @@
     "dev": "bun run --watch src/main.ts",
     "start:debug": "nest start --debug --watch",
     "start": "bun run src/main.ts",
-    "test": "bun jest",
+    "test": "bun test src/**/*.spec.ts",
     "test:e2e": "bun test tests/e2e"
   },
   "dependencies": {

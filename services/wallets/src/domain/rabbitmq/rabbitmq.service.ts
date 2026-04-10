@@ -1,8 +1,4 @@
-export enum TransactionSource {
-  BET_PLACED = "bet_placed",
-  BET_LOST = "bet_lost",
-  BET_RESERVE = "bet_reserve",
-}
+import { TransactionSource } from '@/infrastructure/database/orm/entites/transaction.entity';
 
 export interface BaseMessage {
   tracingId: string;
@@ -36,4 +32,4 @@ export interface IRabbitmqService {
   processCashout(message: CashoutMessage, tracingId: string): Promise<void>;
 }
 
-export const RABBITMQ_SERVICE = Symbol("IRabbitmqService");
+export const RABBITMQ_SERVICE = Symbol('IRabbitmqService');

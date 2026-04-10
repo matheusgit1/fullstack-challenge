@@ -13,19 +13,32 @@ export class RabbitmqService implements IRabbitmqService {
   ) {}
 
   async processReserve(message: CashReserveMessage, tracingId: string) {
-    this.logger.debug(`[${tracingId}] processReserve - BET_RESERVE message recebida para userId: ${message.userId}`);
+    this.logger.debug(`[${tracingId}] process reserve - BET_RESERVE message aquired for userId: ${message.userId}`);
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
 
-    this.logger.debug(`[${tracingId}] exists: ${exists}`);
+    this.logger.debug(`[${tracingId}] existing BET_RESERVE: ${!!exists}`);
 
     if (exists) {
       return;
     }
 
-    this.logger.log(`[${tracingId}] BET_RESERVE message enviada para userId: ${message.userId}`);
+    const processing = {
+      userId: message.userId,
+      amount: message.amount,
+      transactionType: TransactionType.DEBIT,
+      transactionSource: TransactionSource.BET_RESERVE,
+      externalId: message.externalId,
+      metadata: { timestamp: message.timestamp, tracingId },
+    };
+
+    this.logger.debug(
+      `[${tracingId}] BET_RESERVE data: ${JSON.stringify({
+        ...processing,
+      })}`,
+    );
 
     await this.transactionRepository.processTransaction(
       message.userId,
@@ -33,40 +46,77 @@ export class RabbitmqService implements IRabbitmqService {
       TransactionType.DEBIT,
       TransactionSource.BET_RESERVE,
       message.externalId,
-      { timestamp: message.timestamp },
+      { timestamp: message.timestamp, tracingId },
     );
+
+    this.logger.log(`[${tracingId}] BET_RESERVE processed for userId: ${message.userId}`);
   }
 
   async processCashin(message: CashinMessage, tracingId: string) {
+    this.logger.debug(`[${tracingId}] process cashin - BET_PLACED message aquired for userId: ${message.userId}`);
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
+
+    this.logger.debug(`[${tracingId}] existing BET_RESERVE: ${!!exists}`);
 
     if (!exists) {
       return;
     }
 
     const winAmount = exists.amountInCents * message.multiplier;
+
+    const process = {
+      userId: message.userId,
+      amount: winAmount,
+      transactionType: TransactionType.CREDIT,
+      transactionSource: TransactionSource.BET_PLACED,
+      externalId: message.externalId,
+      metadata: { timestamp: message.timestamp, tracingId },
+    };
+
+    this.logger.debug(
+      `[${tracingId}] BET_PLACED data: ${JSON.stringify({
+        ...process,
+      })}`,
+    );
+
     await this.transactionRepository.processTransaction(
       message.userId,
       winAmount,
       TransactionType.CREDIT,
       TransactionSource.BET_PLACED,
       message.externalId,
-      { timestamp: message.timestamp },
+      { timestamp: message.timestamp, tracingId },
     );
+
+    this.logger.log(`[${tracingId}] BET_PLACED processed for userId: ${message.userId}`);
   }
 
   async processCashout(message: CashoutMessage, tracingId: string) {
+    this.logger.debug(`[${tracingId}] process cashout - BET_LOST message aquired for userId: ${message.userId}`);
     const exists = await this.transactionRepository.findByExternalIdAndSource(
       message.externalId,
       TransactionSource.BET_RESERVE,
     );
 
+    this.logger.debug(`[${tracingId}] existing BET_RESERVE: ${!!exists}`);
+
     if (!exists) {
       return;
     }
+
+    this.logger.debug(
+      `[${tracingId}] BET_LOST data: ${JSON.stringify({
+        userId: message.userId,
+        amount: exists.amountInCents,
+        transactionType: TransactionType.DEBIT,
+        transactionSource: TransactionSource.BET_LOST,
+        externalId: message.externalId,
+        metadata: { timestamp: message.timestamp, tracingId },
+      })}`,
+    );
 
     await this.transactionRepository.processTransaction(
       message.userId,
@@ -74,7 +124,7 @@ export class RabbitmqService implements IRabbitmqService {
       TransactionType.DEBIT,
       TransactionSource.BET_LOST,
       message.externalId,
-      { timestamp: message.timestamp },
+      { timestamp: message.timestamp, tracingId },
     );
   }
 }

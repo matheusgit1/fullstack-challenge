@@ -6,24 +6,24 @@ import {
   UpdateDateColumn,
   Index,
   VersionColumn,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("wallets")
-@Index(["userId"], { unique: true })
+@Entity('wallets')
+@Index(['userId'], { unique: true })
 export class Wallet {
-  constructor(partial: Partial<Wallet>) {
+  constructor(partial: Omit<Wallet, 'id' | 'createdAt'>) {
     Object.assign(this, partial);
   }
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: "uuid", unique: true })
+  @Column({ type: 'uuid', unique: true })
   userId: string;
 
   @Column({
-    type: "bigint",
-    default: 0,
-    comment: "Saldo em centavos",
+    type: 'bigint',
+    default: 5000 * 100,
+    comment: 'Saldo em centavos',
     transformer: {
       to: (value: number) => value,
       from: (value: string) => Number(value),
@@ -54,7 +54,7 @@ export class Wallet {
 
   debit(amountInCents: number): void {
     if (!this.canDebit(amountInCents)) {
-      throw new Error("Saldo insuficiente");
+      throw new Error('Saldo insuficiente');
     }
 
     this.balanceInCents -= amountInCents;
@@ -62,7 +62,7 @@ export class Wallet {
 
   credit(amountInCents: number): void {
     if (amountInCents < 0) {
-      throw new Error("Valor de crédito deve ser positivo");
+      throw new Error('Valor de crédito deve ser positivo');
     }
     this.balanceInCents += amountInCents;
   }
