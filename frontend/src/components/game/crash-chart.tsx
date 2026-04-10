@@ -10,7 +10,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { currentRound } = useGameStore();
 
-  // Histórico de multiplicadores acumulado durante a rodada
   const historyRef = useRef<number[]>([]);
   const prevRoundIdRef = useRef<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
@@ -19,18 +18,15 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
   useEffect(() => {
     if (!currentRound) return;
 
-    // Nova rodada — limpa o histórico
     if (currentRound.id !== prevRoundIdRef.current) {
       historyRef.current = [];
       prevRoundIdRef.current = currentRound.id;
     }
 
-    // Acumula ponto só quando rodada está rodando
     if (currentRound.status === "running" && currentRound.multiplier) {
       historyRef.current = [...historyRef.current, currentRound.multiplier];
     }
 
-    // Adiciona ponto final no crash
     if (
       currentRound.status === "crashed" &&
       prevStatusRef.current === "running" &&
@@ -42,7 +38,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
     prevStatusRef.current = currentRound.status;
 
     if (currentRound?.status === "running") {
-      // Cancela loop anterior se existir
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
 
       const animate = () => {
@@ -51,7 +46,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
       };
       animate();
     } else {
-      // Para o loop e desenha uma última vez
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
@@ -76,12 +70,9 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
     const multiplier = currentRound?.multiplier ?? 1.0;
 
     ctx.clearRect(0, 0, width, height);
-
-    // Fundo
     ctx.fillStyle = "#0f172a";
     ctx.fillRect(0, 0, width, height);
 
-    // Grid
     ctx.strokeStyle = "#1e293b";
     ctx.lineWidth = 1;
     for (let x = 0; x <= width; x += width / 10) {
@@ -97,7 +88,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
       ctx.stroke();
     }
 
-    // Labels do eixo Y (multiplicador)
     const maxMult = Math.max(...history, multiplier, 2);
     ctx.fillStyle = "#475569";
     ctx.font = "11px monospace";
@@ -107,7 +97,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
       ctx.fillText(`${val}x`, 6, y + 4);
     }
 
-    // Sem histórico ainda — tela de espera
     if (history.length === 0) {
       ctx.font = "bold 18px monospace";
       ctx.fillStyle = "#475569";
@@ -122,7 +111,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
       return;
     }
 
-    // Curva
     const padding = { left: 40, right: 20, top: 20, bottom: 30 };
     const drawW = width - padding.left - padding.right;
     const drawH = height - padding.top - padding.bottom;
@@ -145,14 +133,12 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
     });
     ctx.stroke();
 
-    // Área sob a curva
     ctx.lineTo(padding.left + drawW, height - padding.bottom);
     ctx.lineTo(padding.left, height - padding.bottom);
     ctx.closePath();
     ctx.fillStyle = crashed ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)";
     ctx.fill();
 
-    // Ponto atual
     const lastX = padding.left + drawW;
     const lastNorm = (multiplier - 1) / Math.max(maxMult - 1, 0.1);
     const lastY = padding.top + drawH - lastNorm * drawH;
@@ -162,19 +148,16 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
     ctx.fillStyle = color;
     ctx.fill();
 
-    // Pulse ring quando rodando
     if (!crashed) {
       const now = Date.now();
-      const pulse = (Math.sin(now / 300) + 1) / 2; // 0 a 1 oscilando
+      const pulse = (Math.sin(now / 300) + 1) / 2;
 
-      // Anel externo
       ctx.beginPath();
       ctx.arc(lastX, lastY, 14 + pulse * 8, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(34,197,94,${0.15 + pulse * 0.25})`;
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Anel médio
       ctx.beginPath();
       ctx.arc(lastX, lastY, 14, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(34,197,94,${0.4 - pulse * 0.3})`;
@@ -182,7 +165,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
       ctx.stroke();
     }
 
-    // Multiplicador atual
     ctx.font = "bold 42px monospace";
     ctx.textAlign = "center";
     ctx.fillStyle = crashed ? "#ef4444" : "#22c55e";

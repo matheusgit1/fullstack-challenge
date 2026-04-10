@@ -8,47 +8,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Users, Clock, Trophy, DollarSign, Hash } from "lucide-react";
+import { Shield, Users } from "lucide-react";
 import { cn } from "@/app/_lib/utils";
-import { RoundHistory } from "@/types/games";
 import { useSession } from "next-auth/react";
-import { useGameContext } from "@/context/game-context";
-import { useGameStore } from "@/stores/game-store";
-import { faker } from "@faker-js/faker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ProvablyFairAudit } from "./provably-fair-audit";
-
-interface Bet {
-  id: string;
-  roundId: string;
-  userId: string;
-  amount: number;
-  multiplier: number | null;
-  status: string;
-  cashedOutAt: Date | null;
-  createdAt: string;
-  updatedAt: string;
-  username?: string;
-}
-
-interface RoundDetails {
-  roundId: string;
-  crashPoint: number | "secret";
-  serverSeedHash: string;
-  serverSeed?: string;
-  clientSeed?: string;
-  nonce?: number;
-  endedAt: string;
-  status: string;
-  multiplier: number;
-  bettingStartedAt: string;
-  bettingEndsAt: string;
-  roundStartedAt: string;
-  roundCrashedAt: string;
-  createdAt: string;
-  updatedAt: string;
-  bets: Bet[];
-}
+import { RoundHistory } from "@/types/round";
 
 interface RoundDetailsModalProps {
   round: RoundHistory | null;

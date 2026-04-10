@@ -1,6 +1,6 @@
+import { ApiPagination } from "./api";
 import { UserBet } from "./bet";
-
-export type RoundStatus = "betting" | "running" | "crashed";
+import { RoundHistory, RoundStatus } from "./round";
 
 export type BetStatus = "pending" | "cashed_out" | "lost";
 
@@ -49,7 +49,7 @@ export interface GameState {
   currentRound: CurrentRound | null;
   myBet: Bet | null;
   currentBets: Bet[];
-  roundHistory: RoundHistory[];
+  roundHistory: ApiPagination<RoundHistory[]>;
   user: User | null;
   isLoading: boolean;
   error: string | null;
@@ -65,23 +65,4 @@ export interface GameState {
     total: number;
     totalPages: number;
   };
-}
-
-export interface RoundHistory {
-  roundId: string;
-  crashPoint: "secret" | number;
-  serverSeedHash: string;
-  endedAt: string;
-  status: RoundStatus;
-  multiplier: number;
-  bettingStartedAt: string;
-  bettingEndsAt: string;
-  roundStartedAt: string;
-  roundCrashedAt: string;
-  serverSeed: string;
-  clientSeed: string;
-  nonce: number;
-  createdAt: string;
-  updatedAt: string;
-  bets: Bet[];
 }

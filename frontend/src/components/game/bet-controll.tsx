@@ -1,26 +1,18 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { useGameStore } from "@/stores/game-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCurrencyFormat } from "@/hooks/use-currency-format";
 
 export function BetControls() {
   const [betAmount, setBetAmount] = useState(10);
-  const {
-    currentRound,
-    myBet,
-    user,
-    isLoading,
-    placeBet,
-    cashOut,
-    debitBalance,
-  } = useGameStore();
+  const { currentRound, myBet, user, isLoading, placeBet, cashOut } =
+    useGameStore();
   const router = useRouter();
-  const { toBRL, toCENTS } = useCurrencyFormat();
+  const { toBRL } = useCurrencyFormat();
 
   const canBet = currentRound?.status === "betting" && !myBet && !isLoading;
   const canCashOut =
@@ -65,7 +57,7 @@ export function BetControls() {
               R$ {(user?.balance ?? 0).toFixed(2)}
             </span>
           </div>
-          {/* botão minhas apostas */}
+
           <div className="flex justify-end items-center">
             <Button
               onClick={() => router.push("/bets")}

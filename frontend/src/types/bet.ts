@@ -1,5 +1,12 @@
 import { BetStatus } from "./games";
 
+export interface BetHistory {
+  bets: UserBet[];
+  totalBetsAmount: number;
+  totalProfit: number;
+  successRate: number;
+}
+
 export interface Bet {
   id: string;
   roundId: string;

@@ -38,16 +38,14 @@ export function RoundHistory() {
           </div>
 
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {roundHistory.map((round, index) => (
+            {roundHistory.data.map((round, index) => (
               <div
                 key={round.roundId}
                 className="grid grid-cols-4 gap-2 items-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
               >
-                {/* <div className="max-w-[200px]"> */}
                 <span className="text-sm font-mono text-slate-400 text-ellipsis overflow-hidden">
                   #{round.roundId.substring(0, 6) + "...."}
                 </span>
-                {/* </div> */}
 
                 <div className="flex justify-center">
                   <span

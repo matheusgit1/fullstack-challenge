@@ -8,18 +8,16 @@ import {
   ChevronRight,
   TrendingUp,
   DollarSign,
-  Calendar,
   AlertCircle,
   CheckCircle,
   XCircle,
   Clock,
 } from "lucide-react";
 import { cn } from "@/app/_lib/utils";
-import { BetsApiResponse, UserBet } from "@/types/bet";
+import { UserBet } from "@/types/bet";
 import { useGameStore } from "@/stores/game-store";
 import { useGamesApi } from "@/hooks/use-games-api";
 import { useCurrencyFormat } from "@/hooks/use-currency-format";
-// import type { UserBet, BetsApiResponse } from "@/types/myBetHistory.types";
 
 interface BetsHistoryProps {
   initialBets?: UserBet[];

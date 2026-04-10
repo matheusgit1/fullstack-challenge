@@ -1,20 +1,15 @@
+import { ApiPagination } from "./../types/api";
 import { create } from "zustand";
-import {
-  Bet,
-  CurrentRound,
-  GameState,
-  Round,
-  RoundHistory,
-  User,
-} from "@/types/games";
+import { Bet, CurrentRound, GameState, User } from "@/types/games";
 import { apiFetch } from "@/app/_lib/api";
-import { UserBet } from "@/types/bet";
+import { BetHistory } from "@/types/bet";
+import { RoundHistory } from "@/types/round";
 
 interface GameActions {
   placeBet: (amount: number) => Promise<void>;
   cashOut: () => Promise<void>;
   setCurrentRound: (round: CurrentRound) => void;
-  replaceRoundHistory: (round: RoundHistory[]) => void;
+  replaceRoundHistory: (round: ApiPagination<RoundHistory[]>) => void;
   updateMultiplier: (multiplier: number) => void;
   addBet: (bet: Bet) => void;
   updateBet: (betId: string, updates: Partial<Bet>) => void;
@@ -25,25 +20,20 @@ interface GameActions {
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
-  replaceMyBetHistory: (history: {
-    data: {
-      bets: UserBet[];
-      totalBetsAmount: number;
-      totalProfit: number;
-      successRate: number;
-    };
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  }) => void;
+  replaceMyBetHistory: (history: ApiPagination<BetHistory>) => void;
 }
 
 const initialState: GameState = {
   currentRound: null,
   myBet: null,
   currentBets: [],
-  roundHistory: [],
+  roundHistory: {
+    data: [],
+    page: 0,
+    limit: 0,
+    total: 0,
+    totalPages: 0,
+  },
   user: null,
   isLoading: false,
   error: null,
@@ -64,7 +54,7 @@ const initialState: GameState = {
 export const useGameStore = create<GameState & GameActions>((set, get) => ({
   ...initialState,
   replaceMyBetHistory: (history) => set({ myBetHistory: history }),
-  replaceRoundHistory: (roundHistory: RoundHistory[]) =>
+  replaceRoundHistory: (roundHistory: ApiPagination<RoundHistory[]>) =>
     set((state) => ({
       ...state,
       roundHistory: roundHistory,

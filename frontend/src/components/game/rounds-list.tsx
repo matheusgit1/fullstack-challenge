@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, ChevronLeft, ChevronRight, Eye, Shield } from "lucide-react";
 import { cn } from "@/app/_lib/utils";
 import { RoundDetailsModal } from "./round-details-modal";
-import { RoundHistory } from "@/types/games";
 import { apiFetch } from "@/app/_lib/api";
+import { RoundHistory } from "@/types/round";
 
 interface RoundsListProps {
   initialRounds?: RoundHistory[];
@@ -31,9 +31,6 @@ export function RoundsList({ initialRounds = [] }: RoundsListProps) {
   const fetchRounds = async () => {
     setLoading(true);
     try {
-      // const response = await fetch(
-      //   ``,
-      // );
       const { response } = await apiFetch<{
         data: RoundHistory[];
         page: number;
@@ -49,7 +46,7 @@ export function RoundsList({ initialRounds = [] }: RoundsListProps) {
 
       console.log("repsonse pagination: ", response);
       const { data } = response;
-      // const data = await response.json();
+
       setRounds(data.data);
       setTotalPages(data.totalPages);
     } catch (error) {

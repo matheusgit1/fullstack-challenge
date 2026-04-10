@@ -2,7 +2,6 @@
 import { useGameStore } from "@/stores/game-store";
 import { Button } from "@/components/ui/button";
 import { Coins, User, LogOut } from "lucide-react";
-import React, { memo, useState } from "react";
 import { useLogout } from "@/functions/logout";
 import { useRouter } from "next/navigation";
 
@@ -10,17 +9,14 @@ export function Header() {
   const { user } = useGameStore();
   const router = useRouter();
   const logout = useLogout();
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
-    setIsLoading(true);
     try {
       await logout();
       console.log("Logout successful");
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
-      setIsLoading(false);
     }
   };
 

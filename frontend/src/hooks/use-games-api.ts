@@ -1,7 +1,9 @@
 import { apiFetch } from "@/app/_lib/api";
 import { useGameStore } from "@/stores/game-store";
-import { UserBet } from "@/types/bet";
-import { CurrentRound, RoundHistory } from "@/types/games";
+import { ApiPagination } from "@/types/api";
+import { BetHistory, UserBet } from "@/types/bet";
+import { CurrentRound } from "@/types/games";
+import { RoundHistory } from "@/types/round";
 import { useSession } from "next-auth/react";
 
 export function useGamesApi() {
@@ -23,35 +25,26 @@ export function useGamesApi() {
     );
     if (!currentRound.success) throw new Error(currentRound.error.message);
     const currentRoundz = currentRound.data;
-    currentRoundz.bets.forEach((bet) => addBet(bet, data?.user?.sub ?? ""));
+    currentRoundz.bets.forEach((bet) => addBet(bet));
 
     updateCurrentRound(currentRoundz);
     return { currentRound, status };
   };
 
   const fetchRoundHistory = async (page = 1, limit = 30) => {
-    const { response: roundHistory, status } = await apiFetch<{
-      data: RoundHistory[];
-    }>("game", `/games/rounds/history?page=${page}&limit=${limit}`);
+    const { response: roundHistory, status } = await apiFetch<
+      ApiPagination<RoundHistory[]>
+    >("game", `/games/rounds/history?page=${page}&limit=${limit}`);
     if (!roundHistory.success) throw new Error(roundHistory.error.message);
 
-    replaceRoundHistory(roundHistory.data.data);
+    replaceRoundHistory(roundHistory.data);
     return { roundHistory, status };
   };
 
   const fetchMyBetHistory = async (page = 1, limit = 30) => {
-    const { response: myBetHistory } = await apiFetch<{
-      data: {
-        bets: UserBet[];
-        totalBetsAmount: number;
-        totalProfit: number;
-        successRate: number;
-      };
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    }>("game", `/games/bets/me?page=${page}&limit=${limit}`);
+    const { response: myBetHistory } = await apiFetch<
+      ApiPagination<BetHistory>
+    >("game", `/games/bets/me?page=${page}&limit=${limit}`);
     if (!myBetHistory.success) throw new Error(myBetHistory.error.message);
     replaceMyBetHistory(myBetHistory.data);
     return { myBetHistory };
