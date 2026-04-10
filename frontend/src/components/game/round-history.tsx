@@ -3,7 +3,7 @@
 import { useGameStore } from "@/stores/game-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, CheckCircle, AlertCircle } from "lucide-react";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/app/_lib/utils";
 import { useRouter } from "next/navigation";
 
 export function RoundHistory() {

@@ -1,7 +1,19 @@
 import { BetStatus } from "./games";
 
+export interface Bet {
+  id: string;
+  roundId: string;
+  userId: string;
+  amount: number;
+  multiplier: number | null;
+  status: BetStatus;
+  cashedOutAt: string | null;
+  createdAt: string;
+  roundCrashPoint: "secret" | number;
+}
+
 export interface UserBet {
-  roundCrashPoint: number;
+  roundCrashPoint: "secret" | number;
   roundId: string;
   id: string;
   userId: string;

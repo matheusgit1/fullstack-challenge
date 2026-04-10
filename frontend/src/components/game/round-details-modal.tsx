@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Users, Clock, Trophy, DollarSign, Hash } from "lucide-react";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/app/_lib/utils";
 import { RoundHistory } from "@/types/games";
 import { useSession } from "next-auth/react";
 import { useGameContext } from "@/context/game-context";

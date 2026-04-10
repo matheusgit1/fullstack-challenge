@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, ChevronLeft, ChevronRight, Eye, Shield } from "lucide-react";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/app/_lib/utils";
 import { RoundDetailsModal } from "./round-details-modal";
 import { RoundHistory } from "@/types/games";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch } from "@/app/_lib/api";
 
 interface RoundsListProps {
   initialRounds?: RoundHistory[];

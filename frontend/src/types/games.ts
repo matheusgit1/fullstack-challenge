@@ -1,3 +1,5 @@
+import { UserBet } from "./bet";
+
 export type RoundStatus = "betting" | "running" | "crashed";
 
 export type BetStatus = "pending" | "cashed_out" | "lost";
@@ -40,6 +42,7 @@ export interface User {
   id: string;
   username: string;
   balance: number;
+  acessToken?: string;
 }
 
 export interface GameState {
@@ -50,6 +53,18 @@ export interface GameState {
   user: User | null;
   isLoading: boolean;
   error: string | null;
+  myBetHistory: {
+    data: {
+      bets: UserBet[];
+      totalBetsAmount: number;
+      totalProfit: number;
+      successRate: number;
+    };
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface RoundHistory {

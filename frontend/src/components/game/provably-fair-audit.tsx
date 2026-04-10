@@ -16,8 +16,8 @@ import {
   RefreshCw,
   Lock,
 } from "lucide-react";
-import { cn } from "@/app/lib/utils";
-import { apiFetch } from "@/app/lib/api";
+import { cn } from "@/app/_lib/utils";
+import { apiFetch } from "@/app/_lib/api";
 
 export interface ProvablyFairAuditResponse {
   success: boolean;

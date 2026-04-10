@@ -1,8 +1,9 @@
 import { useGameStore } from "@/stores/game-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Trophy, Clock, Coins } from "lucide-react";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/app/_lib/utils";
 import { faker } from "@faker-js/faker";
+import { useCurrencyFormat } from "@/hooks/use-currency-format";
 
 export function CurrentBets() {
   const { currentBets, currentRound, user } = useGameStore();
@@ -59,7 +60,9 @@ export function CurrentBets() {
                   bet={{
                     ...bet,
                     username:
-                      user?.username || `Anonymous ${faker.person.firstName()}`,
+                      bet.userId === user?.id
+                        ? user?.username
+                        : `Anonymous ${faker.person.firstName()}`,
                   }}
                   isCurrentUser={bet.userId === user?.id}
                   showPotentialWin={isRoundActive}
@@ -70,7 +73,6 @@ export function CurrentBets() {
           </div>
         )}
 
-        {/* Cashouts Realizados */}
         {cashedOutBets.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2 text-sm text-green-500">
@@ -94,7 +96,6 @@ export function CurrentBets() {
           </div>
         )}
 
-        {/* Apostas Perdidas */}
         {lostBets.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2 text-sm text-red-500">
@@ -118,7 +119,6 @@ export function CurrentBets() {
           </div>
         )}
 
-        {/* Legenda */}
         {isRoundActive && (
           <div className="pt-2 text-xs text-slate-500 border-t border-slate-800">
             💡 Cashout disponível enquanto o multiplicador estiver subindo
@@ -154,6 +154,7 @@ function BetRow({
   currentMultiplier = 1,
 }: BetRowProps) {
   const potentialWin = bet.amount * currentMultiplier;
+  const { toBRL } = useCurrencyFormat();
 
   return (
     <div
@@ -197,9 +198,7 @@ function BetRow({
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Coins className="h-3 w-3 text-slate-500" />
-            <span className="text-slate-400">
-              R$ {(bet.amount / 100).toFixed(2)}
-            </span>
+            <span className="text-slate-400">R$ {toBRL(bet.amount)}</span>
           </div>
         </div>
       </div>
@@ -209,9 +208,7 @@ function BetRow({
           <div className="text-sm">
             <span className="text-slate-400">potencial: </span>
             <span className="text-green-400 font-mono">
-              R${" "}
-              {(potentialWin / 100) /**converter para reais */
-                .toFixed(2)}
+              R$ {toBRL(potentialWin)}
             </span>
           </div>
         )}
@@ -219,7 +216,7 @@ function BetRow({
         {isCashedOut && bet.multiplier && (
           <div className="text-sm">
             <span className="text-green-400 font-bold">
-              + R$ {((bet.amount * bet.multiplier) / 100).toFixed(2)}
+              + R$ {toBRL(bet.amount * bet.multiplier)}
             </span>
             <span className="text-slate-500 text-xs ml-1">
               ({bet.multiplier.toFixed(2)}x)
@@ -228,9 +225,7 @@ function BetRow({
         )}
 
         {isLost && (
-          <div className="text-sm text-red-400">
-            - R$ {(bet.amount / 100).toFixed(2)}
-          </div>
+          <div className="text-sm text-red-400">- R$ {toBRL(bet.amount)}</div>
         )}
       </div>
     </div>

@@ -6,7 +6,6 @@ import { RoundTimer } from "@/components/game/round-timer";
 import { CurrentBets } from "@/components/game/current-bets";
 import { RoundHistory } from "@/components/game/round-history";
 import { useGameStore } from "@/stores/game-store";
-import { useWebSocket } from "@/hooks/use-websocket";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { useGameWebSocket } from "@/hooks/use-games-websocket";
@@ -15,7 +14,7 @@ export default function GamePage() {
   const { currentRound } = useGameStore();
 
   // useWebSocket();
-  useGameWebSocket(); 
+  useGameWebSocket();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950">
@@ -52,8 +51,10 @@ export default function GamePage() {
 
           <div className="space-y-6">
             <BetControls />
-            <RoundHistory />
           </div>
+        </div>
+        <div className="mt-6">
+          <RoundHistory />
         </div>
       </main>
     </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "./lib/utils";
+import { cn } from "./_lib/utils";
 import { AuthGuard } from "@/guards/auth-guard";
 import { SessionProvider } from "next-auth/react";
 import { Providers } from "./providers";

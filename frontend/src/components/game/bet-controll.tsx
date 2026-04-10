@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useCurrencyFormat } from "@/hooks/use-currency-format";
 
 export function BetControls() {
   const [betAmount, setBetAmount] = useState(10);
@@ -17,8 +19,8 @@ export function BetControls() {
     cashOut,
     debitBalance,
   } = useGameStore();
-
-  const { data: session } = useSession();
+  const router = useRouter();
+  const { toBRL, toCENTS } = useCurrencyFormat();
 
   const canBet = currentRound?.status === "betting" && !myBet && !isLoading;
   const canCashOut =
@@ -44,11 +46,11 @@ export function BetControls() {
       return;
     }
 
-    await placeBet(betAmount, session?.accessToken ?? "");
+    await placeBet(betAmount);
   };
 
   const handleCashOut = async () => {
-    cashOut(session?.accessToken ?? "");
+    cashOut();
   };
 
   const presetAmounts = [10, 50, 100, 500];
@@ -57,15 +59,22 @@ export function BetControls() {
     <Card className="bg-slate-900 border-slate-800">
       <CardContent className="p-6">
         <div className="space-y-4">
-          {/* Saldo */}
           <div className="flex justify-between items-center">
             <span className="text-slate-400">Saldo</span>
             <span className="text-2xl font-bold text-green-500">
               R$ {(user?.balance ?? 0).toFixed(2)}
             </span>
           </div>
+          {/* botão minhas apostas */}
+          <div className="flex justify-end items-center">
+            <Button
+              onClick={() => router.push("/bets")}
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+            >
+              Minhas Apostas
+            </Button>
+          </div>
 
-          {/* Input aposta */}
           {!myBet && (
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -109,17 +118,16 @@ export function BetControls() {
             </div>
           )}
 
-          {/* Cashout */}
           {myBet && myBet.status === "pending" && (
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Aposta</span>
-                <span>R$ {(myBet.amount / 100).toFixed(2)}</span>
+                <span>R$ {toBRL(myBet.amount)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Ganho potencial</span>
                 <span className="text-green-500 font-bold">
-                  R$ {(potentialWin / 100).toFixed(2)}
+                  R$ {toBRL(potentialWin)}
                 </span>
               </div>
               <Button
@@ -137,7 +145,6 @@ export function BetControls() {
             </div>
           )}
 
-          {/* Status da aposta */}
           {myBet && myBet.status !== "pending" && (
             <div className="text-center p-4 rounded-lg bg-slate-800">
               {myBet.status === "cashed_out" && (
@@ -146,19 +153,14 @@ export function BetControls() {
                     ✓ Sacou em {(myBet.multiplier ?? 0).toFixed(2)}x
                   </p>
                   <p className="text-xl font-bold text-green-500">
-                    + R${" "}
-                    {((myBet.amount / 100) * (myBet.multiplier || 0)).toFixed(
-                      2,
-                    )}
+                    + R$ {toBRL(myBet.amount * (myBet.multiplier || 0))}
                   </p>
                 </div>
               )}
               {myBet.status === "lost" && (
                 <div>
                   <p className="text-red-500 font-bold">✗ Perdeu a aposta</p>
-                  <p className="text-slate-400">
-                    - R$ {(myBet.amount / 100).toFixed(2)}
-                  </p>
+                  <p className="text-slate-400">- R$ {toBRL(myBet.amount)}</p>
                 </div>
               )}
             </div>

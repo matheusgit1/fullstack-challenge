@@ -1,62 +1,64 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  History, 
-  ChevronLeft, 
-  ChevronRight, 
-  TrendingUp, 
+import {
+  History,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
   DollarSign,
   Calendar,
   AlertCircle,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
 } from "lucide-react";
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/app/_lib/utils";
 import { BetsApiResponse, UserBet } from "@/types/bet";
-// import type { UserBet, BetsApiResponse } from "@/types/bets.types";
+import { useGameStore } from "@/stores/game-store";
+import { useGamesApi } from "@/hooks/use-games-api";
+import { useCurrencyFormat } from "@/hooks/use-currency-format";
+// import type { UserBet, BetsApiResponse } from "@/types/myBetHistory.types";
 
 interface BetsHistoryProps {
   initialBets?: UserBet[];
   initialTotalPages?: number;
-  userId?: string; // Opcional: para filtrar por usuário específico
 }
 
-export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }: BetsHistoryProps) {
-  const [bets, setBets] = useState<UserBet[]>(initialBets);
-  const [loading, setLoading] = useState(!initialBets.length);
+export function BetsHistory({
+  initialBets = [],
+  initialTotalPages = 1,
+}: BetsHistoryProps) {
+  const { myBetHistory, isLoading, setLoading } = useGameStore();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const { fetchMyBetHistory } = useGamesApi();
+  const { toBRL, toCENTS } = useCurrencyFormat();
 
   const betsPerPage = 20;
 
   useEffect(() => {
-    if (!initialBets.length) {
+    if (!myBetHistory.data.bets.length) {
       fetchBets();
     }
-  }, [currentPage, userId]);
+  }, [currentPage]);
 
   const fetchBets = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const url = userId 
-        ? `/api/bets?page=${currentPage}&limit=${betsPerPage}&userId=${userId}`
-        : `/api/bets?page=${currentPage}&limit=${betsPerPage}`;
-      
-      const response = await fetch(url);
-      const data: BetsApiResponse = await response.json();
-      
-      if (data.success) {
-        setBets(data.data.data);
-        setTotalPages(data.data.totalPages);
-        setTotal(data.data.total);
+      const { myBetHistory } = await fetchMyBetHistory(currentPage, 20);
+
+      console.log("roundCrashPoint: ", myBetHistory);
+
+      if (myBetHistory.success) {
+        setTotalPages(myBetHistory.data.totalPages);
+        setTotal(myBetHistory.data.total);
       } else {
         throw new Error("Falha ao carregar apostas");
       }
@@ -104,15 +106,15 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
     }
   };
 
-  const getCrashColor = (crashPoint: number) => {
-    if (crashPoint <= 1.5) return "text-red-500 bg-red-500/10";
-    if (crashPoint <= 3) return "text-orange-500 bg-orange-500/10";
-    if (crashPoint <= 5) return "text-yellow-500 bg-yellow-500/10";
+  const getCrashColor = (crashPoint: number | "secret") => {
+    if (typeof crashPoint === "number" && crashPoint <= 1.5)
+      return "text-red-500 bg-red-500/10";
+    if (typeof crashPoint === "number" && crashPoint <= 3)
+      return "text-orange-500 bg-orange-500/10";
+    if (typeof crashPoint === "number" && crashPoint <= 5)
+      return "text-yellow-500 bg-yellow-500/10";
+    if (crashPoint === "secret") return "text-slate-500 bg-slate-500/10";
     return "text-green-500 bg-green-500/10";
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
   };
 
   const calculateProfit = (bet: UserBet) => {
@@ -125,15 +127,7 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
     return null;
   };
 
-  // Estatísticas
-  const totalBetsAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
-  const totalProfit = bets.reduce((sum, bet) => {
-    const profit = calculateProfit(bet);
-    return sum + (profit || 0);
-  }, 0);
-  const successRate = bets.filter(b => b.status === "cashed_out").length / bets.length * 100;
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="bg-slate-900/50 border-slate-800">
         <CardContent className="p-8">
@@ -174,7 +168,7 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
               <div>
                 <p className="text-xs text-slate-400 mb-1">Total Apostado</p>
                 <p className="text-2xl font-bold text-white">
-                  {totalBetsAmount.toFixed(2)} APT
+                  {toBRL(myBetHistory.data.totalBetsAmount)}
                 </p>
               </div>
               <DollarSign className="h-8 w-8 text-blue-500 opacity-50" />
@@ -187,17 +181,26 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-slate-400 mb-1">Lucro/Prejuízo</p>
-                <p className={cn(
-                  "text-2xl font-bold",
-                  totalProfit >= 0 ? "text-green-500" : "text-red-500"
-                )}>
-                  {totalProfit >= 0 ? "+" : ""}{totalProfit.toFixed(2)} APT
+                <p
+                  className={cn(
+                    "text-2xl font-bold",
+                    myBetHistory.data.totalProfit >= 0
+                      ? "text-green-500"
+                      : "text-red-500",
+                  )}
+                >
+                  {myBetHistory.data.totalProfit >= 0 ? "+" : ""}
+                  {toBRL(myBetHistory.data.totalProfit)}
                 </p>
               </div>
-              <TrendingUp className={cn(
-                "h-8 w-8 opacity-50",
-                totalProfit >= 0 ? "text-green-500" : "text-red-500"
-              )} />
+              <TrendingUp
+                className={cn(
+                  "h-8 w-8 opacity-50",
+                  myBetHistory.data.totalProfit >= 0
+                    ? "text-green-500"
+                    : "text-red-500",
+                )}
+              />
             </div>
           </CardContent>
         </Card>
@@ -208,10 +211,15 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
               <div>
                 <p className="text-xs text-slate-400 mb-1">Taxa de Acerto</p>
                 <p className="text-2xl font-bold text-yellow-500">
-                  {successRate.toFixed(1)}%
+                  {myBetHistory.data.successRate.toFixed(1)}%
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  {bets.filter(b => b.status === "cashed_out").length} / {bets.length} apostas
+                  {
+                    myBetHistory.data.bets.filter(
+                      (b) => b.status === "cashed_out",
+                    ).length
+                  }{" "}
+                  / {myBetHistory.data.bets.length} apostas
                 </p>
               </div>
               <TrendingUp className="h-8 w-8 text-yellow-500 opacity-50" />
@@ -236,7 +244,6 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
 
         <CardContent>
           <div className="space-y-4">
-            {/* Table Header */}
             <div className="grid grid-cols-6 gap-2 text-xs text-slate-500 pb-2 border-b border-slate-800">
               <span>Rodada</span>
               <span className="text-center">Crash Point</span>
@@ -245,70 +252,71 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
               <span className="text-right">Retorno</span>
               <span className="text-center">Status</span>
             </div>
-
-            {/* Bets List */}
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
-              {bets.length === 0 ? (
+              {myBetHistory.data.bets.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">
                   Nenhuma aposta encontrada
                 </div>
               ) : (
-                bets.map((bet) => {
+                myBetHistory.data.bets.map((bet) => {
                   const profit = calculateProfit(bet);
-                  const payout = bet.status === "cashed_out" 
-                    ? bet.amount * bet.multiplier 
-                    : 0;
-                  
+                  const payout =
+                    bet.status === "cashed_out"
+                      ? bet.amount * bet.multiplier
+                      : 0;
+
                   return (
                     <div
                       key={bet.id}
                       className="grid grid-cols-6 gap-2 items-center p-3 rounded-lg hover:bg-slate-800/50 transition-colors"
                     >
-                      {/* Round ID */}
-                      <span className="text-sm font-mono text-slate-400 truncate" title={bet.roundId}>
+                      <span
+                        className="text-sm font-mono text-slate-400 truncate"
+                        title={bet.roundId}
+                      >
                         #{bet.roundId.substring(0, 8)}...
                       </span>
 
-                      {/* Crash Point */}
                       <div className="flex justify-center">
                         <span
                           className={cn(
                             "px-2 py-1 rounded-md text-sm font-bold font-mono",
-                            getCrashColor(bet.roundCrashPoint)
+                            getCrashColor(bet.roundCrashPoint),
                           )}
                         >
-                          {bet.roundCrashPoint.toFixed(2)}x
+                          {bet.roundCrashPoint === "secret"
+                            ? "Secret"
+                            : bet.roundCrashPoint}
+                          x
                         </span>
                       </div>
 
                       {/* Amount */}
                       <div className="text-right">
                         <span className="text-sm font-mono text-white">
-                          {bet.amount.toFixed(2)} APT
+                          {toBRL(bet.amount)}
                         </span>
                       </div>
 
-                      {/* Multiplier */}
                       <div className="text-right">
                         <span className="text-sm font-mono text-yellow-500">
                           {bet.multiplier.toFixed(2)}x
                         </span>
                       </div>
 
-                      {/* Payout/Profit */}
                       <div className="text-right">
                         {bet.status === "cashed_out" ? (
                           <div>
                             <span className="text-sm font-mono text-green-500">
-                              +{profit?.toFixed(2)} APT
+                              +{toBRL(profit)}
                             </span>
                             <span className="text-xs text-slate-500 ml-1">
-                              ({payout.toFixed(2)})
+                              ({toBRL(payout)})
                             </span>
                           </div>
                         ) : bet.status === "lost" ? (
                           <span className="text-sm font-mono text-red-500">
-                            {profit?.toFixed(2)} APT
+                            {toBRL(profit)}
                           </span>
                         ) : (
                           <span className="text-sm font-mono text-yellow-500">
@@ -319,10 +327,12 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
 
                       {/* Status */}
                       <div className="flex justify-center">
-                        <div className={cn(
-                          "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
-                          getStatusColor(bet.status)
-                        )}>
+                        <div
+                          className={cn(
+                            "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
+                            getStatusColor(bet.status),
+                          )}
+                        >
                           {getStatusIcon(bet.status, bet.multiplier)}
                           <span>{getStatusText(bet.status)}</span>
                         </div>
@@ -333,17 +343,16 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
               )}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 pt-4 border-t border-slate-800">
                 <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                
+
                 <div className="flex gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
@@ -356,7 +365,7 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
                     } else {
                       pageNum = currentPage - 2 + i;
                     }
-                    
+
                     return (
                       <button
                         key={pageNum}
@@ -365,7 +374,7 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
                           "w-8 h-8 rounded-lg text-sm transition-colors",
                           currentPage === pageNum
                             ? "bg-yellow-500 text-slate-900 font-bold"
-                            : "bg-slate-800/50 text-slate-400 hover:text-yellow-500"
+                            : "bg-slate-800/50 text-slate-400 hover:text-yellow-500",
                         )}
                       >
                         {pageNum}
@@ -373,9 +382,11 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
                     );
                   })}
                 </div>
-                
+
                 <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -384,9 +395,8 @@ export function BetsHistory({ initialBets = [], initialTotalPages = 1, userId }:
               </div>
             )}
 
-            {/* Info Footer */}
             <div className="text-xs text-slate-500 text-right pt-2">
-              Mostrando {bets.length} de {total} apostas
+              Mostrando {myBetHistory.data.bets.length} de {total} apostas
             </div>
           </div>
         </CardContent>

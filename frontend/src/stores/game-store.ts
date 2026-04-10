@@ -7,23 +7,36 @@ import {
   RoundHistory,
   User,
 } from "@/types/games";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch } from "@/app/_lib/api";
+import { UserBet } from "@/types/bet";
 
 interface GameActions {
-  placeBet: (amount: number, accessToken: string) => Promise<void>;
-  cashOut: (accessToken: string) => Promise<void>;
+  placeBet: (amount: number) => Promise<void>;
+  cashOut: () => Promise<void>;
   setCurrentRound: (round: CurrentRound) => void;
   replaceRoundHistory: (round: RoundHistory[]) => void;
   updateMultiplier: (multiplier: number) => void;
-  addBet: (bet: Bet, userId: string) => void;
+  addBet: (bet: Bet) => void;
   updateBet: (betId: string, updates: Partial<Bet>) => void;
   clearBets: () => void;
-  setUser: (user: User | null) => void; // Permite null
+  setUser: (user: User | null) => void;
   updateBalance: (newBalance: number) => void;
   debitBalance: (amount: number) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
+  replaceMyBetHistory: (history: {
+    data: {
+      bets: UserBet[];
+      totalBetsAmount: number;
+      totalProfit: number;
+      successRate: number;
+    };
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  }) => void;
 }
 
 const initialState: GameState = {
@@ -34,10 +47,23 @@ const initialState: GameState = {
   user: null,
   isLoading: false,
   error: null,
+  myBetHistory: {
+    data: {
+      bets: [],
+      totalBetsAmount: 0,
+      totalProfit: 0,
+      successRate: 0,
+    },
+    page: 0,
+    limit: 0,
+    total: 0,
+    totalPages: 0,
+  },
 };
 
 export const useGameStore = create<GameState & GameActions>((set, get) => ({
   ...initialState,
+  replaceMyBetHistory: (history) => set({ myBetHistory: history }),
   replaceRoundHistory: (roundHistory: RoundHistory[]) =>
     set((state) => ({
       ...state,
@@ -51,7 +77,14 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       user: state.user ? { ...state.user, balance: newBalance } : null,
     }));
   },
-  setCurrentRound: (round) => set({ currentRound: round }),
+  setCurrentRound: (round) => {
+    const { user } = get();
+    set({
+      currentRound: round,
+      currentBets: round.bets,
+      myBet: round.bets.find((bet) => bet.userId === user?.id),
+    });
+  },
 
   updateMultiplier: (multiplier) =>
     set((state) => ({
@@ -60,10 +93,11 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
         : null,
     })),
 
-  addBet: (bet, userId) => {
+  addBet: (bet) => {
+    const { user } = get();
     set((state) => ({
       currentBets: [...state.currentBets, bet],
-      ...(bet.userId === userId && { myBet: bet }),
+      ...(bet.userId === user?.id && { myBet: bet }),
     }));
   },
 
@@ -80,7 +114,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
   clearBets: () => set({ currentBets: [], myBet: null }),
 
-  placeBet: async (amount, accessToken) => {
+  placeBet: async (amount) => {
     const { user, currentRound } = get();
 
     if (!user || user.balance < amount) {
@@ -101,12 +135,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
         roundId: string;
       }>("game", `/games/bet`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
         data: {
-          amount: amount,
+          amount: amount * 100,
           roundId: currentRound.id,
         },
       });
@@ -127,7 +157,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
         createdAt: data.bet.createdAt,
       };
 
-      get().addBet(newBet, user.id);
+      get().addBet(newBet);
       get().debitBalance(amount);
       set({ isLoading: false });
     } catch {
@@ -144,7 +174,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     }));
   },
 
-  cashOut: async (accessToken: string) => {
+  cashOut: async () => {
     const { myBet, currentRound, user } = get();
 
     if (!myBet || myBet.status !== "pending") {
@@ -163,13 +193,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       const multiplier = currentRound.multiplier || 1;
       const winAmount = (myBet.amount / 100) * multiplier;
 
-      //enviar para api
       const { response } = await apiFetch("game", `/games/bet/cashout`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
         data: {
           betId: myBet.id,
         },

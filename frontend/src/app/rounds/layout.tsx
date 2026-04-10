@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
-import { cn } from "../lib/utils";
+import { cn } from "../_lib/utils";
 import "../globals.css";
 import { Providers } from "../providers";
 
@@ -26,19 +26,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html
-      lang="en"
-      className={cn(
-        "h-full",
-        "antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        "font-sans",
-        inter.variable,
-      )}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
-    </html>
-  );
+  return <div className="min-h-full flex flex-col">{children}</div>;
 }

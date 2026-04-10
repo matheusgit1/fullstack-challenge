@@ -2,10 +2,12 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch } from "@/app/_lib/api";
 import { useGameStore } from "@/stores/game-store";
 import { Wallet } from "@/types/wallet";
 import { CurrentRound, RoundHistory } from "@/types/games";
+import { useGamesApi } from "@/hooks/use-games-api";
+import { useWalletApi } from "@/hooks/use-wallet-api";
 
 interface GameContextProps {
   wallet: Wallet | null;
@@ -16,25 +18,22 @@ const GameContext = createContext({} as GameContextProps);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const { fetchCurrentRound, fetchRoundHistory } = useGamesApi();
+  const { wallet } = useWalletApi();
   const setUser = useGameStore((state) => state.setUser);
-  const updateBalance = useGameStore((state) => state.updateBalance);
-  const updateCurrentRound = useGameStore((state) => state.setCurrentRound);
-  const addBet = useGameStore((state) => state.addBet);
-  const replaceRoundHistory = useGameStore(
-    (state) => state.replaceRoundHistory,
-  );
 
-  const [wallet, setWalletState] = useState<Wallet | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user) return;
 
     setUser({
-      id: session.user.id ?? session.user.email ?? "unknown",
+      id:
+        session.user.id ?? session.user.sub ?? session.user.email ?? "unknown",
       username:
         session.user.name ?? session.user.email?.split("@")[0] ?? "Player",
       balance: 0,
+      acessToken: session.accessToken,
     });
   }, [status, session?.user?.id]);
 
@@ -43,32 +42,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
     const initialize = async () => {
       try {
-        //carteira do cliente
-        const { response } = await apiFetch<Wallet>("wallet", "/wallets/me");
-        //rodada atual
-        const { response: currentRound } = await apiFetch<CurrentRound>(
-          "game",
-          "/games/rounds/current",
-        );
-        //apostas atuais
-        // const { response: currentBets } = await apiFetch<CurrentRound>(
-        //   "game",
-        //   "/games/rounds/current",
-        // );
-        //historico de rodadas
-        const { response: roundHistory } = await apiFetch<{
-          data: RoundHistory[];
-        }>("game", "/games/rounds/history");
-
-        if (!response.success) throw new Error(response.error.message);
-        if (!currentRound.success) throw new Error(currentRound.error.message);
-        if (!roundHistory.success) throw new Error(roundHistory.error.message);
-
-        setWalletState(response.data);
-        updateBalance(response.data.balance);
-        updateCurrentRound(currentRound.data);
-        replaceRoundHistory(roundHistory.data.data);
-        currentRound.data.bets.forEach((bet) => addBet(bet, bet.userId));
+        await fetchCurrentRound();
+        await fetchRoundHistory();
       } catch (err) {
         console.error("Erro ao carregar wallet:", err);
       } finally {
