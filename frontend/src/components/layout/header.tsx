@@ -2,15 +2,13 @@
 import { useGameStore } from "@/stores/game-store";
 import { Button } from "@/components/ui/button";
 import { Coins, User, LogOut } from "lucide-react";
-import { useSession } from "next-auth/react";
 import React, { memo, useState } from "react";
 import { useLogout } from "@/functions/logout";
-import { useGameContext } from "@/context/game-context";
+import { useRouter } from "next/navigation";
 
 export function Header() {
   const { user } = useGameStore();
-  const { data } = useSession();
-  const { wallet } = useGameContext();
+  const router = useRouter();
   const logout = useLogout();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,15 +28,17 @@ export function Header() {
     <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 hover:zoom-in hover:scale-110 transition-all"
+            style={{ cursor: "pointer" }}
+            onClick={() => router.push("/")}
+          >
             <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg" />
             <span className="font-bold text-xl bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
               Crash Game
             </span>
           </div>
 
-          {/* User info */}
           {user && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full">

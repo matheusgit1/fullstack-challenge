@@ -5,7 +5,6 @@ export const useLogout = () => {
   const { data: session } = useSession();
 
   return useCallback(async () => {
-    console.log("useLogout render:");
     const idToken = (session as any)?.idToken;
 
     const baseUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL!;
