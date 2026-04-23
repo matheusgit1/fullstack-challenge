@@ -1,8 +1,5 @@
-// hooks/useWebSocket.ts
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useGameStore } from "@/stores/game-store";
-import { Round, Bet, CurrentRound } from "@/types/games";
-import { apiFetch } from "@/app/_lib/api";
 import { useGamesApi } from "./use-games-api";
 
 const WS_URL = "ws://localhost:4001/ws";
@@ -23,8 +20,15 @@ export function useGameWebSocket() {
 
   if (error) throw error;
 
-  const { setCurrentRound, updateMultiplier, addBet, updateBet, clearBets } =
-    useGameStore();
+  const {
+    setCurrentRound,
+    updateMultiplier,
+    addBet,
+    updateBet,
+    clearBets,
+    currentBets,
+    currentRound,
+  } = useGameStore();
 
   const { fetchCurrentRound } = useGamesApi();
 
@@ -35,71 +39,59 @@ export function useGameWebSocket() {
         const { type, data } = message;
 
         switch (type) {
-          // Fase de apostas iniciou
-          case "betting.phase":
-            clearBets();
-            const { response } = await apiFetch<CurrentRound>(
-              "game",
-              `/games/rounds/current`,
-            );
-            if (!response.success) throw new Error(response.error.message);
-            setCurrentRound(response.data);
-
+          case "round.multiple.updated":
+            updateMultiplier(data.multiplier);
             break;
 
-          // Rodada começou a correr
+          case "round.crashed":
+            setCurrentRound({
+              ...useGameStore.getState().currentRound!,
+              status: "crashed",
+              crashPoint: data.crashPoint,
+            });
+
+            currentBets.map((bet) => {
+              if (bet.status === "pending") {
+                updateBet(bet.id, { status: "lost" });
+              }
+            });
+            break;
+
+          case "betting.phase":
+            await fetchCurrentRound();
+            break;
+
           case "betting.running":
-            clearBets();
             setCurrentRound({
               ...useGameStore.getState().currentRound!,
               status: "running",
               startedAt: new Date().toISOString(),
             });
-            console.log("Rodada começou a correr", message);
-            break;
-
-          case "multiplier.updated":
-            updateMultiplier(data.multiplier ?? data.value);
-            console.log("Multiplicador atualizado em tempo real", message);
-            break;
-
-          case "betting.crashed":
-            // clearBets();
-            setCurrentRound({
-              ...useGameStore.getState().currentRound!,
-              status: "crashed",
-              crashPoint: data.round?.crashPoint ?? data.round.multiplier,
-            });
-            console.log("Rodada crashou", message);
-            break;
-
-          // Apostas perdedoras processadas
-          case "betting.loose":
-            const { currentBets } = useGameStore.getState();
-            currentBets.forEach((bet) => {
-              if (bet.status === "pending") {
-                updateBet(bet.id, {
-                  status: "lost",
-                  multiplier: data.crashPoint ?? data.multiplier,
-                });
-              }
-            });
-            //TODO - enviar bets para ser marcadas como loose no backend
-            console.log("Apostas perdedoras processadas", message);
             break;
 
           case "betting.new":
             await fetchCurrentRound();
-            console.log("Nova aposta", message);
+
+          case "betting.loose":
+            data.bets.forEach((bet: any) => {
+              updateBet(bet.id, { status: "lost" });
+            });
             break;
 
-          // Confirmação de conexão do backend
+          case "betting.cashout":
+            data.bets.forEach((bet: any) => {
+              updateBet(bet.id, {
+                status: "cashed_out",
+                multiplier: bet.multiplier,
+              });
+            });
+            break;
+
           case "connection":
             console.log("✅ WS conectado:", data.clientId);
             reconnectAttempts.current = 0;
             break;
 
-          // Pong do servidor
           case "pong":
             console.log("🏓 WS pong:", data.clientId);
             break;

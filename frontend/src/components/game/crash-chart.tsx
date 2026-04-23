@@ -17,8 +17,6 @@ export function CrashChart({ width = 800, height = 400 }: CrashChartProps) {
   const prevStatusRef = useRef<string | null>(null);
   const animationRef = useRef<number | null>(null);
 
-  console.log("currentRound: ", currentRound);
-
   useEffect(() => {
     if (!currentRound) {
       fetchCurrentRound();

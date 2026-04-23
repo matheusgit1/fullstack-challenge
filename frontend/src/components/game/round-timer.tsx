@@ -63,7 +63,9 @@ export function RoundTimer() {
     return (
       <div className="text-center">
         <span className="text-red-500 font-bold">
-          💥 CRASHOU EM {currentRound.crashPoint}
+          {/* 💥 CRASHOU EM {currentRound.crashPoint}
+           */}
+          💥 CRASHOU
         </span>
       </div>
     );

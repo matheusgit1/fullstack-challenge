@@ -4,15 +4,28 @@ import { Users, Trophy, Clock, Coins } from "lucide-react";
 import { cn } from "@/app/_lib/utils";
 import { faker } from "@faker-js/faker";
 import { useCurrencyFormat } from "@/hooks/use-currency-format";
+import { useEffect, useState } from "react";
+import { Bet } from "@/types/games";
 
 export function CurrentBets() {
   const { currentBets, currentRound, user } = useGameStore();
+  const [pendingBets, setPendingBets] = useState<Bet[]>([]);
+  const [cashedOutBets, setCashedOutBets] = useState<Bet[]>([]);
+  const [lostBets, setLostBets] = useState<Bet[]>([]);
 
-  const pendingBets =
-    currentBets?.filter((bet) => bet.status === "pending") || [];
-  const cashedOutBets =
-    currentBets?.filter((bet) => bet.status === "cashed_out") || [];
-  const lostBets = currentBets?.filter((bet) => bet.status === "lost") || [];
+  useEffect(() => {
+    if (currentBets) {
+      setPendingBets(currentBets.filter((bet) => bet.status === "pending"));
+      setCashedOutBets(currentBets.filter((bet) => bet.status === "cashed_out"));
+      setLostBets(currentBets.filter((bet) => bet.status === "lost"));
+    }
+  }, [currentBets]);
+
+  // const pendingBets =
+  //   currentBets?.filter((bet) => bet.status === "pending") || [];
+  // const cashedOutBets =
+  //   currentBets?.filter((bet) => bet.status === "cashed_out") || [];
+  // const lostBets = currentBets?.filter((bet) => bet.status === "lost") || [];
 
   const isRoundActive = currentRound?.status === "running";
   const isBettingPhase = currentRound?.status === "betting";
@@ -46,7 +59,6 @@ export function CurrentBets() {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Apostas Pendentes */}
         {pendingBets.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2 text-sm text-slate-400">

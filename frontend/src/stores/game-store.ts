@@ -69,8 +69,6 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
   },
   setCurrentRound: (round) => {
     const { user } = get();
-    console.log("round: ", round);
-    console.log("my bets: ", round.bets);
     set({
       currentRound: round,
       currentBets: round.bets,
@@ -135,21 +133,21 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
       if (!response.success) throw new Error(response.error.message);
 
-      const { data } = response;
+      // const { data } = response;
 
-      const newBet: Bet & { username: string } = {
-        id: data.bet.id,
-        roundId: data.roundId,
-        userId: user.id,
-        username: user.username,
-        amount: data.bet.amount * 100,
-        multiplier: data.bet.multiplier,
-        status: data.bet.status,
-        cashedOutAt: data.bet.cashedOutAt,
-        createdAt: data.bet.createdAt,
-      };
+      // const newBet: Bet & { username: string } = {
+      //   id: data.bet.id,
+      //   roundId: data.roundId,
+      //   userId: user.id,
+      //   username: user.username,
+      //   amount: data.bet.amount * 100,
+      //   multiplier: data.bet.multiplier,
+      //   status: data.bet.status,
+      //   cashedOutAt: data.bet.cashedOutAt,
+      //   createdAt: data.bet.createdAt,
+      // };
 
-      get().addBet(newBet);
+      // get().addBet(newBet);
       get().debitBalance(amount);
       set({ isLoading: false });
     } catch {

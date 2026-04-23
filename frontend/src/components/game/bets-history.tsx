@@ -50,8 +50,6 @@ export function BetsHistory({
     try {
       const { myBetHistory } = await fetchMyBetHistory(currentPage, 20);
 
-      console.log("roundCrashPoint: ", myBetHistory);
-
       if (myBetHistory.success) {
         setTotalPages(myBetHistory.data.totalPages);
         setTotal(myBetHistory.data.total);

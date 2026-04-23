@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ProvablyFairAudit } from "./provably-fair-audit";
 import { RoundHistory } from "@/types/round";
+import { useCurrencyFormat } from "@/hooks/use-currency-format";
 
 interface RoundDetailsModalProps {
   round: RoundHistory | null;
@@ -28,6 +29,7 @@ export function RoundDetailsModal({
 }: RoundDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<"bets" | "audit">("bets");
   const { data: session } = useSession();
+  const { toBRL } = useCurrencyFormat();
 
   if (!round) return null;
 
@@ -91,13 +93,13 @@ export function RoundDetailsModal({
                     Total Apostado
                   </div>
                   <div className="text-sm font-semibold text-white">
-                    {totalBets.toFixed(2)} APT
+                    {toBRL(totalBets)}
                   </div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-400 mb-1">Total Pago</div>
                   <div className="text-sm font-semibold text-green-500">
-                    {totalPayout.toFixed(2)} APT
+                    {toBRL(totalPayout)}
                   </div>
                 </div>
                 <div>
@@ -180,7 +182,7 @@ export function RoundDetailsModal({
                                   : `Anonymous ${Math.random().toString(36).substring(7)}`}
                               </td>
                               <td className="py-2 text-right text-white font-mono">
-                                {bet.amount.toFixed(2)} APT
+                                {toBRL(bet.amount)}
                               </td>
                               <td className="py-2 text-right">
                                 {bet.multiplier ? (
@@ -199,7 +201,7 @@ export function RoundDetailsModal({
                               <td className="py-2 text-right font-mono">
                                 {payout > 0 ? (
                                   <span className="text-green-500 font-semibold">
-                                    {payout.toFixed(2)} APT
+                                    {toBRL(payout)}
                                   </span>
                                 ) : (
                                   <span className="text-slate-500">-</span>
