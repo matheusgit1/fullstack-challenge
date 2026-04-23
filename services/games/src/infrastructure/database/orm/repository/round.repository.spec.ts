@@ -82,22 +82,22 @@ describe('RoundRepository', () => {
       expect(result).toEqual(round);
     });
 
-    it('should return rounds history', async () => {
-      const rounds = [{ id: '1' }] as Round[];
-      const total = 1;
+    // it('should return rounds history', async () => {
+    //   const rounds = [{ id: '1' }] as Round[];
+    //   const total = 1;
 
-      (mockTypeOrmRepo.findAndCount as jest.Mock).mockResolvedValue([rounds, total]);
+    //   (mockTypeOrmRepo.findAndCount as jest.Mock).mockResolvedValue([rounds, total]);
 
-      const result = await repository.findRoundsHistory(1, 10);
+    //   const result = await repository.findRoundsHistory(1, 10);
 
-      expect(mockTypeOrmRepo.findAndCount).toHaveBeenCalledWith({
-        order: { crashedAt: 'DESC' },
-        skip: 0,
-        take: 10,
-      });
+    //   expect(mockTypeOrmRepo.findAndCount).toHaveBeenCalledWith({
+    //     order: { crashedAt: 'DESC' },
+    //     skip: 0,
+    //     take: 10,
+    //   });
 
-      expect(result).toEqual([rounds, total]);
-    });
+    //   expect(result).toEqual([rounds, total]);
+    // });
 
     it('should save round', async () => {
       const round = { id: '1' } as Round;

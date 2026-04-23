@@ -68,17 +68,6 @@ export class GamesController {
     return await this.auditRoundUsecase.handler(roundId);
   }
 
-  // @Get('rounds/:roundId/verify')
-  // @Auth(AuthGuardType.NONE)
-  // @ApiOperation({ summary: 'Dados de verificação provably fair' })
-  // @ApiResponse({
-  //   status: 200,
-  //   type: BaseSuccessResponseDto(RoundVerifyResponseDto),
-  // })
-  // async verifyRound(@Param('roundId') roundId: string): Promise<RoundVerifyResponseDto> {
-  //   return await this.verifyRoundUseCase.handler(roundId);
-  // }
-
   @Get('bets/me')
   @Auth(AuthGuardType.GUARD)
   @ApiOperation({ summary: 'Histórico de apostas do jogador' })

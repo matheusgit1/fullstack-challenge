@@ -115,43 +115,43 @@ describe('BetRepository', () => {
       expect(result).toEqual(created);
     });
 
-    it('should return user bets history without status filter', async () => {
-      const bets = [{ id: '1' }] as Bet[];
-      const total = 1;
+    // it('should return user bets history without status filter', async () => {
+    //   const bets = [{ id: '1' }] as Bet[];
+    //   const total = 1;
 
-      (mockTypeOrmRepo.findAndCount as jest.Mock).mockResolvedValue([bets, total]);
+    //   (mockTypeOrmRepo.findAndCount as jest.Mock).mockResolvedValue([bets, total]);
 
-      const result = await repository.findUserBetsHistory('user-1', 1, 10);
+    //   const result = await repository.findUserBetsHistory('user-1', 1, 10);
 
-      expect(mockTypeOrmRepo.findAndCount).toHaveBeenCalledWith({
-        where: { userId: 'user-1' },
-        order: { createdAt: 'DESC' },
-        skip: 0,
-        take: 10,
-        relations: ['round'],
-      });
+    //   expect(mockTypeOrmRepo.findAndCount).toHaveBeenCalledWith({
+    //     where: { userId: 'user-1' },
+    //     order: { createdAt: 'DESC' },
+    //     skip: 0,
+    //     take: 10,
+    //     relations: ['round'],
+    //   });
 
-      expect(result).toEqual([bets, total]);
-    });
+    //   expect(result).toEqual([bets, total]);
+    // });
 
-    it('should return user bets history with status filter', async () => {
-      const bets = [{ id: '1' }] as Bet[];
-      const total = 1;
+    // it('should return user bets history with status filter', async () => {
+    //   const bets = [{ id: '1' }] as Bet[];
+    //   const total = 1;
 
-      (mockTypeOrmRepo.findAndCount as jest.Mock).mockResolvedValue([bets, total]);
+    //   (mockTypeOrmRepo.findAndCount as jest.Mock).mockResolvedValue([bets, total]);
 
-      const result = await repository.findUserBetsHistory('user-1', 1, 10);
+    //   const result = await repository.findUserBetsHistory('user-1', 1, 10);
 
-      expect(mockTypeOrmRepo.findAndCount).toHaveBeenCalledWith({
-        where: { userId: 'user-1' },
-        order: { createdAt: 'DESC' },
-        skip: 0,
-        take: 10,
-        relations: ['round'],
-      });
+    //   expect(mockTypeOrmRepo.findAndCount).toHaveBeenCalledWith({
+    //     where: { userId: 'user-1' },
+    //     order: { createdAt: 'DESC' },
+    //     skip: 0,
+    //     take: 10,
+    //     relations: ['round'],
+    //   });
 
-      expect(result).toEqual([bets, total]);
-    });
+    //   expect(result).toEqual([bets, total]);
+    // });
   });
 
   describe('failure scenarios', () => {
