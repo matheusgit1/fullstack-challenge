@@ -5,7 +5,7 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -24,10 +24,10 @@
     "incremental": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "types": ["jest", "node"]
   },
   "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist", "tests/**/*"]
+  "exclude": ["node_modules", "dist"]
 }

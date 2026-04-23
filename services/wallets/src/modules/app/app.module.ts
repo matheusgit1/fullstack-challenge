@@ -24,7 +24,6 @@ import { ResponseInterceptor } from '@/interceptor/response.interceptor';
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
-    { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
   ],
 })
