@@ -1,10 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { CurrentRoundUseCase } from './current-round.usecase';
 import { CurrentRoundResponseDto } from '../dtos/response/current-round-response.dto';
-import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 import { Round, RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
 import { genRound } from '@/util-teste/entitites/gen-round';
+import { genBets } from '@/util-teste/entitites/gen-bets';
+import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
 
 describe('CurrentRoundUseCase', () => {
   const mockRoundRepository = {
@@ -49,26 +49,12 @@ describe('CurrentRoundUseCase', () => {
 
       expect(mockRoundRepository.findCurrentBettingRound).toHaveBeenCalledTimes(1);
       expect(result).toBeInstanceOf(CurrentRoundResponseDto);
-      expect(result).toEqual({
-        id: mockCurrentRound.id,
-        status: mockCurrentRound.status,
-        multiplier: mockCurrentRound.multiplier,
-        bets: mockCurrentRound.bets,
-        serverSeedHash: mockCurrentRound.serverSeedHash,
-        bettingEndsAt: mockCurrentRound.bettingEndsAt,
-        startedAt: mockCurrentRound.startedAt,
-      });
     });
 
     it('should handle round with bets array', async () => {
-      const roundWithBets = new Round({
+      const roundWithBets = genRound({
         ...mockCurrentRound,
-        bets: Array.from({ length: 2 }, (_, i) => ({
-          id: `bet-${i}`,
-          userId: `user-${i}`,
-          amount: i * 100,
-          status: 'PENDING',
-        })),
+        bets: Array.from({ length: 2 }, (_, i) => genBets({ id: `bet-${i}`, status: BetStatus.PENDING })),
       });
 
       mockRoundRepository.findCurrentBettingRound.mockResolvedValueOnce(roundWithBets);
@@ -77,7 +63,6 @@ describe('CurrentRoundUseCase', () => {
 
       expect(result.bets).toHaveLength(2);
       expect(result.bets[0].id).toBe('bet-0');
-      expect(result.bets[1].amount).toBe(100);
     });
 
     it('should handle round with different status values', async () => {

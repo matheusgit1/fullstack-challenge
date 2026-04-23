@@ -54,9 +54,9 @@ describe('KeycloakService', () => {
     beforeEach(() => {
       mockConfigService.get.mockImplementation((key: string) => {
         const config = {
-          KEYCLOAK_URL: appConfig.keycloakUrl,
-          KEYCLOAK_REALM: appConfig.realm,
-          KEYCLOAK_CLIENT_ID: appConfig.audience,
+          KEYCLOAK_URL: appConfig.KEY_CLOAK_URL,
+          KEYCLOAK_REALM: appConfig.KEYCLOAK_REALM,
+          KEYCLOAK_CLIENT_ID: appConfig.KEYCLOAK_CLIENT_ID,
           KEYCLOAK_CLIENT_SECRET: undefined,
         } as any;
         return config[key];
@@ -94,9 +94,9 @@ describe('KeycloakService', () => {
       expect(result).toEqual(mockAxiosResponse.data);
       expect(mockHttpService.post).toHaveBeenCalledTimes(1);
       expect(mockHttpService.post).toHaveBeenCalledWith(
-        appConfig.keycloakUrl + '/realms/' + appConfig.realm + '/protocol/openid-connect/token',
+        appConfig.KEY_CLOAK_URL + '/realms/' + appConfig.KEYCLOAK_REALM + '/protocol/openid-connect/token',
         {
-          client_id: appConfig.audience,
+          client_id: appConfig.KEYCLOAK_CLIENT_ID,
           grant_type: 'password',
           password: body.password,
           scope: 'openid profile email',

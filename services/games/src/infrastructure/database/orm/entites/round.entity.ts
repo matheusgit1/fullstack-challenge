@@ -10,7 +10,7 @@ export enum RoundStatus {
 @Entity('rounds')
 @Index(['status', 'createdAt'])
 export class Round {
-  constructor(partial?: Partial<Round>) {
+  constructor(partial?: Omit<Round, 'id' | 'createdAt' | 'updatedAt'>) {
     Object.assign(this, partial);
   }
 
@@ -115,10 +115,11 @@ export class Round {
 
   setStatus(status: RoundStatus) {
     if (status === RoundStatus.CRASHED) {
-      this.crashedAt = new Date();
+      this.endedAt = new Date();
     }
 
     if (status === RoundStatus.RUNNING) {
+      this.bettingEndsAt = new Date();
       this.startedAt = new Date();
     }
 

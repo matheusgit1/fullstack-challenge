@@ -11,7 +11,7 @@ export class WalletProxy implements IWalletProxy {
   async getUserBalance(token: string): Promise<Sucess<UserWallet>> {
     try {
       const response = await lastValueFrom(
-        this.httpService.get(appConfig.apiWalletsUrl + `/wallets/me`, {
+        this.httpService.get(appConfig.API_WALLETS_URL + `/wallets/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -20,7 +20,6 @@ export class WalletProxy implements IWalletProxy {
 
       return response.data satisfies UserWallet;
     } catch (error) {
-      // console.error('Error fetching user balance:', error);
       throw new Error('Failed to fetch user balance');
     }
   }

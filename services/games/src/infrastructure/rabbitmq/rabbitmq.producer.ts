@@ -18,7 +18,7 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
 
   private async connect() {
     try {
-      const connection = await amqp.connect(rabbitConfig.uri);
+      const connection = await amqp.connect(rabbitConfig.URI);
       this.channel = await connection.createChannel();
       this.logger.log('Conectado ao RabbitMQ');
     } catch (error) {
@@ -45,8 +45,8 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     };
 
     try {
-      await this.channel!.assertQueue(rabbitConfig.queue, { durable: true });
-      this.sendMessage(rabbitConfig.queue, message);
+      await this.channel!.assertQueue(rabbitConfig.QUEUE, { durable: true });
+      this.sendMessage(rabbitConfig.QUEUE, message);
       this.logger.log(` BET_LOST message enviada para userId: ${messageToSend.userId}`, {
         externalId: messageToSend.externalId,
       });
@@ -74,8 +74,8 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     };
 
     try {
-      await this.channel!.assertQueue(rabbitConfig.queue, { durable: true });
-      this.sendMessage(rabbitConfig.queue, message);
+      await this.channel!.assertQueue(rabbitConfig.QUEUE, { durable: true });
+      this.sendMessage(rabbitConfig.QUEUE, message);
       this.logger.log(` BET_PLACED message enviada para userId: ${messageToSend.userId}`, {
         multiplier: messageToSend.multiplier,
         externalId: messageToSend.externalId,
@@ -106,8 +106,8 @@ export class RabbitmqProducerService implements IRabbitmqProducerService {
     };
 
     try {
-      await this.channel!.assertQueue(rabbitConfig.queue, { durable: true });
-      this.sendMessage(rabbitConfig.queue, message);
+      await this.channel!.assertQueue(rabbitConfig.QUEUE, { durable: true });
+      this.sendMessage(rabbitConfig.QUEUE, message);
       this.logger.log(` BET_RESERVE message enviada para userId: ${messageToSend.userId}`, {
         amount: messageToSend.amount,
         externalId: messageToSend.externalId,

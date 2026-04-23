@@ -4,6 +4,7 @@ import { GameEngineModule } from '@/application/game/game-engine/game-engine.mod
 import { ProvablyFairModule } from '@/application/game/provably-fair/provably-fair.module';
 import { OrmModule } from '@/infrastructure/database/orm/orm.module';
 import { WebsocketModule } from '@/infrastructure/websocket/websocket.module';
+import { EventModule } from '../event/event.module';
 
 @Module({
   imports: [OrmModule, GameEngineModule, ProvablyFairModule, WebsocketModule],

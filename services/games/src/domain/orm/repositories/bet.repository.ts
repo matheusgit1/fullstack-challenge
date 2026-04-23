@@ -4,7 +4,8 @@ import { Bet, type BetStatus } from '@/infrastructure/database/orm/entites/bet.e
 export interface IBetRepository {
   setPendingBetsToLost(roundId: string): Promise<void>;
   save(bet: Bet): Promise<Bet>;
-  findByFilters(options: FindOneOptions<Bet>): Promise<Bet | null>;
+  findBetByFilters(options: FindOneOptions<Bet>): Promise<Bet | null>;
+  findBetsByFilters(options: FindOneOptions<Bet>): Promise<Bet[]>;
   findPeddingBets(): Promise<Bet[]>;
   findLooserBetsByRoundId(roundId: string): Promise<Bet[]>;
   createBet(data: Partial<Bet>): Promise<Bet>;

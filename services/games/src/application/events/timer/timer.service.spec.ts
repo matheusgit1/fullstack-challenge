@@ -1,3 +1,4 @@
+import { ProvablyFairUtil } from '@/application/game/provably-fair/provably-fair.util';
 import { IGameEngineService } from '@/domain/game/game.engine';
 import { IRoundRepository } from '@/domain/orm/repositories/round.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -42,8 +43,9 @@ describe('TimerService', () => {
     emitAsync: jest.fn(),
     waitFor: jest.fn(),
   } as unknown as EventEmitter2;
+  const provablyFairUtil = new ProvablyFairUtil();
 
-  const timerService = new TimerService(mockEventEmitter, mockRoundRepository, mockGameEngineService);
+  const timerService = new TimerService(mockEventEmitter, mockRoundRepository, mockGameEngineService, provablyFairUtil);
   timerService.logger = logger;
 
   beforeAll(async () => {
@@ -123,7 +125,7 @@ describe('TimerService', () => {
       } as any;
       mockRoundRepository.findCurrentRunningRound.mockResolvedValueOnce(round);
 
-      const response = await timerService.handleNewCrashed();
+      const response = await timerService.handlerUpdateMultiplier();
       const findCurrentRunningRound = jest.spyOn(mockRoundRepository, 'findCurrentRunningRound');
       const gameEngineServiceSpy = jest.spyOn(mockGameEngineService, 'runningRound');
       const startNewRound = jest.spyOn(mockGameEngineService, 'startNewRound');
@@ -135,7 +137,7 @@ describe('TimerService', () => {
       expect(startNewRound).toHaveBeenCalledTimes(0);
       expect(saveRound).toHaveBeenCalledTimes(1);
       expect(emit).toHaveBeenCalledTimes(1);
-      expect(emit).toHaveBeenCalledWith('multiplier.updated', {
+      expect(emit).toHaveBeenCalledWith('round.round.multiple.updated', {
         roundId: round.id,
         multiplier: expect.any(Number),
         crashPoint: expect.any(Number),
@@ -196,7 +198,7 @@ describe('TimerService', () => {
       } as any;
       mockRoundRepository.findCurrentRunningRound.mockResolvedValueOnce(round);
 
-      const response = await timerService.handleNewCrashed();
+      const response = await timerService.handlerUpdateMultiplier();
       expect(response).toBeUndefined();
     });
 
@@ -213,7 +215,7 @@ describe('TimerService', () => {
       } as any;
       mockRoundRepository.findCurrentRunningRound.mockResolvedValueOnce(round);
 
-      const response = await timerService.handleNewCrashed();
+      const response = await timerService.handlerUpdateMultiplier();
       expect(response).toBeUndefined();
     });
   });

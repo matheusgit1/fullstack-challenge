@@ -8,10 +8,12 @@ import { Round } from '@/infrastructure/database/orm/entites/round.entity';
 import { BetRepository } from '@/infrastructure/database/orm/repository/bet.repository';
 import { RoundRepository } from '@/infrastructure/database/orm/repository/round.repository';
 import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
+import { ProvablyFairUtil } from './provably-fair.util';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ProvablyFairSeed, Round, Bet])],
   providers: [
+    ProvablyFairUtil,
     {
       provide: PROVABY_SERVICE,
       useClass: ProvablyFairService,
@@ -21,6 +23,6 @@ import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
       useClass: RoundRepository,
     },
   ],
-  exports: [TypeOrmModule, PROVABY_SERVICE],
+  exports: [TypeOrmModule, ProvablyFairUtil, PROVABY_SERVICE],
 })
 export class ProvablyFairModule {}

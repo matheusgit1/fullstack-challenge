@@ -17,7 +17,6 @@ import { CashOutUsecase } from '@/presentation/usecases/cashout.usecase';
 import { CurrentRoundUseCase } from '@/presentation/usecases/current-round.usecase';
 import { HistoryRoundUsecase } from '@/presentation/usecases/history-round.usecase';
 import { GetMyBetsUseCase } from '@/presentation/usecases/my-bets.usecase';
-import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase';
 import { HttpStatus, Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, REQUEST } from '@nestjs/core';
@@ -136,7 +135,6 @@ describe('E2E', () => {
     providers: [
       CurrentRoundUseCase,
       HistoryRoundUsecase,
-      VerifyRoundUsecase,
       GetMyBetsUseCase,
       BetUseCase,
       CashOutUsecase,

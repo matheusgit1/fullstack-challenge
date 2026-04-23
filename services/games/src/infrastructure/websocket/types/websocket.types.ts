@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+import { WebSocket } from 'ws';
 
 export interface ConnectedClient {
   ws: WebSocket;
@@ -13,13 +13,13 @@ export interface WebSocketMessage {
 }
 
 export enum WebSocketEvent {
-  CONNECTION = "connection",
-  PONG = "pong",
-  BETTING_RUNNING = "betting.running",
-  MULTIPLIER_UPDATED = "multiplier.updated",
-  BETTING_LOOSE = "betting.loose",
-  BETTING_CRASHED = "betting.crashed",
-  ROUND_BETTING_STARTED = "round.betting.started",
+  CONNECTION = 'connection',
+  PONG = 'pong',
+  BETTING_RUNNING = 'betting.running',
+  MULTIPLIER_UPDATED = 'round.multiple.updated',
+  BETTING_LOOSE = 'betting.loose',
+  BETTING_CRASHED = 'betting.crashed',
+  ROUND_BETTING_STARTED = 'round.betting.started',
 }
 
 export interface BettingRunningEvent {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, FindOneOptions } from 'typeorm';
+import { Repository, FindOptionsWhere, FindOneOptions, FindManyOptions } from 'typeorm';
 import { Bet, BetStatus } from '../entites/bet.entity';
 import { type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 
@@ -11,6 +11,10 @@ export class BetRepository implements IBetRepository {
     private readonly repository: Repository<Bet>,
   ) {}
 
+  async findBetsByFilters(options: FindManyOptions<Bet>): Promise<Bet[]> {
+    return await this.repository.find(options);
+  }
+
   async setPendingBetsToLost(roundId: string): Promise<void> {
     await this.repository.update({ roundId, status: BetStatus.PENDING }, { status: BetStatus.LOST });
   }
@@ -19,7 +23,7 @@ export class BetRepository implements IBetRepository {
     return await this.repository.save(bet);
   }
 
-  async findByFilters(options: FindOneOptions<Bet>): Promise<Bet | null> {
+  async findBetByFilters(options: FindOneOptions<Bet>): Promise<Bet | null> {
     return this.repository.findOne(options);
   }
 

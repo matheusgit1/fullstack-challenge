@@ -8,11 +8,13 @@ import {
   NotFoundException,
   ConflictException,
   GoneException,
+  Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private logger = new Logger(GlobalExceptionFilter.name);
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -47,6 +49,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
     }
 
+    this.logger.error(`[${hash}] - global exception - ${errorType}: ${JSON.stringify(exception)}`);
     response.status(status).json({
       success: false,
       error: {

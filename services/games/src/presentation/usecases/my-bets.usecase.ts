@@ -26,7 +26,7 @@ export class GetMyBetsUseCase implements HandlerUsecase {
       totalBetsAmount,
       totalProfit,
       successRate,
-    } = await this.betRepository.findUserBetsHistory(user?.sub || 'anonymous', Number(page), Number(limit));
+    } = await this.betRepository.findUserBetsHistory(user?.sub || 'anonymous', Number(page), Number(limit), query.status || undefined);
 
     return new PaginatedResponseDto<DetailedBetHistoryItemDto>({
       data: new DetailedBetHistoryItemDto({

@@ -6,15 +6,15 @@ import { GameEngineService } from './game-engine.service';
 import { GAME_ENGINE_SERVICE } from '@/domain/game/game.engine';
 import { OrmModule } from '@/infrastructure/database/orm/orm.module';
 import { EventModule } from '@/application/events/event/event.module';
+import { RabbitmqModule } from '@/infrastructure/rabbitmq/rabbitmq.module';
 
 @Module({
-  imports: [ProvablyFairModule, OrmModule, ConfigModule, EventModule],
+  imports: [ProvablyFairModule, OrmModule, ConfigModule, EventModule, RabbitmqModule],
   providers: [
     {
       provide: GAME_ENGINE_SERVICE,
       useClass: GameEngineService,
     },
-    EventEmitter2,
   ],
   exports: [GAME_ENGINE_SERVICE],
 })

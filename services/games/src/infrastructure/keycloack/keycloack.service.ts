@@ -10,8 +10,8 @@ export class KeycloakService implements IKeyCloakService {
 
   public async getUserFromToken(token?: string): Promise<User> {
     try {
-      const keycloakUrl = appConfig.keycloakUrl;
-      const realm = appConfig.realm;
+      const keycloakUrl = appConfig.KEY_CLOAK_URL;
+      const realm = appConfig.KEYCLOAK_REALM;
 
       const getKeyCloackUserInfoUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/userinfo`;
       const response = await lastValueFrom(
@@ -24,16 +24,15 @@ export class KeycloakService implements IKeyCloakService {
 
       return response.data satisfies User;
     } catch (error) {
-      // console.error('Erro ao validar token', error);
       throw new UnauthorizedException('Erro ao validar token');
     }
   }
 
   async getToken(body: { username: string; password: string }): Promise<KeycloakTokenResponse> {
     try {
-      const keycloakUrl = appConfig.keycloakUrl;
-      const realm = appConfig.realm;
-      const audience = appConfig.audience;
+      const keycloakUrl = appConfig.KEY_CLOAK_URL;
+      const realm = appConfig.KEYCLOAK_REALM;
+      const audience = appConfig.KEYCLOAK_CLIENT_ID;
 
       const getTokenUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`;
       const response = await lastValueFrom(
@@ -55,7 +54,6 @@ export class KeycloakService implements IKeyCloakService {
       );
       return response.data satisfies KeycloakTokenResponse;
     } catch (error) {
-      // console.error('Erro ao obter token', error);
       throw new UnauthorizedException('Erro ao obter token');
     }
   }

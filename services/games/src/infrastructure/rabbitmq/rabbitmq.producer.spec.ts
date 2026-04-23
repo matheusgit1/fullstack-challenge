@@ -64,7 +64,7 @@ describe('RabbitmqProducerService', () => {
       it('should connect to RabbitMQ successfully', async () => {
         await rabbitmqProducer['connect']();
 
-        expect(mockAmqp.connect).toHaveBeenCalledWith(rabbitConfig.uri);
+        expect(mockAmqp.connect).toHaveBeenCalledWith(rabbitConfig.URI);
         expect(mockConnection.createChannel).toHaveBeenCalled();
         expect(rabbitmqProducer['channel']).toBe(mockChannel);
         expect(logger.log).toHaveBeenCalledWith('Conectado ao RabbitMQ');
@@ -84,7 +84,7 @@ describe('RabbitmqProducerService', () => {
         await rabbitmqProducer.publishCashout(cashoutMessage);
 
         expect(mockAmqp.connect).toHaveBeenCalled();
-        expect(mockChannel.assertQueue).toHaveBeenCalledWith(rabbitConfig.queue, { durable: true });
+        expect(mockChannel.assertQueue).toHaveBeenCalledWith(rabbitConfig.QUEUE, { durable: true });
         expect(mockChannel.sendToQueue).toHaveBeenCalled();
 
         const sentMessage = JSON.parse(mockChannel.sendToQueue.mock.calls[0][1]);
@@ -126,7 +126,7 @@ describe('RabbitmqProducerService', () => {
       it('should send message with persistent flag', async () => {
         await rabbitmqProducer.publishCashout(cashoutMessage);
 
-        expect(mockChannel.sendToQueue).toHaveBeenCalledWith(rabbitConfig.queue, expect.any(Buffer), {
+        expect(mockChannel.sendToQueue).toHaveBeenCalledWith(rabbitConfig.QUEUE, expect.any(Buffer), {
           persistent: true,
         });
       });
@@ -146,7 +146,7 @@ describe('RabbitmqProducerService', () => {
         await rabbitmqProducer.publishCashin(cashinMessage);
 
         expect(mockAmqp.connect).toHaveBeenCalled();
-        expect(mockChannel.assertQueue).toHaveBeenCalledWith(rabbitConfig.queue, { durable: true });
+        expect(mockChannel.assertQueue).toHaveBeenCalledWith(rabbitConfig.QUEUE, { durable: true });
         expect(mockChannel.sendToQueue).toHaveBeenCalled();
 
         const sentMessage = JSON.parse(mockChannel.sendToQueue.mock.calls[0][1]);
@@ -190,7 +190,7 @@ describe('RabbitmqProducerService', () => {
       it('should send message with persistent flag', async () => {
         await rabbitmqProducer.publishCashin(cashinMessage);
 
-        expect(mockChannel.sendToQueue).toHaveBeenCalledWith(rabbitConfig.queue, expect.any(Buffer), {
+        expect(mockChannel.sendToQueue).toHaveBeenCalledWith(rabbitConfig.QUEUE, expect.any(Buffer), {
           persistent: true,
         });
       });
@@ -210,7 +210,7 @@ describe('RabbitmqProducerService', () => {
         await rabbitmqProducer.publishReserve(reserveMessage);
 
         expect(mockAmqp.connect).toHaveBeenCalled();
-        expect(mockChannel.assertQueue).toHaveBeenCalledWith(rabbitConfig.queue, { durable: true });
+        expect(mockChannel.assertQueue).toHaveBeenCalledWith(rabbitConfig.QUEUE, { durable: true });
         expect(mockChannel.sendToQueue).toHaveBeenCalled();
 
         const sentMessage = JSON.parse(mockChannel.sendToQueue.mock.calls[0][1]);

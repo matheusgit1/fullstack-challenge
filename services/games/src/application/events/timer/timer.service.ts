@@ -1,141 +1,85 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { appConfig } from '@/configs/app.config';
 import { GAME_ENGINE_SERVICE, type IGameEngineService } from '@/domain/game/game.engine';
 import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
+import { ProvablyFairUtil } from '@/application/game/provably-fair/provably-fair.util';
+import { betConfig } from '@/configs/bet.config';
+import { WebSocketEvent } from '@/infrastructure/websocket/types/websocket.types';
 
 @Injectable()
 export class TimerService {
   logger = new Logger(TimerService.name);
   constructor(
-    private readonly eventEmitter: EventEmitter2,
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
     @Inject(GAME_ENGINE_SERVICE)
     private readonly gameEngineService: IGameEngineService,
+    private readonly provablyFairUtil: ProvablyFairUtil,
   ) {}
 
-  @Interval('betting.phase', appConfig.bettingDurationSeconds * 1000)
+  @Interval('round.betting.started', betConfig.BETTING_RUNNING_CHECK_INTERVAL_SECONDS)
   async handleBettingPhase() {
-    const activeRound = await this.roundRepository.findCurrentBettingRound();
-    this.logger.log(`[Trace:NO-TRACING] Fase de betting iniciada.`);
-    if (activeRound && activeRound.isBettingPhase()) {
-      if (activeRound.bettingEndsAt < new Date(Date.now())) {
-        await this.gameEngineService.runningRound(activeRound);
-
-        this.logger.log('Fase de betting encerrada, emitindo evento de fase de running.');
-
-        this.eventEmitter.emit('betting.running', {
-          roundId: activeRound.id,
-          round: activeRound,
-        });
+    try {
+      const activeRound = await this.roundRepository.findCurrentBettingRound();
+      this.logger.log(`[Trace:NO-TRACING] Fase de betting iniciada.`);
+      if (activeRound && activeRound.isBettingPhase()) {
+        if (activeRound.bettingEndsAt < new Date(Date.now())) {
+          await this.gameEngineService.runningRound(activeRound);
+        }
+        return;
       }
-
-      return;
-    }
-    if (activeRound && activeRound.isRunning()) {
-      await this.handleNewBetting();
-      return;
-    }
-    await this.gameEngineService.startNewRound();
-    const round = await this.roundRepository.findCurrentBettingRound();
-    if (round) {
-      this.logger.log(`[Trace:${round.id}] Fase de betting iniciada.`);
-      this.eventEmitter.emit('betting.phase', {
-        roundId: round.id,
-        round: round,
-      });
+      if (activeRound && activeRound.isRunning()) {
+        return;
+      }
+      await this.gameEngineService.startNewRound();
+    } catch (error) {
+      console.error(`[round.betting.started]`, error);
     }
   }
 
-  @Interval('multiple.updated', 5 * 1000)
-  async handleNewCrashed() {
-    const activeRound = await this.roundRepository.findCurrentRunningRound();
-    this.logger.log(`[Trace:NO-TRACING] atualizando multiplicador.`);
-    if (activeRound && activeRound.isRunning()) {
-      console.log(
-        'condição Date.now() < new Date(activeRound.crashedAt).getTime(): ',
-        Date.now() < new Date(activeRound.crashedAt).getTime(),
+  @Interval('round.multiple.updated', 5000)
+  async handlerUpdateMultiplier() {
+    try {
+      const activeRound = await this.roundRepository.findCurrentRunningRound();
+      this.logger.log(
+        `[Trace:round ${activeRound?.id || 'no trace'}] ${activeRound?.id ? 'Multiplicador atual: ' + activeRound.multiplier.toFixed(2) + 'x.' : 'fase de aposta'}.`,
       );
-      if (Date.now() < new Date(activeRound.crashedAt).getTime()) {
-        const newMultiplier = this.calculateMultiplierInterpolation(
-          activeRound.bettingEndsAt,
-          activeRound.crashedAt,
-          activeRound.crashPoint,
-        );
+      if (activeRound && activeRound.isRunning()) {
+        if (Date.now() < new Date(activeRound.crashedAt).getTime()) {
+          const newMultiplier = this.provablyFairUtil.interpolateMultiplier(
+            activeRound.startedAt,
+            activeRound.crashedAt,
+            activeRound.crashPoint,
+            new Date(),
+          );
+          if (newMultiplier > activeRound.multiplier) {
+            activeRound.setMultiplier(newMultiplier);
+            await this.gameEngineService.updateRound(activeRound, {
+              event: WebSocketEvent.MULTIPLIER_UPDATED,
+            });
+            this.logger.log(
+              `[Trace:update-round-multiplier ${activeRound?.id || 'no trace'}] Multiplicador atualizado para ${newMultiplier.toFixed(2)}x`,
+            );
+          }
+          return;
+        }
 
-        if (newMultiplier > activeRound.multiplier) {
+        if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
+          this.logger.log(`[Trace:round ${activeRound.id}] Fase de running sendo encerrada.`);
+          const tracingId = activeRound.id;
+          this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
+
+          const newMultiplier = activeRound.crashPoint;
+
           activeRound.setMultiplier(newMultiplier);
-          await this.roundRepository.saveRound(activeRound);
-
-          this.logger.log(`Multiplicador atualizado para ${newMultiplier.toFixed(2)}x`);
-
-          this.eventEmitter.emit('multiplier.updated', {
-            roundId: activeRound.id,
-            multiplier: newMultiplier,
-            crashPoint: activeRound.crashPoint,
-          });
+          await this.gameEngineService.endRound(activeRound);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await this.gameEngineService.startNewRound();
+          return;
         }
       }
+    } catch (error) {
+      console.error(`[round.multiple.updated]`, error);
     }
-  }
-
-  @Interval('betting.running', appConfig.bettingRunningCheckIntervalSeconds * 1000)
-  async handleNewBetting() {
-    const activeRound = await this.roundRepository.findCurrentRunningRound();
-    if (activeRound && activeRound.isRunning()) {
-      if (Date.now() > new Date(activeRound.crashedAt).getTime()) {
-        this.logger.log(`[Trace:NO-TRACING] Fase de running sendo encerrada.`);
-        const tracingId = activeRound.id;
-        this.logger.log(`[Trace:${tracingId}] Fase de running encerrada.`);
-        await this.gameEngineService.endRound(activeRound);
-
-        const newMultiplier = this.calculateMultiplierInterpolation(
-          activeRound.startedAt,
-          activeRound.crashedAt,
-          activeRound.crashPoint,
-        );
-
-        this.eventEmitter.emit('multiplier.updated', {
-          roundId: activeRound.id,
-          multiplier: newMultiplier,
-          crashPoint: activeRound.crashPoint,
-        });
-
-        this.eventEmitter.emit('betting.loose', {
-          roundId: activeRound.id,
-          tracingId: tracingId,
-        });
-
-        this.eventEmitter.emit('betting.crashed', {
-          roundId: activeRound.id,
-          round: activeRound,
-          tracingId: tracingId,
-        });
-      }
-    }
-  }
-
-  private calculateMultiplierInterpolation(startedAt: Date, crashedAt: Date, crashPoint: number): number {
-    const now = Date.now();
-    const startTime = startedAt.getTime();
-    const crashTime = crashedAt.getTime();
-
-    if (!startedAt || !crashedAt || !crashPoint || crashPoint <= 1.0) {
-      this.logger.warn('Parâmetros inválidos para interpolação de multiplicador');
-      return 1.0;
-    }
-
-    if (now <= startTime || now >= crashTime) {
-      return 1.0;
-    }
-
-    const totalDuration = crashTime - startTime;
-    const elapsedTime = now - startTime;
-    const timeProgress = elapsedTime / totalDuration;
-    const interpolatedMultiplier = 1.0 + (crashPoint - 1.0) * timeProgress;
-    const finalMultiplier = Math.min(interpolatedMultiplier, crashPoint);
-    return Math.round(finalMultiplier * 100) / 100;
   }
 }

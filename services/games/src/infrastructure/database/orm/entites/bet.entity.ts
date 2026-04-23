@@ -21,7 +21,7 @@ export enum BetStatus {
 @Index(['userId', 'createdAt'])
 @Index(['roundId', 'status'])
 export class Bet {
-  constructor(partial: Partial<Bet>) {
+  constructor(partial: Omit<Bet, 'id'>) {
     Object.assign(this, partial);
   }
   @PrimaryGeneratedColumn('uuid')
@@ -67,7 +67,7 @@ export class Bet {
   @Column({ type: 'timestamp', nullable: true })
   cashedOutAt: Date | null;
 
-  // Relacionamentos
+
   @ManyToOne(() => Round, (round) => round.bets)
   @JoinColumn({ name: 'roundId' })
   round: Round;

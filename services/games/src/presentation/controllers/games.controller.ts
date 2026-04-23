@@ -7,13 +7,11 @@ import { BetHistoryItemDto } from '../dtos/response/bets-history-response.dto';
 import { CurrentRoundResponseDto } from '../dtos/response/current-round-response.dto';
 import { HealthCheckResponseDto } from '../dtos/response/health-check-response.dto';
 import { RoundHistoryItemDto } from '../dtos/response/round-history-response.dto';
-import { RoundVerifyResponseDto } from '../dtos/response/round-verify-response.dto';
 import { PaginatedResponseDto } from '../dtos/response/paginated-reponse.dto';
 import { BetUseCase } from '../usecases/bet.usecase';
 import { CashOutUsecase } from '../usecases/cashout.usecase';
 import { HistoryRoundUsecase } from '../usecases/history-round.usecase';
 import { GetMyBetsUseCase } from '../usecases/my-bets.usecase';
-import { VerifyRoundUsecase } from '../usecases/verify-round.usecase';
 import { CurrentRoundUseCase } from './../usecases/current-round.usecase';
 import { Auth, AuthGuardType } from '@/application/auth/auth.decorator';
 import { RoundHistoryQueryDto } from '../dtos/request/round-history-query.dto';
@@ -28,7 +26,6 @@ export class GamesController {
   constructor(
     private readonly currentRoundUseCase: CurrentRoundUseCase,
     private readonly historyRoundUseCase: HistoryRoundUsecase,
-    private readonly verifyRoundUseCase: VerifyRoundUsecase,
     private readonly getMyBetsUseCase: GetMyBetsUseCase,
     private readonly betUseCase: BetUseCase,
     private readonly cashoutUseCase: CashOutUsecase,
@@ -59,7 +56,7 @@ export class GamesController {
     status: 200,
     type: BaseSuccessResponseDto(PaginatedResponseDto<RoundHistoryItemDto>),
   })
-  async getRoundHistory(@Query() query: RoundHistoryQueryDto): Promise<PaginatedResponseDto<RoundHistoryItemDto>> {
+  async getRoundHistory(@Query() query: RoundHistoryQueryDto): Promise<PaginatedResponseDto<RoundHistoryItemDto[]>> {
     return this.historyRoundUseCase.handler(query);
   }
 

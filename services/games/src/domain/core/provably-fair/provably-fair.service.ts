@@ -20,12 +20,6 @@ export interface IProvablyFairService {
   getActiveSeed(): Promise<ProvablyFairSeed>;
   getNextSeedForRound(): Promise<IProvablyFairData>;
   incrementNonce(seedId: string): Promise<void>;
-  calculateCrashPoint(
-    serverSeed: string,
-    clientSeed: string,
-    nonce: number,
-    houseEdgePercent?: number,
-  ): Promise<number>;
   verifyRound(
     serverSeed: string,
     clientSeed: string,

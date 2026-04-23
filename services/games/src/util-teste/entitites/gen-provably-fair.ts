@@ -1,8 +1,7 @@
 import { ProvablyFairSeed } from '@/infrastructure/database/orm/entites/provably-fair.entity';
 
 export const genProvablyFair = (partial?: Partial<ProvablyFairSeed>) => {
-  return new ProvablyFairSeed({
-    id: 'id',
+  const defaults = new ProvablyFairSeed({
     clientSeed: 'clientSeed',
     serverSeed: 'serverSeed',
     serverSeedHash: 'serverSeedHash',
@@ -10,6 +9,7 @@ export const genProvablyFair = (partial?: Partial<ProvablyFairSeed>) => {
     isUsed: true,
     usedAt: new Date(),
     createdAt: new Date(),
-    ...partial,
   });
+
+  return new ProvablyFairSeed({ ...defaults, ...partial });
 };

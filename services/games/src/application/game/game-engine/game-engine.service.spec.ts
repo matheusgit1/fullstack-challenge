@@ -4,6 +4,7 @@ import { GameEngineService } from './game-engine.service';
 import { IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
+import { ProvablyFairUtil } from '../provably-fair/provably-fair.util';
 
 describe('GameEngineService', () => {
   const logger = {
@@ -30,7 +31,6 @@ describe('GameEngineService', () => {
     getActiveSeed: jest.fn(),
     getNextSeedForRound: jest.fn(),
     incrementNonce: jest.fn(),
-    calculateCrashPoint: jest.fn(),
     verifyRound: jest.fn(),
     setSeedAsUsed: jest.fn(),
     rotateSeed: jest.fn(),
@@ -41,7 +41,7 @@ describe('GameEngineService', () => {
   const mockBetRepository: jest.Mocked<IBetRepository> = {
     setPendingBetsToLost: jest.fn(),
     save: jest.fn(),
-    findByFilters: jest.fn(),
+    findBetByFilters: jest.fn(),
     findPeddingBets: jest.fn(),
     findLooserBetsByRoundId: jest.fn(),
     createBet: jest.fn(),
@@ -54,11 +54,13 @@ describe('GameEngineService', () => {
     once: jest.fn(),
   } as unknown as EventEmitter2;
 
+  const provablyFairUtil = new ProvablyFairUtil();
+
   const gameEngineService = new GameEngineService(
     mockRoundRepository,
     mockProvablyFairService,
     mockBetRepository,
-    mockEventEmitter,
+    provablyFairUtil,
   );
 
   gameEngineService.logger = logger;

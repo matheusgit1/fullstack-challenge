@@ -8,7 +8,6 @@ import { GameModule } from '@/application/game/game.module';
 import { BET_REPOSITORY } from '@/domain/orm/repositories/bet.repository';
 import { ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 import { WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
-import { RABBITMQ_PRODUCER_SERVICE } from '@/domain/rabbitmq/rabbitmq.producer';
 import { GlobalExceptionFilter } from '@/filters/global-execeptions.filters';
 import { OrmModule } from '@/infrastructure/database/orm/orm.module';
 import { BetRepository } from '@/infrastructure/database/orm/repository/bet.repository';
@@ -16,7 +15,6 @@ import { RoundRepository } from '@/infrastructure/database/orm/repository/round.
 import { ProxyModule } from '@/infrastructure/proxy/proxy.module';
 import { WalletProxy } from '@/infrastructure/proxy/wallets.proxy';
 import { RabbitmqModule } from '@/infrastructure/rabbitmq/rabbitmq.module';
-import { RabbitmqProducerService } from '@/infrastructure/rabbitmq/rabbitmq.producer';
 import { WebsocketModule } from '@/infrastructure/websocket/websocket.module';
 import { LoggingInterceptor } from '@/interceptor/logging.interceptor';
 import { TracingMiddleware } from '@/middleware/tracing.middleware';
@@ -27,11 +25,11 @@ import { CashOutUsecase } from '@/presentation/usecases/cashout.usecase';
 import { CurrentRoundUseCase } from '@/presentation/usecases/current-round.usecase';
 import { HistoryRoundUsecase } from '@/presentation/usecases/history-round.usecase';
 import { GetMyBetsUseCase } from '@/presentation/usecases/my-bets.usecase';
-import { VerifyRoundUsecase } from '@/presentation/usecases/verify-round.usecase';
 import { AuthModule } from '@/application/auth/auth.module';
 import { AuthController } from '@/application/auth/auth.controller';
 import { EventModule } from '@/application/events/event/event.module';
 import { AuditRoundUsecase } from '@/presentation/usecases/audit-round.usecase';
+import { ResponseInterceptor } from '@/interceptor/response.interceptor';
 
 @Module({
   imports: [
@@ -51,7 +49,6 @@ import { AuditRoundUsecase } from '@/presentation/usecases/audit-round.usecase';
     GamesManager,
     CurrentRoundUseCase,
     HistoryRoundUsecase,
-    VerifyRoundUsecase,
     GetMyBetsUseCase,
     BetUseCase,
     CashOutUsecase,
@@ -71,6 +68,7 @@ import { AuditRoundUsecase } from '@/presentation/usecases/audit-round.usecase';
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
   ],
 })
 export class AppModule implements NestModule {
@@ -78,3 +76,5 @@ export class AppModule implements NestModule {
     consumer.apply(TracingMiddleware).forRoutes('*');
   }
 }
+
+    

@@ -1,65 +1,13 @@
+import { ProvablyFairUtil } from './../../application/game/provably-fair/provably-fair.util';
 import { createHash } from 'crypto';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { type IProvablyFairService, PROVABY_SERVICE } from '@/domain/core/provably-fair/provably-fair.service';
 import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 import { RoundAuditResponseDto } from '../dtos/response/round-audit-response.dto';
 import { RoundStatus } from '@/infrastructure/database/orm/entites/round.entity';
+import { provablyFairConfig } from '@/configs/provably-fair.config';
 
-const HOUSE_EDGE_PERCENT = 1;
-const GROWTH_K = 0.001;
-const SCHEDULER_INTERVAL_MS = 10000;
-const PROCESSING_MARGIN_MS = 500;
-const MAX_ACCEPTABLE_DRIFT_MS = SCHEDULER_INTERVAL_MS + PROCESSING_MARGIN_MS;
-
-function calculateCrashPoint(serverSeed: string, clientSeed: string, nonce: number, houseEdgePercent: number): number {
-  const combined = `${serverSeed}:${clientSeed}:${nonce}`;
-  const hash = createHash('sha256').update(combined).digest('hex');
-  const hex = hash.substring(0, 13);
-  const int = parseInt(hex, 16);
-  const max = Math.pow(2, 52);
-  const crashPoint = (max / (int + 1)) * (1 - houseEdgePercent / 100);
-  return Math.floor(Math.max(1, crashPoint) * 100) / 100;
-}
-
-function calculateTimeToCrashMs(crashPoint: number): number {
-  if (crashPoint <= 1) return 0;
-  return (Math.log(crashPoint) / GROWTH_K) * 1000;
-}
-
-function interpolateMultiplier(startedAt: Date, crashedAt: Date, crashPoint: number, atTime: Date): number {
-  const startTime = startedAt.getTime();
-  const crashTime = crashedAt.getTime();
-  const t = atTime.getTime();
-
-  if (t <= startTime || t >= crashTime) return 1.0;
-
-  const totalDuration = crashTime - startTime;
-  const elapsed = t - startTime;
-  const progress = elapsed / totalDuration;
-  const interpolated = 1.0 + (crashPoint - 1.0) * progress;
-  return Math.round(Math.min(interpolated, crashPoint) * 100) / 100;
-}
-
-function buildFormula(serverSeed: string, clientSeed: string, nonce: number, houseEdgePercent: number): string {
-  const combined = `${serverSeed}:${clientSeed}:${nonce}`;
-  const hash = createHash('sha256').update(combined).digest('hex');
-  const hex = hash.substring(0, 13);
-  const int = parseInt(hex, 16);
-  const max = Math.pow(2, 52);
-  const edge = 1 - houseEdgePercent / 100;
-
-  return [
-    `combined   = "${combined}"`,
-    `sha256     = "${hash}"`,
-    `hex13      = "${hex}"`,
-    `H          = ${int}`,
-    `max        = 2^52 = ${max}`,
-    `edge       = 1 - ${houseEdgePercent}% = ${edge}`,
-    `crashPoint = floor(max / (H + 1) * edge * 100) / 100`,
-    `           = floor(${max} / ${int + 1} * ${edge} * 100) / 100`,
-    `timeToCrash (s) = ln(crashPoint) / k = ln(?) / ${GROWTH_K}`,
-  ].join('\n');
-}
+const { HOUSE_EDGE_PERCENT, MAX_ACCEPTABLE_DRIFT_MS } = provablyFairConfig;
 
 @Injectable()
 export class AuditRoundUsecase {
@@ -68,6 +16,7 @@ export class AuditRoundUsecase {
     private readonly provablyFairService: IProvablyFairService,
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
+    private readonly provablyFairUtil: ProvablyFairUtil,
   ) {}
 
   async handler(roundId: string): Promise<RoundAuditResponseDto> {
@@ -79,8 +28,18 @@ export class AuditRoundUsecase {
     if (!round) throw new NotFoundException(`Round ${roundId} não encontrado`);
     if (!fair) throw new NotFoundException(`Provably fair não encontrado para o round ${roundId}`);
 
-    const calculatedCrashPoint = calculateCrashPoint(fair.serverSeed, fair.clientSeed, fair.nonce, HOUSE_EDGE_PERCENT);
-    const recalculated = calculateCrashPoint(fair.serverSeed, fair.clientSeed, fair.nonce, HOUSE_EDGE_PERCENT);
+    const calculatedCrashPoint = this.provablyFairUtil.calculateCrashPoint(
+      fair.serverSeed,
+      fair.clientSeed,
+      fair.nonce,
+      HOUSE_EDGE_PERCENT,
+    );
+    const recalculated = this.provablyFairUtil.calculateCrashPoint(
+      fair.serverSeed,
+      fair.clientSeed,
+      fair.nonce,
+      HOUSE_EDGE_PERCENT,
+    );
     const resultIsRepeatable = recalculated === calculatedCrashPoint;
 
     const realCrashPoint = round.crashPoint ?? null;
@@ -100,7 +59,7 @@ export class AuditRoundUsecase {
         ? new Date(round.crashedAt)
         : null;
 
-    const estimatedCrashDurationMs = calculateTimeToCrashMs(calculatedCrashPoint);
+    const estimatedCrashDurationMs = this.provablyFairUtil.calculateTimeToCrashMs(calculatedCrashPoint);
 
     const roundDurationMs = endedAt ? endedAt.getTime() - startedAt.getTime() : null;
 
@@ -115,16 +74,13 @@ export class AuditRoundUsecase {
       estimatedCrashDurationMs <= timeIdConsistenceByEndedDate;
 
     const theoreticalMaxMultiplierAtCrash = endedAt
-      ? interpolateMultiplier(startedAt, endedAt, calculatedCrashPoint, endedAt)
+      ? this.provablyFairUtil.interpolateMultiplier(startedAt, endedAt, calculatedCrashPoint, endedAt)
       : null;
 
     const maxMultiplierDeviation =
       round.multiplier != null && theoreticalMaxMultiplierAtCrash != null
         ? parseFloat(Math.abs(round.multiplier - theoreticalMaxMultiplierAtCrash).toFixed(4))
         : null;
-
-    console.log('tempos estimado: ', estimatedCrashDurationMs, 'real: ', roundDurationMs, 'diferenca: ', timingDriftMs);
-    console.log('time consistence: ', timingIsConsistent, MAX_ACCEPTABLE_DRIFT_MS);
 
     return new RoundAuditResponseDto({
       fairId: fair.id,
@@ -138,7 +94,7 @@ export class AuditRoundUsecase {
       maxMultiplierReached: round.multiplier ?? realCrashPoint,
       deviation: this.getPropertyByRoundStatus(round.status, parseFloat(deviation.toFixed(4))),
       houseEdgePercent: HOUSE_EDGE_PERCENT,
-      formula: buildFormula(fair.serverSeed, fair.clientSeed, fair.nonce, HOUSE_EDGE_PERCENT),
+      formula: this.provablyFairUtil.buildFormula(fair.serverSeed, fair.clientSeed, fair.nonce, HOUSE_EDGE_PERCENT),
 
       round: {
         roundId: round.id,

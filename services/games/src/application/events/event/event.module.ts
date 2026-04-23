@@ -1,6 +1,6 @@
-import { Global, Module } from '@nestjs/common';
-import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { EventEmitter } from 'node:stream';
+import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventService } from './event.service';
 
 @Module({
   imports: [
@@ -14,6 +14,7 @@ import { EventEmitter } from 'node:stream';
       ignoreErrors: false,
     }),
   ],
-  exports: [EventEmitterModule],
+  providers: [EventService],
+  exports: [EventEmitterModule, EventService],
 })
 export class EventModule {}

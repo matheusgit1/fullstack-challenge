@@ -36,7 +36,6 @@ describe('BetRepository', () => {
     jest.clearAllMocks();
   });
 
-
   describe('success scenarios', () => {
     it('should set pending bets to lost', async () => {
       (mockTypeOrmRepo.update as jest.Mock).mockResolvedValue(undefined);
@@ -65,7 +64,7 @@ describe('BetRepository', () => {
 
       (mockTypeOrmRepo.findOne as jest.Mock).mockResolvedValue(bet);
 
-      const result = await repository.findByFilters({ where: { id: '1' } });
+      const result = await repository.findBetByFilters({ where: { id: '1' } });
 
       expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: '1' },
@@ -155,12 +154,11 @@ describe('BetRepository', () => {
     });
   });
 
-
   describe('failure scenarios', () => {
     it('should return null when bet not found', async () => {
       (mockTypeOrmRepo.findOne as jest.Mock).mockResolvedValue(null);
 
-      const result = await repository.findByFilters({ where: { id: 'invalid' } });
+      const result = await repository.findBetByFilters({ where: { id: 'invalid' } });
 
       expect(result).toBeNull();
     });

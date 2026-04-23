@@ -1,3 +1,4 @@
+import { ProvablyFairUtil } from '@/application/game/provably-fair/provably-fair.util';
 import { createHash, randomBytes } from 'crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,7 @@ export class ProvablyFairService implements IProvablyFairService {
     private readonly seedRepository: Repository<ProvablyFairSeed>,
     @Inject(ROUND_REPOSITORY)
     private readonly roundRepository: IRoundRepository,
+    private readonly provablyFairUtil: ProvablyFairUtil,
   ) {}
 
   async generateNewSeed(clientSeed?: string): Promise<ProvablyFairSeed> {
@@ -67,25 +69,6 @@ export class ProvablyFairService implements IProvablyFairService {
     await this.seedRepository.increment({ id: seedId }, 'nonce', 1);
   }
 
-  async calculateCrashPoint(
-    serverSeed: string,
-    clientSeed: string,
-    nonce: number,
-    houseEdgePercent: number = 1,
-  ): Promise<number> {
-    const combined = `${serverSeed}:${clientSeed}:${nonce}`;
-    const hash = createHash('sha256').update(combined).digest('hex');
-    const hex = hash.substring(0, 13);
-    const int = parseInt(hex, 16);
-    const max = Math.pow(2, 52);
-
-    let crashPoint = (max / (int + 1)) * (1 - houseEdgePercent / 100);
-
-    crashPoint = Math.max(1, crashPoint);
-
-    return Math.floor(crashPoint * 100) / 100;
-  }
-
   async verifyRound(
     serverSeed: string,
     clientSeed: string,
@@ -100,7 +83,12 @@ export class ProvablyFairService implements IProvablyFairService {
   }> {
     const expectedHash = createHash('sha256').update(serverSeed).digest('hex');
 
-    const calculatedCrashPoint = await this.calculateCrashPoint(serverSeed, clientSeed, nonce, houseEdgePercent);
+    const calculatedCrashPoint = this.provablyFairUtil.calculateCrashPoint(
+      serverSeed,
+      clientSeed,
+      nonce,
+      houseEdgePercent,
+    );
 
     const isValid = Math.abs(calculatedCrashPoint - expectedCrashPoint) < 0.01;
 

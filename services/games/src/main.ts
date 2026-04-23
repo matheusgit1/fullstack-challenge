@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { setupMicroservices } from './configs/rabbitmq.config';
+import { setupRabbitmq } from './configs/rabbitmq.config';
 import { setupSwagger } from './configs/swagger.config';
 import { GlobalExceptionFilter } from './filters/global-execeptions.filters';
 import { ResponseInterceptor } from './interceptor/response.interceptor';
@@ -33,14 +33,11 @@ async function bootstrap(): Promise<void> {
 
   app.setGlobalPrefix('games');
 
-  setupMicroservices(app);
+  setupRabbitmq(app);
 
   const { apiEnpoint } = setupSwagger(app);
 
   await app.startAllMicroservices();
-
-  app.useGlobalFilters(new GlobalExceptionFilter());
-  app.useGlobalInterceptors(new ResponseInterceptor());
 
   await app.listen(port, '0.0.0.0', () => {
     console.log(`Games service rodando na porta ${port}`);

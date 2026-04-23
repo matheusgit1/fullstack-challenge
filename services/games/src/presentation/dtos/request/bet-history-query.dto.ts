@@ -3,7 +3,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class BetsHistoryQueryDto {
-  constructor(partial: Partial<BetsHistoryQueryDto>) {
+  constructor(partial?: Partial<BetsHistoryQueryDto>) {
     Object.assign(this, partial);
   }
   @ApiPropertyOptional({ example: 1, default: 1, nullable: true })
@@ -21,5 +21,5 @@ export class BetsHistoryQueryDto {
   @ApiPropertyOptional({ enum: BetStatus, example: BetStatus.PENDING, nullable: true })
   @IsEnum(BetStatus)
   @IsOptional()
-  status?: BetStatus;
+  status?: BetStatus = undefined;
 }

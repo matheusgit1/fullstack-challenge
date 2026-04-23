@@ -6,13 +6,9 @@ import { HandlerUsecase } from '../interfaces/usecase.interface';
 import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import { type IRoundRepository, ROUND_REPOSITORY } from '@/domain/orm/repositories/round.repository';
 import { type IWalletProxy, WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
-import {
-  type IRabbitmqProducerService,
-  RABBITMQ_PRODUCER_SERVICE,
-  TransactionSource,
-} from '@/domain/rabbitmq/rabbitmq.producer';
 import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
 import { GamesManager } from '../manager/games.manager';
+import { EventService } from '@/application/events/event/event.service';
 
 @Injectable()
 export class BetUseCase implements HandlerUsecase {
@@ -23,60 +19,55 @@ export class BetUseCase implements HandlerUsecase {
     private readonly roundRepository: IRoundRepository,
     @Inject(WALLET_PROXY) private readonly proxyService: IWalletProxy,
     private readonly gamesManager: GamesManager,
-    @Inject(RABBITMQ_PRODUCER_SERVICE)
-    private readonly rabbitmqProducer: IRabbitmqProducerService,
+    private readonly eventService: EventService,
   ) {}
 
   async handler(dto: BetRequestDto): Promise<BetResponseDto> {
-    const { user, hash, token } = this.request;
+    try {
+      const { user, hash, token } = this.request;
 
-    const userBalance = await this.proxyService.getUserBalance(token!);
-    const isAvailableBet = userBalance.data.balanceInCents >= dto.amount;
+      const userBalance = await this.proxyService.getUserBalance(token!);
+      const isAvailableBet = userBalance.data.balanceInCents >= dto.amount;
 
-    if (!isAvailableBet) {
-      throw new ConflictException('Saldo insuficiente');
-    }
-    const round = await this.roundRepository.findByRoundId(dto.roundId);
-    console.log('round bet usecase: ', round);
-    if (!round) {
-      throw new NotFoundException('Nenhuma rodada ativa');
-    }
-    if (!round.isBettingPhase()) {
-      throw new ConflictException('Fase de aposta encerrada');
-    }
+      if (!isAvailableBet) {
+        throw new ConflictException('Saldo insuficiente');
+      }
+      const round = await this.roundRepository.findByRoundId(dto.roundId);
 
-    const bet = await this.betRepository.createBet({
-      userId: user?.sub || 'Anonymous',
-      roundId: dto.roundId,
-      amount: dto.amount,
-      status: BetStatus.PENDING,
-    });
+      if (!round) {
+        throw new NotFoundException('Nenhuma rodada ativa');
+      }
+      if (!round.isBettingPhase()) {
+        throw new ConflictException('Fase de aposta encerrada');
+      }
 
-    await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
-
-    // await this.rabbitmqProducer.publishReserve({
-    //   cashType: TransactionSource.BET_RESERVE,
-    //   userId: user?.sub || 'Anonymous',
-    //   amount: dto.amount,
-    //   timestamp: new Date().toISOString(),
-    //   externalId: bet.id,
-    //   tracingId: hash,
-    // });
-
-    //enviar evento de nova aposta
-
-    return new BetResponseDto({
-      bet: {
-        id: bet.id,
+      const bet = await this.betRepository.createBet({
         userId: user?.sub || 'Anonymous',
+        roundId: dto.roundId,
         amount: dto.amount,
-        multiplier: 1,
         status: BetStatus.PENDING,
-        cashedOutAt: null,
-        createdAt: new Date(),
-      },
-      newBalance: userBalance.data.balanceInCents - dto.amount,
-      roundId: round.id,
-    });
+      });
+
+      await this.gamesManager.processBet(bet, user?.sub || 'Anonymous', dto.amount, hash);
+
+      //emit evento de aposta
+      await this.eventService.emitBet
+
+      return new BetResponseDto({
+        bet: {
+          id: bet.id,
+          userId: user?.sub || 'Anonymous',
+          amount: dto.amount,
+          multiplier: 1,
+          status: BetStatus.PENDING,
+          cashedOutAt: null,
+          createdAt: new Date(),
+        },
+        newBalance: userBalance.data.balanceInCents - dto.amount,
+        roundId: round.id,
+      });
+    } catch (err) {
+      throw err;
+    }
   }
 }

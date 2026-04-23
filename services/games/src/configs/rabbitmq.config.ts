@@ -1,20 +1,17 @@
-import { INestApplication } from "@nestjs/common";
-import { Transport } from "@nestjs/microservices";
+import { INestApplication } from '@nestjs/common';
+import { Transport } from '@nestjs/microservices';
 
 export const rabbitConfig = {
-  uri:
-    process.env.RABBITMQ_URI ||
-    process.env.RABBITMQ_URL ||
-    "amqp://admin:admin@localhost:5672",
-  queue: "cashin",
+  URI: process.env.RABBITMQ_URI || process.env.RABBITMQ_URL || 'amqp://admin:admin@localhost:5672',
+  QUEUE: 'cashin',
 };
 
-export function setupMicroservices(app: INestApplication<any>) {
+export function setupRabbitmq(app: INestApplication<any>) {
   app.connectMicroservice({
     transport: Transport.RMQ,
     options: {
-      urls: [rabbitConfig.uri],
-      queue: rabbitConfig.queue,
+      urls: [rabbitConfig.URI],
+      queue: rabbitConfig.QUEUE,
       queueOptions: {
         durable: true,
       },

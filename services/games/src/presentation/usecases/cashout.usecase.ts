@@ -7,19 +7,20 @@ import { GamesManager } from '../manager/games.manager';
 import { BET_REPOSITORY, type IBetRepository } from '@/domain/orm/repositories/bet.repository';
 import { type IWalletProxy, WALLET_PROXY } from '@/domain/proxy/wallet.proxy';
 import { BetStatus } from '@/infrastructure/database/orm/entites/bet.entity';
+import { EventService } from '@/application/events/event/event.service';
 
 @Injectable()
 export class CashOutUsecase implements HandlerUsecase {
   constructor(
     @Inject(BET_REPOSITORY) private readonly betRepository: IBetRepository,
-    @Inject(WALLET_PROXY) private readonly proxyService: IWalletProxy,
     @Inject(REQUEST) private readonly request: Request,
     private readonly gamesManager: GamesManager,
+    private readonly eventService: EventService,
   ) {}
 
   async handler(dto: CashoutRequestDto) {
     const { user, hash, token } = this.request;
-    const bet = await this.betRepository.findByFilters({
+    const bet = await this.betRepository.findBetByFilters({
       where: { id: dto.betId, userId: user?.sub || 'anonymous' },
       relations: ['round'],
     });
@@ -39,11 +40,11 @@ export class CashOutUsecase implements HandlerUsecase {
 
     if (round.isRunning()) {
       const cashin = await this.gamesManager.processBetWin(bet, round, user?.sub || 'anonymous', externalId, hash);
-
+      await this.eventService.emitCashout(bet);
       return cashin;
     }
 
-    throw new Error('Rodada já finalizada, saque indisponível');
+    throw new Error('Aposta nao pode ser sacada');
   }
 
   private getErrorByStatus(status: BetStatus) {
