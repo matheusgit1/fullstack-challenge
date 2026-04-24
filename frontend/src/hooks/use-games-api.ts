@@ -27,8 +27,6 @@ export function useGamesApi() {
     const currentRoundz = currentRound.data;
     currentRoundz.bets?.forEach((bet) => addBet(bet));
 
-    console.log("currentRound by context: ", currentRoundz);
-
     updateCurrentRound(currentRoundz);
     return { currentRound, status };
   };

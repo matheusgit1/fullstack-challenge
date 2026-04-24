@@ -57,7 +57,6 @@ export function BetsHistory({
         throw new Error("Falha ao carregar apostas");
       }
     } catch (err) {
-      console.warn("Error fetching bets:", err);
       setError("Falha ao carregar histórico de apostas");
     } finally {
       setLoading(false);

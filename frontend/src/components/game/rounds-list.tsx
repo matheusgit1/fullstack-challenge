@@ -44,7 +44,6 @@ export function RoundsList({ initialRounds = [] }: RoundsListProps) {
 
       if (!response.success) throw new Error(response.error.message);
 
-      console.log("repsonse pagination: ", response);
       const { data } = response;
 
       setRounds(data.data);
