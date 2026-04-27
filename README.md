@@ -1,5 +1,22 @@
 # Desafio Full-stack - Crash Game 🎮
 
+## Como executar
+
+- Requisitos: Docker instalado
+- Comando: `docker-compose up --build`
+
+### Acessos importantes
+
+- Frontend: `http://localhost:3000`
+- API Games docs: `http://localhost:4001/api-games`
+- API Wallets docs: `http://localhost:4002/api-wallets`
+- pgAdmin: `http://localhost:5050`
+- Keycloak: `http://localhost:8080`
+  - usuário: `player`
+  - senha: `player123`
+
+> Apenas isso.
+
 ## Bem-vindo à Jungle Gaming 🦧
 
 A **Jungle Gaming** é uma software house especializada em iGaming — desenvolvemos plataformas de cassino online com tecnologia de ponta: NestJS, Bun, TanStack, DDD e arquitetura orientada a eventos. Somos apaixonados por engenharia de software e acreditamos que grandes produtos nascem de grandes times.
